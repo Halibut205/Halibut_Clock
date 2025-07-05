@@ -1,6 +1,8 @@
 # 🕐 Fliqlo Timer - Pomodoro Study Timer
 
-A **beautiful, bilingual Pomodoro timer** with modern UI, task management, and cross-platform audio support. Perfect for focused study sessions and productivity tracking.
+A **beautiful, bilingual Pomodoro timer** by Halibut with modern UI, task management, and cross-platform audio support. Perfect for focused study sessions and productivity tracking.
+
+2025 - what is Trình ?
 
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)
 ![Python](https://img.shields.io/badge/python-3.8%2B-green)
