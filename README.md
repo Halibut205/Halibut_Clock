@@ -6,6 +6,7 @@
 
 1. Clone repo hoặc tải source
 2. Chạy file bash
+3. Học 10 tiếng 1 ngày nhé
 
 ## 📋 Mô tả
 
