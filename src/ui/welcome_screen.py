@@ -303,8 +303,8 @@ def show_welcome_screen(on_start_callback):
     
     # Tạo sound manager cho welcome screen
     try:
-        from ..managers.sound_manager import ButtonSoundManager
-        sound_manager = ButtonSoundManager()
+        from ..managers.sound_manager import SoundManager
+        sound_manager = SoundManager()
         welcome.play_sound = sound_manager.play_button_click
     except:
         # Nếu không thể import sound manager, bỏ qua

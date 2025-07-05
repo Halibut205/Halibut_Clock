@@ -35,8 +35,13 @@ if not exist "sfx" mkdir sfx
 
 if not exist "sfx\button_1.mp3" (
     echo [WARNING] Sound file 'sfx\button_1.mp3' not found
-    echo [INFO] App will run without sound effects
-    echo [INFO] Add 'button_1.mp3' to 'sfx\' folder for sound
+    echo [INFO] Add 'button_1.mp3' to 'sfx\' folder for button sounds
+)
+
+if not exist "sfx\whitenoise_1.mp3" (
+    echo [WARNING] Background music 'sfx\whitenoise_1.mp3' not found
+    echo [INFO] Add 'whitenoise_1.mp3' to 'sfx\' folder for background music
+    echo [INFO] App will work without background music
 )
 
 echo.

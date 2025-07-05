@@ -6,7 +6,7 @@ import tkinter as tk
 from datetime import datetime
 from .timer_core import TimerCore
 from ..ui.ui_components import FliqloUI
-from ..managers.sound_manager import ButtonSoundManager
+from ..managers.sound_manager import SoundManager
 from ..managers.task_manager import TaskManager
 
 class TimerController:
@@ -16,7 +16,7 @@ class TimerController:
         # Khởi tạo core logic, UI, sound và task manager
         self.timer_core = TimerCore()
         self.ui = FliqloUI(root)
-        self.sound_manager = ButtonSoundManager()
+        self.sound_manager = SoundManager()
         self.task_manager = TaskManager()
         
         # Kết nối callbacks
@@ -68,17 +68,25 @@ class TimerController:
     def _handle_start(self):
         """Xử lý sự kiện Start"""
         self.timer_core.start_timer()
+        # Bắt đầu background music khi start timer
+        self.sound_manager.start_background_music()
 
     def _handle_toggle(self):
         """Xử lý sự kiện Pause/Resume"""
         if self.timer_core.running:
             self.timer_core.pause_timer()
+            # Pause background music khi pause timer
+            self.sound_manager.pause_background_music()
         else:
             self.timer_core.resume_timer()
+            # Resume background music khi resume timer
+            self.sound_manager.resume_background_music()
 
     def _handle_reset(self):
         """Xử lý sự kiện Reset"""
         self.timer_core.reset_timer()
+        # Dừng background music khi reset
+        self.sound_manager.stop_background_music()
 
     def _handle_sessions_changed(self, sessions):
         """Xử lý sự kiện thay đổi target sessions"""
