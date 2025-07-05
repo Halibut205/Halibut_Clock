@@ -6,6 +6,17 @@ import tkinter as tk
 from tkinter import font as tkfont
 from .task_ui import TaskUI
 
+# Session duration options - định nghĩa local để tránh import issues
+SESSION_DURATION_OPTIONS = {
+    "15 min": 15 * 60,    # 900 seconds
+    "25 min": 25 * 60,    # 1500 seconds (Pomodoro)
+    "30 min": 30 * 60,    # 1800 seconds
+    "45 min": 45 * 60,    # 2700 seconds
+    "1 hour": 60 * 60,    # 3600 seconds (default)
+    "1.5 hours": 90 * 60, # 5400 seconds
+    "2 hours": 120 * 60   # 7200 seconds
+}
+
 class FliqloUI:
     def __init__(self, root):
         self.root = root
@@ -19,6 +30,7 @@ class FliqloUI:
         self.on_sessions_changed = None
         self.on_auto_continue_changed = None
         self.on_reset_sessions = None
+        self.on_session_duration_changed = None  # New callback
         
         # Task callbacks
         self.on_add_task = None
@@ -146,8 +158,26 @@ class FliqloUI:
         settings_frame = tk.Frame(self.root, bg='black')
         settings_frame.pack(pady=5)
 
+        # Session duration setting - NEW
+        tk.Label(settings_frame, text="Duration:", fg="white", bg="black", font=("Arial", 9)).grid(row=0, column=0, padx=3)
+        self.session_duration_var = tk.StringVar(value="1 hour")
+        self.duration_combobox = tk.OptionMenu(
+            settings_frame,
+            self.session_duration_var,
+            *SESSION_DURATION_OPTIONS.keys(),
+            command=self._on_session_duration_changed
+        )
+        self.duration_combobox.config(
+            font=("Arial", 8),
+            width=8,
+            bg="gray20",
+            fg="white",
+            highlightthickness=0
+        )
+        self.duration_combobox.grid(row=0, column=1, padx=3)
+
         # Target sessions setting - compact
-        tk.Label(settings_frame, text="Sessions:", fg="white", bg="black", font=("Arial", 9)).grid(row=0, column=0, padx=3)
+        tk.Label(settings_frame, text="Sessions:", fg="white", bg="black", font=("Arial", 9)).grid(row=0, column=2, padx=3)
         self.sessions_var = tk.StringVar(value="8")
         self.sessions_spinbox = tk.Spinbox(
             settings_frame,
@@ -157,7 +187,7 @@ class FliqloUI:
             font=("Arial", 9),
             command=self._on_sessions_changed
         )
-        self.sessions_spinbox.grid(row=0, column=1, padx=3)
+        self.sessions_spinbox.grid(row=0, column=3, padx=3)
 
         # Auto continue setting - compact
         self.auto_continue_var = tk.BooleanVar(value=True)
@@ -171,98 +201,23 @@ class FliqloUI:
             font=("Arial", 9),
             command=self._on_auto_continue_changed
         )
-        self.auto_continue_cb.grid(row=0, column=2, padx=5)
+        self.auto_continue_cb.grid(row=0, column=4, padx=5)
 
         # Reset sessions button - compact
         self.reset_sessions_btn = tk.Button(
             settings_frame,
-            text="Reset Sessions",
-            width=12,
+            text="Reset",
+            width=8,
             font=("Arial", 8),
             command=self._on_reset_sessions_clicked
         )
-        self.reset_sessions_btn.grid(row=0, column=3, padx=5)
+        self.reset_sessions_btn.grid(row=0, column=5, padx=5)
 
-    def _on_start_clicked(self):
-        """Tạo các nút điều khiển chính - TO HƠN"""
-        btn_frame = tk.Frame(self.root, bg='black')
-        btn_frame.pack(pady=10)
-
-        # Các nút to hơn với font lớn hơn
-        btn_font = tkfont.Font(family="Arial", size=14, weight="bold")
-        
-        self.start_btn = tk.Button(
-            btn_frame, 
-            text="▶ START", 
-            font=btn_font,
-            width=12, 
-            height=2,
-            bg="green",
-            fg="white",
-            command=self._on_start_clicked
-        )
-        self.start_btn.grid(row=0, column=0, padx=8, pady=5)
-
-        self.toggle_btn = tk.Button(
-            btn_frame, 
-            text="⏸ PAUSE", 
-            font=btn_font,
-            width=12,
-            height=2,
-            bg="orange",
-            fg="white", 
-            command=self._on_toggle_clicked
-        )
-        self.toggle_btn.grid(row=0, column=1, padx=8, pady=5)
-
-        self.reset_btn = tk.Button(
-            btn_frame, 
-            text="🔄 RESET", 
-            font=btn_font,
-            width=12,
-            height=2,
-            bg="red",
-            fg="white",
-            command=self._on_reset_clicked
-        )
-        self.reset_btn.grid(row=0, column=2, padx=8, pady=5)
-        """Tạo phần cài đặt session"""
-        settings_frame = tk.Frame(self.root, bg='black')
-        settings_frame.pack(pady=10)
-
-        # Target sessions setting
-        tk.Label(settings_frame, text="Target Sessions:", fg="white", bg="black").grid(row=0, column=0, padx=5)
-        self.sessions_var = tk.StringVar(value="8")
-        self.sessions_spinbox = tk.Spinbox(
-            settings_frame,
-            from_=1, to=20,
-            textvariable=self.sessions_var,
-            width=5,
-            command=self._on_sessions_changed
-        )
-        self.sessions_spinbox.grid(row=0, column=1, padx=5)
-
-        # Auto continue setting
-        self.auto_continue_var = tk.BooleanVar(value=True)
-        self.auto_continue_cb = tk.Checkbutton(
-            settings_frame,
-            text="Auto Continue",
-            variable=self.auto_continue_var,
-            fg="white",
-            bg="black",
-            selectcolor="black",
-            command=self._on_auto_continue_changed
-        )
-        self.auto_continue_cb.grid(row=0, column=2, padx=10)
-
-        # Reset sessions button
-        self.reset_sessions_btn = tk.Button(
-            settings_frame,
-            text="Reset Sessions",
-            width=12,
-            command=self._on_reset_sessions_clicked
-        )
-        self.reset_sessions_btn.grid(row=0, column=3, padx=5)
+    def _on_session_duration_changed(self, selected_duration):
+        """Xử lý sự kiện thay đổi session duration"""
+        if self.on_session_duration_changed:
+            duration_seconds = SESSION_DURATION_OPTIONS[selected_duration]
+            self.on_session_duration_changed(duration_seconds, selected_duration)
 
     def _on_start_clicked(self):
         """Xử lý sự kiện click nút Start"""
@@ -303,6 +258,12 @@ class FliqloUI:
         """Xử lý sự kiện reset sessions"""
         if self.on_reset_sessions:
             self.on_reset_sessions()
+
+    def _on_session_duration_changed(self, selected_duration):
+        """Xử lý sự kiện thay đổi session duration"""
+        if self.on_session_duration_changed:
+            duration_seconds = SESSION_DURATION_OPTIONS[selected_duration]
+            self.on_session_duration_changed(duration_seconds, selected_duration)
 
     def update_timer_display(self, time_text):
         """Cập nhật hiển thị timer chính"""

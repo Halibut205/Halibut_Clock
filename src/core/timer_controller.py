@@ -37,6 +37,7 @@ class TimerController:
         self.ui.on_sessions_changed = self._handle_sessions_changed
         self.ui.on_auto_continue_changed = self._handle_auto_continue_changed
         self.ui.on_reset_sessions = self._handle_reset_sessions
+        self.ui.on_session_duration_changed = self._handle_session_duration_changed  # New callback
         
         # Task callbacks
         self.ui.on_add_task = self._handle_add_task
@@ -55,7 +56,7 @@ class TimerController:
         self.timer_core.on_timer_update = self.ui.update_timer_display
         self.timer_core.on_break_update = self.ui.update_break_display
         self.timer_core.on_state_change = self.ui.update_button_state
-        self.timer_core.on_session_update = self.ui.update_session_display
+        self.timer_core.on_session_update = self._update_session_display
         self.timer_core.on_session_complete = self.ui.show_session_complete_message
         
         # Task manager callbacks
@@ -120,6 +121,11 @@ class TimerController:
     def _handle_clear_completed(self):
         """Xử lý sự kiện xóa tất cả completed tasks"""
         self.task_manager.clear_completed_tasks()
+
+    def _handle_session_duration_changed(self, duration_seconds, duration_label):
+        """Xử lý sự kiện thay đổi session duration"""
+        self.timer_core.set_session_duration(duration_seconds)
+        print(f"Session duration changed to: {duration_label} ({duration_seconds} seconds)")
 
     def _on_task_added(self, task):
         """Callback khi task được thêm"""
@@ -200,3 +206,9 @@ class TimerController:
         except Exception as e:
             print(f"❌ Could not import tasks: {e}")
             return False
+
+    def _update_session_display(self):
+        """Update session display với current và target sessions"""
+        current = self.timer_core.current_session
+        target = self.timer_core.target_sessions
+        self.ui.update_session_display(current, target)

@@ -1,8 +1,0 @@
-@echo off
-echo Installing dependencies for Fliqlo Timer...
-cd /d "C:\Users\Asus TUF\OneDrive\Desktop\Timer"
-"C:\Users\Asus TUF\AppData\Local\Programs\Python\Python312\python.exe" -m pip install pygame
-echo.
-echo Installation completed!
-echo You can now run the application using scripts\fliqlo_timer_runner.bat
-pause

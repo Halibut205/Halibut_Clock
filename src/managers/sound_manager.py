@@ -2,18 +2,29 @@
 Sound Effects Module - Quản lý âm thanh cho ứng dụng
 """
 
-import pygame
+try:
+    import pygame
+    PYGAME_AVAILABLE = True
+except ImportError:
+    print("⚠️ pygame not available - sound effects disabled")
+    PYGAME_AVAILABLE = False
+
 import os
 
 class SoundManager:
     def __init__(self):
-        self.enabled = True
+        self.enabled = PYGAME_AVAILABLE
         self.sounds = {}
-        self._initialize_pygame()
-        self._load_sounds()
+        if self.enabled:
+            self._initialize_pygame()
+            self._load_sounds()
+        else:
+            print("🔇 Sound manager disabled (pygame not available)")
 
     def _initialize_pygame(self):
         """Khởi tạo pygame mixer cho âm thanh"""
+        if not PYGAME_AVAILABLE:
+            return
         try:
             pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
             print("✅ Sound system initialized")
@@ -23,7 +34,7 @@ class SoundManager:
 
     def _load_sounds(self):
         """Load các file âm thanh"""
-        if not self.enabled:
+        if not self.enabled or not PYGAME_AVAILABLE:
             return
         
         # Đường dẫn đến thư mục sfx
@@ -49,7 +60,7 @@ class SoundManager:
 
     def play_sound(self, sound_name, volume=0.5):
         """Phát âm thanh"""
-        if not self.enabled or sound_name not in self.sounds:
+        if not self.enabled or not PYGAME_AVAILABLE or sound_name not in self.sounds:
             return
             
         try:
@@ -81,13 +92,17 @@ class SoundManager:
 
     def toggle_sound(self):
         """Bật/tắt âm thanh"""
-        self.enabled = not self.enabled
+        if PYGAME_AVAILABLE:
+            self.enabled = not self.enabled
         return self.enabled
 
     def set_volume(self, volume):
         """Điều chỉnh âm lượng chung (0.0 - 1.0)"""
-        if not self.enabled:
+        if not self.enabled or not PYGAME_AVAILABLE:
             return
             
         for sound in self.sounds.values():
-            sound.set_volume(volume)
+            try:
+                sound.set_volume(volume)
+            except:
+                pass

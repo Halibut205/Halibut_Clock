@@ -9,12 +9,22 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.join(BASE_DIR, 'src')
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 SFX_DIR = os.path.join(BASE_DIR, 'sfx')
-ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 
 # Timer settings
 DEFAULT_SESSION_DURATION = 3600  # 1 hour in seconds
 DEFAULT_TARGET_SESSIONS = 8
 DEFAULT_AUTO_CONTINUE = True
+
+# Session duration options (in seconds)
+SESSION_DURATION_OPTIONS = {
+    "15 min": 15 * 60,    # 900 seconds
+    "25 min": 25 * 60,    # 1500 seconds (Pomodoro)
+    "30 min": 30 * 60,    # 1800 seconds
+    "45 min": 45 * 60,    # 2700 seconds
+    "1 hour": 60 * 60,    # 3600 seconds (default)
+    "1.5 hours": 90 * 60, # 5400 seconds
+    "2 hours": 120 * 60   # 7200 seconds
+}
 
 # UI settings
 WINDOW_SIZE = "500x600"

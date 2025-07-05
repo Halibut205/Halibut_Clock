@@ -55,3 +55,19 @@ ENV/
 # Temporary files
 *.tmp
 *.temp
+
+# Runtime files
+*.pid
+*.lock
+
+# Editor backups
+*~
+*.bak
+*.orig
+
+# Test files
+test_*.py
+
+# Development
+.vscode/
+.idea/

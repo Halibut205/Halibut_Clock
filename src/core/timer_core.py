@@ -160,3 +160,21 @@ class TimerCore:
         """Lấy thời gian còn lại của session hiện tại"""
         remaining = self.session_duration - self.time_elapsed
         return max(0, remaining)
+
+    def set_session_duration(self, duration_seconds):
+        """Thiết lập thời lượng session mới"""
+        self.session_duration = duration_seconds
+        # Reset session completed flag nếu đang trong session
+        if self.time_elapsed < self.session_duration:
+            self.session_completed = False
+        # Trigger update để UI hiển thị progress mới
+        if self.on_session_update:
+            self.on_session_update()
+
+    def get_session_duration(self):
+        """Lấy thời lượng session hiện tại"""
+        return self.session_duration
+
+    def get_session_duration_formatted(self):
+        """Lấy thời lượng session dạng format"""
+        return self.format_time(self.session_duration)

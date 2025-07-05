@@ -1,157 +1,165 @@
-# Study Fliqlo Clock
+# 🕐 Fliqlo Study Timer
 
-Đây là đồng hồ count-up (tăng thời gian) bằng Python/Tkinter của Halibut.
+Ứng dụng đếm thời gian học tập với giao diện Fliqlo-style, quản lý session và task management tích hợp.
 
 ---
 
-## 🚀 Hướng dẫn chạy ứng dụng
+## 🚀 Hướng dẫn sử dụng
 
-### 1. Cài đặt lần đầu
+### 📥 Clone và chạy lần đầu
 
-#### **Windows**
-1. Clone repo theo cách của bạn:  
-    ```bash
-    git clone <repo_url>
-    ```
-2. Cài đặt: Double-click `setup.bat`
-3. Chạy app: Double-click `run.bat`
+#### **Windows:**
+```bash
+git clone <repo_url>
+cd Timer
+# Double-click setup.bat (cài đặt dependencies)
+# Double-click run.bat (chạy app)
+```
 
-#### **Linux/Mac**
-1. Clone repo theo cách của bạn:    
-    ```bash
-    git clone <repo_url>
-    ```
-2. Cài đặt:  
-    ```bash
-    chmod +x setup.sh && ./setup.sh
-    ```
-3. Chạy app:  
-    ```bash
-    chmod +x run.sh && ./run.sh
-    ```
-    hoặc  
-    ```bash
-    python3 main.py
-    ```
+#### **Linux/Mac:**
+```bash
+git clone <repo_url>
+cd Timer
+chmod +x setup.sh && ./setup.sh    # Cài đặt
+chmod +x run.sh && ./run.sh         # Chạy app
+```
 
-### 2. Chạy hàng ngày
+#### **Developers:**
+```bash
+python main.py  # Chạy trực tiếp
+```
 
+### 🔄 Chạy hàng ngày
 - **Windows:** Double-click `run.bat`
 - **Linux/Mac:** `./run.sh` hoặc `python3 main.py`
 
-### 3. Nếu ngựa ngựa
+---
 
-dùng Python:  
-```bash
-python main.py
-```
+## 📋 Tính năng
 
-### 4. Yêu cầu
+### ⏰ **Timer Features**
+- Đếm thời gian count-up (HH:MM:SS)
+- **Điều chỉnh thời lượng session:** 15min, 25min, 30min, 45min, 1h, 1.5h, 2h
+- Session management với auto-break (5min break sau mỗi session)
+- Tự động chuyển session/break
+- Đặt mục tiêu số session/ngày
+- Theo dõi tiến độ session (%)
 
-- Python 3.8 trở lên
-- Tkinter (thường có sẵn với Python)
-- Pygame (setup script sẽ tự cài)
+### 📝 **Task Management**
+- Thêm/sửa/xóa/hoàn thành tasks
+- Đánh dấu độ ưu tiên
+- Task summary và statistics
+- Tự động lưu vào JSON
+- Task UI compact và dễ sử dụng
+
+### 🎨 **UI/UX**
+- Giao diện Fliqlo-style (đen, trắng, cyan)
+- Nút điều khiển lớn, dễ bấm
+- Thiết kế compact (500x600px)
+- Sound effects (optional)
 
 ---
 
-## 📝 Mô tả ứng dụng
-
-- Đếm thời gian dạng count-up với giao diện nhỏ gọn, nền đen, chữ trắng lớn.
-- Nút bấm to, dễ thao tác.
-- Tích hợp quản lý tasks.
-
----
-
-## 📁 Cấu trúc thư mục
-
-<details>
-<summary>Xem chi tiết</summary>
+## 📁 Cấu trúc dự án
 
 ```
 Timer/
-├── main.py                  # Entry point
-├── config.py                # Cấu hình
-├── requirements.txt         # Dependencies
-├── README.md                # File này
-├── src/
-│   ├── core/
+├── main.py              # Entry point chính
+├── config.py            # Cấu hình tập trung
+├── requirements.txt     # Dependencies
+├── README.md            # File này
+├── run.bat/.sh          # Scripts chạy
+├── setup.bat/.sh        # Scripts cài đặt
+├── .gitignore           # Git ignore
+├── src/                 # Source code
+│   ├── core/           # Timer logic
 │   │   ├── timer_core.py
 │   │   └── timer_controller.py
-│   ├── ui/
+│   ├── ui/             # UI components
 │   │   ├── ui_components.py
 │   │   └── task_ui.py
-│   └── managers/
+│   └── managers/       # Managers
 │       ├── sound_manager.py
 │       └── task_manager.py
-├── data/
-│   └── tasks_data.json      # Lưu tasks
-├── sfx/
-│   ├── button_1.mp3         # Âm thanh (thêm thủ công)
+├── data/               # Data persistence
+│   ├── tasks_data.json # Task storage
 │   └── README.md
-├── assets/
-├── scripts/
-│   ├── fliqlo_timer_runner.bat
-│   └── install_dependencies.bat
-└── __pycache__/
+└── sfx/                # Sound effects
+    ├── button_1.mp3    # Click sound
+    └── README.md
 ```
-</details>
 
 ---
 
-## 🧩 Các module chính
+## 🎮 Hướng dẫn sử dụng
 
-- **Core:**  
-  `timer_core.py` (logic timer), `timer_controller.py` (điều phối)
-- **UI:**  
-  `ui_components.py` (giao diện chính), `task_ui.py` (quản lý task)
-- **Managers:**  
-  `sound_manager.py` (âm thanh), `task_manager.py` (quản lý task)
-- **Khác:**  
-  `config.py` (cấu hình), `main.py` (khởi động app), `data/`, `sfx/`, `assets/`, `scripts/`
+### **Timer Controls:**
+- **▶️ Start:** Bắt đầu đếm thời gian
+- **⏸️ Pause:** Tạm dừng (auto-break timer)
+- **⏹️ Stop:** Dừng và reset về 0
+- **🔄 Resume:** Tiếp tục từ break
 
----
+### **Task Management:**
+1. **Thêm task:** Nhập vào ô → nhấn "Add" hoặc Enter
+2. **Hoàn thành:** Chọn task → nhấn "✓"
+3. **Chỉnh sửa:** Chọn task → nhấn "✏️"
+4. **Xóa:** Chọn task → nhấn "🗑️"
+5. **Clear done:** Xóa tất cả tasks đã hoàn thành
 
-## ✅ Tính năng nổi bật
-
-- ⏰ Đếm thời gian dạng HH:MM:SS
-- 📚 Quản lý session (mỗi session = 1 giờ)
-- 🎯 Đặt mục tiêu số session/ngày
-- 🔄 Tự động chuyển session/break
-- 📊 Theo dõi tiến độ session (%)
-- 📝 Quản lý tasks: thêm, sửa, xóa, hoàn thành
-- ✅ Theo dõi tasks đã hoàn thành/còn lại
-- 🎨 Đánh dấu độ ưu tiên task
-- 💾 Tự động lưu tasks vào JSON
-- 📈 Thống kê tasks
-- ⏸️ Break timer tự động khi pause
-- 🔄 Resume break timer
-- 🎨 Giao diện Fliqlo-style (đen, trắng, cyan, vàng, cam)
-- 🖱️ Nút điều khiển to, có icon
-- 📱 Thiết kế nhỏ gọn (500x600px)
+### **Session Management:**
+- **Điều chỉnh thời lượng:** Chọn từ dropdown (15min - 2h)
+- **Pomodoro mode:** Chọn 25min cho phương pháp Pomodoro chuẩn
+- **Study mode:** Chọn 45min - 2h cho session học dài hạn
+- Auto-continue giữa các session
+- Target sessions có thể điều chỉnh
+- Progress bar hiển thị tiến độ session hiện tại
 
 ---
 
-## 🎮 Hướng dẫn quản lý Task
+## ⚙️ Technical Details
 
-- **Thêm task:**  
-  Nhập vào ô "Task:" → Nhấn "Add" hoặc Enter → Task sẽ vào danh sách "📋 Active"
-- **Hoàn thành task:**  
-  Chọn task → Nhấn "✓" → Task chuyển sang "✅ Done"
-- **Chỉnh sửa/Xóa:**  
-  Chọn task → Nhấn "✏️" (sửa) hoặc "🗑️" (xóa)
-- **Quản lý:**  
-  - Tasks tự động lưu vào `data/tasks_data.json`
-  - Nhấn "Clear" để xóa tất cả completed tasks
-  - Task summary hiển thị tiến độ
+### **Dependencies:**
+- Python 3.8+
+- tkinter (built-in)
+- pygame (optional, for sound)
+
+### **Data Storage:**
+- Tasks: `data/tasks_data.json`
+- Config: `config.py`
+- Sound: `sfx/button_1.mp3`
+
+### **Cross-platform:**
+- Windows: `.bat` scripts
+- Linux/Mac: `.sh` scripts
+- Pure Python compatibility
 
 ---
 
-## 🔧 Ưu điểm cấu trúc
+## 🔧 Development
 
-- **Phân chia module rõ ràng:** UI, logic, data tách biệt
-- **Dễ bảo trì, mở rộng**
-- **Import rõ ràng, organized**
-- **Cấu hình tập trung**
-- **Quản lý data riêng biệt**
-- **Scripts tiện dụng**
+### **Module Structure:**
+- `src.core`: Timer logic và controller
+- `src.ui`: UI components và task UI
+- `src.managers`: Sound và task managers
+- `config.py`: Centralized settings
+
+### **Key Features:**
+- Modular architecture
+- Clean separation of concerns
+- Easy to extend and maintain
+- Graceful fallbacks (sound, data)
+
+---
+
+## � Support
+
+Nếu gặp vấn đề:
+1. Kiểm tra Python version (3.8+)
+2. Chạy `setup.bat/.sh` lại
+3. Kiểm tra file `data/tasks_data.json` tự tạo
+4. Nếu thiếu sound: `pip install pygame`
+
+---
+
+**🎯 Ready to use - Clone and go!** 🚀
 
