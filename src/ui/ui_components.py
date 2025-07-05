@@ -207,7 +207,7 @@ class FliqloUI:
         self.sessions_spinbox.grid(row=0, column=3, padx=3)
 
         # Auto continue setting - compact
-        self.auto_continue_var = tk.BooleanVar(value=True)
+        self.auto_continue_var = tk.BooleanVar(value=False)
         self.auto_continue_cb = tk.Checkbutton(
             settings_frame,
             text="Auto",

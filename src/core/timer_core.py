@@ -15,7 +15,7 @@ class TimerCore:
         self.target_sessions = 8
         self.session_duration = 3600  # 1 hour = 3600 seconds
         self.break_duration = 300  # 5 minutes = 300 seconds
-        self.auto_continue = True
+        self.auto_continue = False
         self.last_session_check = 0  # Track last session completion time
         
         # State management
