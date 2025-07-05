@@ -282,12 +282,12 @@ class WelcomeScreen:
     def _on_checkbox_clicked(self):
         """Xử lý click checkbox"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
 
     def start_timer(self):
         """Chuyển sang main timer app"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         # Save setting if user checked "don't show again"
         if self.dont_show_again.get():
             mark_welcome_shown()
@@ -303,9 +303,9 @@ def show_welcome_screen(on_start_callback):
     
     # Tạo sound manager cho welcome screen
     try:
-        from ..managers.sound_manager import SoundManager
-        sound_manager = SoundManager()
-        welcome.play_sound = sound_manager.play_sound
+        from ..managers.sound_manager import ButtonSoundManager
+        sound_manager = ButtonSoundManager()
+        welcome.play_sound = sound_manager.play_button_click
     except:
         # Nếu không thể import sound manager, bỏ qua
         pass

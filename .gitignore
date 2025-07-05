@@ -45,6 +45,15 @@ sfx/*.wav
 sfx/*.ogg
 !sfx/README.md
 
+# Test and temporary files
+test_*.py
+*_test.py
+*_diagnostic.py
+*_clean.py
+*.tmp
+*.bak
+*.old
+
 # Logs
 *.log
 
@@ -65,9 +74,6 @@ ENV/
 *~
 *.bak
 *.orig
-
-# Test files
-test_*.py
 
 # Development
 .vscode/

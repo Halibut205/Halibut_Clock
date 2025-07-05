@@ -17,16 +17,12 @@ echo [INFO] Python found
 python --version
 
 echo.
-echo [INFO] Installing dependencies...
-pip install pygame playsound
+echo [INFO] Installing pygame for button sounds...
+pip install pygame
 
 if %errorlevel% neq 0 (
-    echo [ERROR] Failed to install audio dependencies
-    echo [INFO] Trying to install pygame only...
-    pip install pygame
-    if %errorlevel% neq 0 (
-        echo [WARNING] Could not install pygame, app will use system beep
-    )
+    echo [WARNING] Could not install pygame
+    echo [INFO] Buttons will work without sound
 )
 
 echo.

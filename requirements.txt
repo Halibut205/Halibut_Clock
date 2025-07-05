@@ -1,12 +1,10 @@
 # Fliqlo Timer - Dependencies
 
-# Audio Libraries (Optional - app works without these)
+# pygame - for button sound effects
 pygame>=2.0.0
-playsound>=1.3.0
 
 # Note: All other dependencies are built-in Python modules:
 # - tkinter (GUI framework)
 # - json (data persistence) 
-# - threading (audio playback)
-# - platform (OS detection)
-# - os, sys (system operations)
+# - threading (timer functionality)
+# - os, platform (system integration)

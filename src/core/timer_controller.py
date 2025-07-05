@@ -6,7 +6,7 @@ import tkinter as tk
 from datetime import datetime
 from .timer_core import TimerCore
 from ..ui.ui_components import FliqloUI
-from ..managers.sound_manager import SoundManager
+from ..managers.sound_manager import ButtonSoundManager
 from ..managers.task_manager import TaskManager
 
 class TimerController:
@@ -16,7 +16,7 @@ class TimerController:
         # Khởi tạo core logic, UI, sound và task manager
         self.timer_core = TimerCore()
         self.ui = FliqloUI(root)
-        self.sound_manager = SoundManager()
+        self.sound_manager = ButtonSoundManager()
         self.task_manager = TaskManager()
         
         # Kết nối callbacks
@@ -50,8 +50,8 @@ class TimerController:
         # Setup task UI callbacks
         self.ui.setup_task_callbacks()
         
-        # Sound callback
-        self.ui.play_sound = self.sound_manager.play_sound
+        # Connect sound to UI buttons
+        self.ui.play_sound = self.sound_manager.play_button_click
         
         # Core callbacks
         self.timer_core.on_timer_update = self.ui.update_timer_display
@@ -103,7 +103,7 @@ class TimerController:
         if 0 <= task_index < len(tasks):
             task = tasks[task_index]
             self.task_manager.complete_task(task['id'])
-            self.sound_manager.play_sound('session_complete', volume=0.4)
+            self.sound_manager.play_button_click()
 
     def _handle_delete_task(self, task_index):
         """Xử lý sự kiện xóa task"""

@@ -159,7 +159,7 @@ class TaskUI:
     def _on_add_task_clicked(self):
         """Xử lý sự kiện thêm task"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         task_text = self.task_entry.get().strip()
         if task_text and self.on_add_task:
             self.on_add_task(task_text)
@@ -168,7 +168,7 @@ class TaskUI:
     def _on_complete_task_clicked(self):
         """Xử lý sự kiện hoàn thành task"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         selection = self.task_listbox.curselection()
         if selection and self.on_complete_task:
             index = selection[0]
@@ -177,7 +177,7 @@ class TaskUI:
     def _on_edit_task_clicked(self):
         """Xử lý sự kiện chỉnh sửa task"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         selection = self.task_listbox.curselection()
         if selection and self.on_edit_task:
             index = selection[0]
@@ -193,7 +193,7 @@ class TaskUI:
     def _on_delete_task_clicked(self):
         """Xử lý sự kiện xóa task"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         selection = self.task_listbox.curselection()
         if selection and self.on_delete_task:
             if messagebox.askyesno("Confirm Delete", "Are you sure you want to delete this task?"):
@@ -203,7 +203,7 @@ class TaskUI:
     def _on_clear_completed_clicked(self):
         """Xử lý sự kiện xóa tất cả completed tasks"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         if self.completed_listbox.size() > 0:
             if messagebox.askyesno("Clear Completed", "Clear all completed tasks?"):
                 if hasattr(self, 'on_clear_completed') and self.on_clear_completed:

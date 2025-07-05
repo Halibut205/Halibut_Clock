@@ -246,21 +246,21 @@ class FliqloUI:
     def _on_start_clicked(self):
         """Xử lý sự kiện click nút Start"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         if self.on_start:
             self.on_start()
 
     def _on_toggle_clicked(self):
         """Xử lý sự kiện click nút Pause/Resume"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         if self.on_toggle:
             self.on_toggle()
 
     def _on_reset_clicked(self):
         """Xử lý sự kiện click nút Reset"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         if self.on_reset:
             self.on_reset()
 
@@ -276,21 +276,21 @@ class FliqloUI:
     def _on_auto_continue_changed(self):
         """Xử lý sự kiện thay đổi auto continue"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         if self.on_auto_continue_changed:
             self.on_auto_continue_changed(self.auto_continue_var.get())
 
     def _on_reset_sessions_clicked(self):
         """Xử lý sự kiện reset sessions"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         if self.on_reset_sessions:
             self.on_reset_sessions()
 
     def _on_session_duration_changed(self, selected_duration):
         """Xử lý sự kiện thay đổi session duration"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         if self.on_session_duration_changed:
             duration_seconds = SESSION_DURATION_OPTIONS[selected_duration]
             self.on_session_duration_changed(duration_seconds, selected_duration)
@@ -298,7 +298,7 @@ class FliqloUI:
     def _on_help_clicked(self):
         """Xử lý sự kiện click nút Help"""
         if self.play_sound:
-            self.play_sound('click')
+            self.play_sound()
         if self.on_help_clicked:
             self.on_help_clicked()
 
