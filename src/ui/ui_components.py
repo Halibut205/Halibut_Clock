@@ -31,6 +31,7 @@ class FliqloUI:
         self.on_auto_continue_changed = None
         self.on_reset_sessions = None
         self.on_session_duration_changed = None  # New callback
+        self.on_help_clicked = None  # Help callback
         
         # Task callbacks
         self.on_add_task = None
@@ -89,6 +90,22 @@ class FliqloUI:
             bg="black"
         )
         self.timer_label.pack(pady=10)
+
+        # Help button - visible at top
+        help_frame = tk.Frame(self.root, bg='black')
+        help_frame.pack(pady=5)
+        
+        help_btn_top = tk.Button(
+            help_frame,
+            text="❓ Trợ giúp / Help",
+            font=tkfont.Font(family="Arial", size=10, weight="bold"),
+            width=20,
+            height=1,
+            bg="purple",
+            fg="white",
+            command=self._on_help_clicked
+        )
+        help_btn_top.pack()
 
         # Break timer label - compact
         self.break_label = tk.Label(
@@ -152,6 +169,19 @@ class FliqloUI:
             command=self._on_reset_clicked
         )
         self.reset_btn.grid(row=0, column=2, padx=8, pady=5)
+
+        # Help button - compact but more visible
+        help_btn = tk.Button(
+            btn_frame,
+            text="❓ Help",
+            font=tkfont.Font(family="Arial", size=10, weight="bold"),
+            width=8,
+            height=2,
+            bg="purple",
+            fg="white",
+            command=self._on_help_clicked
+        )
+        help_btn.grid(row=0, column=3, padx=5, pady=5)
 
     def _create_settings(self):
         """Tạo phần cài đặt session - compact"""
@@ -264,6 +294,11 @@ class FliqloUI:
         if self.on_session_duration_changed:
             duration_seconds = SESSION_DURATION_OPTIONS[selected_duration]
             self.on_session_duration_changed(duration_seconds, selected_duration)
+
+    def _on_help_clicked(self):
+        """Xử lý sự kiện click nút Help"""
+        if self.on_help_clicked:
+            self.on_help_clicked()
 
     def update_timer_display(self, time_text):
         """Cập nhật hiển thị timer chính"""

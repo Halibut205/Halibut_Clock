@@ -1,5 +1,11 @@
 # Fliqlo Timer Dependencies
-# No external dependencies required - uses only Python standard library
-# tkinter (included with Python)
-# pygame (optional, for sound effects - install if needed)
-pygame>=2.0.0
+
+# Core dependencies (optional)
+pygame>=2.0.0  # For sound effects - optional, app works without it
+playsound>=1.2.2  # Cross-platform sound player - fallback for pygame
+
+# Built-in Python modules used:
+# - tkinter (GUI)
+# - json (data storage)
+# - datetime (time handling)
+# - os, sys (system operations)

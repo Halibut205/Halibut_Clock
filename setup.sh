@@ -17,11 +17,15 @@ python3 --version
 
 echo
 echo "[INFO] Installing dependencies..."
-pip3 install pygame
+pip3 install pygame playsound
 
 if [ $? -ne 0 ]; then
-    echo "[ERROR] Failed to install pygame"
-    exit 1
+    echo "[WARNING] Failed to install all audio dependencies"
+    echo "[INFO] Trying to install pygame only..."
+    pip3 install pygame
+    if [ $? -ne 0 ]; then
+        echo "[WARNING] Could not install pygame, app will use system beep"
+    fi
 fi
 
 echo

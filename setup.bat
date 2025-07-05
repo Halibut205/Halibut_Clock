@@ -18,12 +18,15 @@ python --version
 
 echo.
 echo [INFO] Installing dependencies...
-pip install pygame
+pip install pygame playsound
 
 if %errorlevel% neq 0 (
-    echo [ERROR] Failed to install pygame
-    pause
-    exit /b 1
+    echo [ERROR] Failed to install audio dependencies
+    echo [INFO] Trying to install pygame only...
+    pip install pygame
+    if %errorlevel% neq 0 (
+        echo [WARNING] Could not install pygame, app will use system beep
+    )
 )
 
 echo.
@@ -44,7 +47,7 @@ echo.
 echo [SUCCESS] Setup completed!
 echo.
 echo To run the app:
-echo 1. Double-click 'scripts\fliqlo_timer_runner.bat'
+echo 1. Double-click 'run.bat'
 echo 2. Or run 'python main.py' from this directory
 echo.
 pause

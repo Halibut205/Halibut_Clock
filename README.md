@@ -1,36 +1,42 @@
 # 🕐 Fliqlo Study Timer
 
-Ứng dụng đếm thời gian học tập với giao diện Fliqlo-style, quản lý session và task management tích hợp.
+Ứng dụng đếm thời gian học tập với giao diện Fliqlo-style, quản lý session và task management tích hợp của Halibut.
 
 ---
 
 ## 🚀 Hướng dẫn sử dụng
 
-### 📥 Clone và chạy lần đầu
+### 📥 Cài đặt và chạy
 
 #### **Windows:**
-```bash
-git clone <repo_url>
-cd Timer
-# Double-click setup.bat (cài đặt dependencies)
-# Double-click run.bat (chạy app)
-```
+1. Tải mã nguồn:  
+    ```bash
+    git clone <repo_url>
+    cd Timer
+    ```
+2. Nhấp đúp `setup.bat` để cài đặt.
+3. Nhấp đúp `run.bat` để chạy ứng dụng.
 
 #### **Linux/Mac:**
-```bash
-git clone <repo_url>
-cd Timer
-chmod +x setup.sh && ./setup.sh    # Cài đặt
-chmod +x run.sh && ./run.sh         # Chạy app
-```
+1. Tải mã nguồn:  
+    ```bash
+    git clone <repo_url>
+    cd Timer
+    ```
+2. Chạy lệnh:  
+    ```bash
+    chmod +x setup.sh && ./setup.sh
+    chmod +x run.sh && ./run.sh
+    ```
 
-#### **Developers:**
-```bash
-python main.py  # Chạy trực tiếp
-```
+#### **Dành cho lập trình viên:**
+- Chạy trực tiếp:  
+  ```bash
+  python main.py
+  ```
 
-### 🔄 Chạy hàng ngày
-- **Windows:** Double-click `run.bat`
+### 🔄 Sử dụng hàng ngày
+- **Windows:** Nhấp đúp `run.bat`
 - **Linux/Mac:** `./run.sh` hoặc `python3 main.py`
 
 ---
@@ -53,9 +59,13 @@ python main.py  # Chạy trực tiếp
 - Task UI compact và dễ sử dụng
 
 ### 🎨 **UI/UX**
+- **Welcome screen:** Interactive Pomodoro tutorial song ngữ (English-Vietnamese)
+- **Bilingual support:** Giao diện và hướng dẫn Anh-Việt
+- **Credit:** "Created by Halibut" hiển thị trong welcome screen
 - Giao diện Fliqlo-style (đen, trắng, cyan)
 - Nút điều khiển lớn, dễ bấm
 - Thiết kế compact (500x600px)
+- Help button (❓) để xem lại hướng dẫn
 - Sound effects (optional)
 
 ---
@@ -83,6 +93,7 @@ Timer/
 │       └── task_manager.py
 ├── data/               # Data persistence
 │   ├── tasks_data.json # Task storage
+│   ├── app_settings.json # App preferences
 │   └── README.md
 └── sfx/                # Sound effects
     ├── button_1.mp3    # Click sound
@@ -98,6 +109,7 @@ Timer/
 - **⏸️ Pause:** Tạm dừng (auto-break timer)
 - **⏹️ Stop:** Dừng và reset về 0
 - **🔄 Resume:** Tiếp tục từ break
+- **❓ Help:** Xem lại hướng dẫn Pomodoro
 
 ### **Task Management:**
 1. **Thêm task:** Nhập vào ô → nhấn "Add" hoặc Enter
@@ -161,5 +173,5 @@ Nếu gặp vấn đề:
 
 ---
 
-**🎯 Ready to use - Clone and go!** 🚀
+**🎯Halibut** 🚀
 

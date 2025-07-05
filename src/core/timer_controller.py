@@ -38,6 +38,7 @@ class TimerController:
         self.ui.on_auto_continue_changed = self._handle_auto_continue_changed
         self.ui.on_reset_sessions = self._handle_reset_sessions
         self.ui.on_session_duration_changed = self._handle_session_duration_changed  # New callback
+        self.ui.on_help_clicked = self._handle_help_clicked  # Help callback
         
         # Task callbacks
         self.ui.on_add_task = self._handle_add_task
@@ -126,6 +127,20 @@ class TimerController:
         """Xử lý sự kiện thay đổi session duration"""
         self.timer_core.set_session_duration(duration_seconds)
         print(f"Session duration changed to: {duration_label} ({duration_seconds} seconds)")
+
+    def _handle_help_clicked(self):
+        """Xử lý sự kiện click Help - show welcome screen"""
+        from ..ui.welcome_screen import show_welcome_screen
+        
+        # Tạm ẩn main window
+        self.root.withdraw()
+        
+        def on_welcome_close():
+            # Hiện lại main window
+            self.root.deiconify()
+        
+        # Show welcome screen
+        show_welcome_screen(on_welcome_close)
 
     def _on_task_added(self, task):
         """Callback khi task được thêm"""

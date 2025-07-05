@@ -1,49 +1,33 @@
 """
-Simple Sound Manager - Fallback without pygame dependency + Windows beep
+Simple Sound Manager - Fallback without pygame dependency
 """
 
 import os
-import platform
 
 class SoundManager:
     def __init__(self):
         self.enabled = False
         self.sounds = {}
-        self.use_pygame = False
-        self.use_system_beep = False
         self._try_initialize()
 
     def _try_initialize(self):
-        """Thử khởi tạo pygame, fallback sang system beep"""
-        # Thử pygame trước
+        """Thử khởi tạo pygame, fallback nếu không có"""
         try:
             import pygame
             pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
             self.enabled = True
-            self.use_pygame = True
             self._load_sounds()
             print("✅ Sound system initialized with pygame")
-            return
         except ImportError:
-            print("🔇 pygame not available - trying system beep")
+            print("🔇 pygame not available - sound effects disabled")
+            self.enabled = False
         except Exception as e:
-            print(f"🔇 pygame initialization failed: {e} - trying system beep")
-        
-        # Fallback sang system beep
-        try:
-            if platform.system() == "Windows":
-                import winsound
-                self.enabled = True
-                self.use_system_beep = True
-                print("✅ Sound system initialized with Windows beep")
-            else:
-                print("🔇 No sound system available")
-        except ImportError:
-            print("🔇 No sound system available")
+            print(f"🔇 Sound initialization failed: {e}")
+            self.enabled = False
 
     def _load_sounds(self):
         """Load sound files if pygame available"""
-        if not self.use_pygame:
+        if not self.enabled:
             return
             
         try:
@@ -64,35 +48,6 @@ class SoundManager:
                     print(f"✅ Loaded sound: {sound_name}")
                     
         except Exception as e:
-            print(f"🔇 Failed to load sounds: {e}")
-            self.enabled = False
-
-    def play_sound(self, sound_name):
-        """Play a sound effect"""
-        if not self.enabled:
-            return
-            
-        try:
-            if self.use_pygame and sound_name in self.sounds:
-                # Sử dụng pygame
-                self.sounds[sound_name].play()
-            elif self.use_system_beep:
-                # Sử dụng Windows beep
-                if platform.system() == "Windows":
-                    import winsound
-                    # Các tần số khác nhau cho các âm thanh khác nhau
-                    frequencies = {
-                        'button_click': 1000,
-                        'start': 800,
-                        'pause': 600,
-                        'reset': 400,
-                        'session_complete': 1200
-                    }
-                    freq = frequencies.get(sound_name, 800)
-                    winsound.Beep(freq, 200)  # frequency, duration
-                    
-        except Exception as e:
-            print(f"🔇 Failed to play sound {sound_name}: {e}")
             print(f"⚠️ Could not load sounds: {e}")
             self.enabled = False
 

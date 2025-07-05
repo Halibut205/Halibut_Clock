@@ -39,6 +39,7 @@ Thumbs.db
 
 # Project specific
 data/tasks_data.json
+data/app_settings.json
 sfx/*.mp3
 sfx/*.wav
 sfx/*.ogg
