@@ -7,6 +7,18 @@ import tkinter as tk
 import sys
 import os
 
+# Hide console window if running with pythonw.exe or in production mode
+if sys.executable.endswith('pythonw.exe'):
+    # Running with pythonw.exe - console already hidden
+    pass
+elif '--hide-console' in sys.argv:
+    # Hide console window on Windows
+    try:
+        import ctypes
+        ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+    except:
+        pass
+
 # Add src directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 

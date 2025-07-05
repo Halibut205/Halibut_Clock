@@ -1,13 +1,11 @@
 @echo off
-echo Starting Fliqlo Timer...
 
+REM Run with hidden console window
 REM Try virtual environment first, then fallback to system Python
-if exist ".venv\Scripts\python.exe" (
-    echo Using virtual environment...
-    ".venv\Scripts\python.exe" main.py
+if exist ".venv\Scripts\pythonw.exe" (
+    start "" ".venv\Scripts\pythonw.exe" main.py
+) else if exist ".venv\Scripts\python.exe" (
+    start "" /min ".venv\Scripts\python.exe" main.py
 ) else (
-    echo Using system Python...
-    python main.py
+    start "" /min python main.py
 )
-
-pause
