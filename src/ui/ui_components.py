@@ -81,15 +81,25 @@ class FliqloUI:
         )
         self.progress_label.pack(side=tk.RIGHT, padx=10)
 
-        # Main timer label - compact
-        self.timer_label = tk.Label(
+        # Main timer label - compact (bỏ chữ "Main")
+        self.main_timer_label = tk.Label(
             self.root, 
             text="00:00:00", 
             font=self.clock_font, 
             fg="white", 
             bg="black"
         )
-        self.timer_label.pack(pady=10)
+        self.main_timer_label.pack(pady=5)
+
+        # Break timer label - compact
+        self.break_timer_label = tk.Label(
+            self.root, 
+            text="Break: 00:00:00", 
+            font=self.break_font, 
+            fg="cyan", 
+            bg="black"
+        )
+        self.break_timer_label.pack(pady=5)
 
         # Help button - visible at top
         help_frame = tk.Frame(self.root, bg='black')
@@ -106,16 +116,6 @@ class FliqloUI:
             command=self._on_help_clicked
         )
         help_btn_top.pack()
-
-        # Break timer label - compact
-        self.break_label = tk.Label(
-            self.root, 
-            text="", 
-            font=self.break_font, 
-            fg="cyan", 
-            bg="black"
-        )
-        self.break_label.pack(pady=5)
 
         # Main control buttons - TO HƠN
         self._create_main_buttons()
@@ -169,19 +169,6 @@ class FliqloUI:
             command=self._on_reset_clicked
         )
         self.reset_btn.grid(row=0, column=2, padx=8, pady=5)
-
-        # Help button - compact but more visible
-        help_btn = tk.Button(
-            btn_frame,
-            text="❓ Help",
-            font=tkfont.Font(family="Arial", size=10, weight="bold"),
-            width=8,
-            height=2,
-            bg="purple",
-            fg="white",
-            command=self._on_help_clicked
-        )
-        help_btn.grid(row=0, column=3, padx=5, pady=5)
 
     def _create_settings(self):
         """Tạo phần cài đặt session - compact"""
@@ -302,24 +289,32 @@ class FliqloUI:
         if self.on_help_clicked:
             self.on_help_clicked()
 
-    def update_timer_display(self, time_text):
-        """Cập nhật hiển thị timer chính"""
-        self.timer_label.config(text=time_text)
+    def update_main_timer_display(self, time_text):
+        """Cập nhật hiển thị main timer (bỏ chữ Main)"""
+        self.main_timer_label.config(text=time_text)
 
-    def update_break_display(self, break_text):
+    def update_break_timer_display(self, time_text):
         """Cập nhật hiển thị break timer"""
-        self.break_label.config(text=break_text)
+        self.break_timer_label.config(text=f"Break: {time_text}")
 
     def update_button_state(self, state):
-        """Cập nhật trạng thái các nút"""
-        if state == "running":
-            self.toggle_btn.config(text="⏸ PAUSE", bg="orange")
-        elif state == "paused":
-            self.toggle_btn.config(text="▶ RESUME", bg="blue")
+        """Cập nhật trạng thái các nút theo dual clock system"""
+        if state == "main_running":
+            self.toggle_btn.config(text="🔄 → BREAK", bg="orange")
+            self.main_timer_label.config(fg="lime")  # Active main timer
+            self.break_timer_label.config(fg="gray")  # Inactive break timer
+        elif state == "break_running":
+            self.toggle_btn.config(text="🔄 → MAIN", bg="blue")
+            self.main_timer_label.config(fg="gray")  # Inactive main timer
+            self.break_timer_label.config(fg="cyan")  # Active break timer
+        elif state == "all_frozen":
+            self.toggle_btn.config(text="▶ START", bg="green")
+            self.main_timer_label.config(fg="white")  # Both frozen
+            self.break_timer_label.config(fg="white")
         elif state == "reset":
-            self.toggle_btn.config(text="⏸ PAUSE", bg="orange")
-        elif state == "session_complete":
-            self.toggle_btn.config(text="▶ RESUME", bg="blue")
+            self.toggle_btn.config(text="▶ START", bg="green")
+            self.main_timer_label.config(text="00:00:00", fg="white")  # Bỏ "Main:"
+            self.break_timer_label.config(text="Break: 00:00:00", fg="white")
 
     def update_session_display(self, current, target):
         """Cập nhật hiển thị session"""
@@ -329,13 +324,19 @@ class FliqloUI:
         """Cập nhật hiển thị tiến độ"""
         self.progress_label.config(text=f"Progress: {progress:.1f}%")
 
-    def show_session_complete_message(self, session, target):
+    def show_session_complete_message(self):
         """Hiển thị thông báo hoàn thành session"""
+        pass  # Message will be handled by controller via choice dialog
+
+    def show_all_sessions_complete_message(self):
+        """Hiển thị thông báo hoàn thành tất cả sessions"""
         import tkinter.messagebox as msgbox
-        if session >= target:
-            msgbox.showinfo("Congratulations!", f"🎉 You completed all {target} sessions today!\nGreat work!")
-        else:
-            msgbox.showinfo("Session Complete", f"✅ Session {session} completed!\n{target - session} sessions remaining.")
+        msgbox.showinfo(
+            "🎉 Congratulations! 🎉", 
+            f"You completed all {self.sessions_var.get()} sessions today!\n\n"
+            "🌟 Amazing work! You are a productivity champion! 🌟\n\n"
+            "Take a well-deserved rest and celebrate your achievement!"
+        )
 
     def setup_task_callbacks(self):
         """Thiết lập callbacks cho task UI"""
@@ -365,8 +366,8 @@ class FliqloUI:
     def get_widgets(self):
         """Trả về dictionary chứa các widget chính"""
         return {
-            'timer_label': self.timer_label,
-            'break_label': self.break_label,
+            'main_timer_label': self.main_timer_label,
+            'break_timer_label': self.break_timer_label,
             'session_label': self.session_label,
             'progress_label': self.progress_label,
             'start_btn': self.start_btn,

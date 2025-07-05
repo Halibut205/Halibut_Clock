@@ -1,27 +1,36 @@
 """
-Timer Core Module - Quản lý logic đồng hồ chính và break timer
+Timer Core Module - Dual Clock System (Main + Break)
 """
 
 class TimerCore:
     def __init__(self):
-        self.running = False
-        self.time_elapsed = 0  # tính bằng giây
+        # Dual clock system
+        self.main_running = False
         self.break_running = False
-        self.break_time = 0  # thời gian nghỉ
+        self.main_time = 0  # Main timer elapsed time
+        self.break_time = 0  # Break timer elapsed time
         
         # Session management
         self.current_session = 0
-        self.target_sessions = 8  # Default 8 sessions per day
+        self.target_sessions = 8
         self.session_duration = 3600  # 1 hour = 3600 seconds
-        self.auto_continue = True  # Tự động tiếp tục sau mỗi session
+        self.break_duration = 300  # 5 minutes = 300 seconds
+        self.auto_continue = True
+        self.last_session_check = 0  # Track last session completion time
+        
+        # State management
         self.session_completed = False
+        self.all_sessions_completed = False
+        self.waiting_for_user_choice = False
         
         # Callbacks để update UI
-        self.on_timer_update = None
-        self.on_break_update = None
+        self.on_main_timer_update = None
+        self.on_break_timer_update = None
         self.on_state_change = None
         self.on_session_update = None
         self.on_session_complete = None
+        self.on_all_sessions_complete = None
+        self.on_choice_required = None  # New callback for user choice
 
     def format_time(self, seconds):
         """Format thời gian thành HH:MM:SS"""
@@ -30,151 +39,171 @@ class TimerCore:
         secs = seconds % 60
         return f"{hrs:02}:{mins:02}:{secs:02}"
 
-    def start_timer(self):
-        """Bắt đầu timer chính"""
-        if not self.running:
-            self.running = True
-            self.time_elapsed = 0
-            self.break_running = False  # Dừng break timer nếu có
-            self.break_time = 0  # Reset break time khi start
-            self.session_completed = False
+    def start_main_timer(self):
+        """Bắt đầu main timer, freeze break timer"""
+        if not self.waiting_for_user_choice:
+            self.main_running = True
+            self.break_running = False
+            self.waiting_for_user_choice = False
             if self.on_state_change:
-                self.on_state_change("running")
-            if self.on_break_update:
-                self.on_break_update("")  # Xóa hiển thị break timer
+                self.on_state_change("main_running")
 
-    def pause_timer(self):
-        """Tạm dừng timer chính và bắt đầu break timer"""
-        if self.running:
-            self.running = False
-            # Bắt đầu break timer (không reset nếu đã có thời gian từ trước)
-            if not self.break_running:
-                self.break_running = True
+    def start_break_timer(self):
+        """Bắt đầu break timer, freeze main timer"""
+        if not self.waiting_for_user_choice:
+            self.main_running = False
+            self.break_running = True
+            self.waiting_for_user_choice = False
             if self.on_state_change:
-                self.on_state_change("paused")
+                self.on_state_change("break_running")
 
-    def resume_timer(self):
-        """Tiếp tục timer chính và dừng break timer"""
-        if not self.running:
-            self.running = True
-            self.break_running = False  # Freeze break timer
-            if self.on_state_change:
-                self.on_state_change("running")
+    def pause_main_start_break(self):
+        """Pause main timer và start break timer"""
+        self.main_running = False
+        self.break_running = True
+        if self.on_state_change:
+            self.on_state_change("break_running")
 
-    def reset_timer(self):
-        """Reset tất cả timer về 0"""
-        self.running = False
+    def pause_break_start_main(self):
+        """Pause break timer và resume main timer"""
         self.break_running = False
-        self.time_elapsed = 0
+        self.main_running = True
+        if self.on_state_change:
+            self.on_state_change("main_running")
+
+    def freeze_all(self):
+        """Freeze cả hai đồng hồ"""
+        self.main_running = False
+        self.break_running = False
+        if self.on_state_change:
+            self.on_state_change("all_frozen")
+
+    def reset_timers(self):
+        """Reset cả hai timer về 0"""
+        self.main_running = False
+        self.break_running = False
+        self.main_time = 0
         self.break_time = 0
+        self.current_session = 0
+        self.last_session_check = 0  # Reset session check
         self.session_completed = False
+        self.all_sessions_completed = False
+        self.waiting_for_user_choice = False
         if self.on_state_change:
             self.on_state_change("reset")
-        if self.on_timer_update:
-            self.on_timer_update("00:00:00")
-        if self.on_break_update:
-            self.on_break_update("")
 
     def tick(self):
-        """Cập nhật timer mỗi giây"""
-        updated = False
+        """Update timers mỗi giây"""
+        # Update main timer
+        if self.main_running:
+            self.main_time += 1
+            if self.on_main_timer_update:
+                self.on_main_timer_update(self.format_time(self.main_time))
+            
+            # Check session completion - mỗi session_duration giây
+            if self.main_time > 0 and self.main_time % self.session_duration == 0:
+                if self.main_time > self.last_session_check:
+                    self.last_session_check = self.main_time
+                    self._handle_session_complete()
         
-        if self.running:
-            self.time_elapsed += 1
-            if self.on_timer_update:
-                self.on_timer_update(self.format_time(self.time_elapsed))
-            
-            # Kiểm tra nếu hoàn thành 1 session (1 giờ)
-            if self.time_elapsed >= self.session_duration and not self.session_completed:
-                self._complete_session()
-            
-            updated = True
-            
+        # Update break timer
         if self.break_running:
             self.break_time += 1
-            if self.on_break_update:
-                self.on_break_update(f"Break: {self.format_time(self.break_time)}")
-            updated = True
-            
-        return updated
+            if self.on_break_timer_update:
+                self.on_break_timer_update(self.format_time(self.break_time))
 
-    def get_state(self):
-        """Lấy trạng thái hiện tại của timer"""
-        return {
-            'running': self.running,
-            'break_running': self.break_running,
-            'time_elapsed': self.time_elapsed,
-            'break_time': self.break_time,
-            'formatted_time': self.format_time(self.time_elapsed),
-            'formatted_break': self.format_time(self.break_time),
-            'current_session': self.current_session,
-            'target_sessions': self.target_sessions,
-            'session_progress': min(self.time_elapsed / self.session_duration * 100, 100),
-            'auto_continue': self.auto_continue
-        }
-
-    def _complete_session(self):
-        """Xử lý khi hoàn thành 1 session"""
-        self.session_completed = True
+    def _handle_session_complete(self):
+        """Xử lý khi hoàn thành một session"""
         self.current_session += 1
+        # KHÔNG reset main timer - để tiếp tục chạy từ thời gian hiện tại
+        self.session_completed = True
         
-        if self.on_session_complete:
-            self.on_session_complete(self.current_session, self.target_sessions)
+        # Freeze cả hai đồng hồ
+        self.freeze_all()
+        self.waiting_for_user_choice = True
         
+        # Cập nhật session display
         if self.on_session_update:
             self.on_session_update(self.current_session, self.target_sessions)
         
-        # Kiểm tra xem có tiếp tục tự động không
-        if self.auto_continue and self.current_session < self.target_sessions:
-            # Tiếp tục session mới
-            self.time_elapsed = 0
-            self.session_completed = False
+        # Check if all sessions completed
+        if self.current_session >= self.target_sessions:
+            self.all_sessions_completed = True
+            if self.on_all_sessions_complete:
+                self.on_all_sessions_complete()
         else:
-            # Dừng và chuyển sang break
-            self.running = False
-            self.break_running = True
-            if self.on_state_change:
-                self.on_state_change("session_complete")
+            # Play completion sound và show choice dialog
+            if self.on_session_complete:
+                self.on_session_complete()
+            if self.on_choice_required:
+                self.on_choice_required()
 
+    def choose_continue_session(self):
+        """User chọn tiếp tục session tiếp theo"""
+        if self.waiting_for_user_choice and not self.all_sessions_completed:
+            self.session_completed = False
+            self.waiting_for_user_choice = False
+            self.start_main_timer()
+
+    def choose_take_break(self):
+        """User chọn nghỉ break"""
+        if self.waiting_for_user_choice and not self.all_sessions_completed:
+            self.session_completed = False
+            self.waiting_for_user_choice = False
+            self.start_break_timer()
+
+    # Getters for UI
+    def get_main_time_text(self):
+        return self.format_time(self.main_time)
+    
+    def get_break_time_text(self):
+        return self.format_time(self.break_time)
+    
+    def is_main_running(self):
+        return self.main_running
+    
+    def is_break_running(self):
+        return self.break_running
+    
+    def is_waiting_for_choice(self):
+        return self.waiting_for_user_choice
+
+    # Session management
     def set_target_sessions(self, sessions):
-        """Thiết lập số session mục tiêu"""
-        self.target_sessions = max(1, sessions)
-        if self.on_session_update:
-            self.on_session_update(self.current_session, self.target_sessions)
+        self.target_sessions = sessions
+
+    def set_session_duration(self, duration):
+        self.session_duration = duration
 
     def set_auto_continue(self, auto_continue):
-        """Thiết lập có tự động tiếp tục sau mỗi session không"""
         self.auto_continue = auto_continue
 
     def reset_sessions(self):
-        """Reset session về 0"""
         self.current_session = 0
         if self.on_session_update:
             self.on_session_update(self.current_session, self.target_sessions)
 
     def get_session_progress(self):
         """Lấy tiến độ của session hiện tại (0-100%)"""
-        return min(self.time_elapsed / self.session_duration * 100, 100)
+        if self.session_duration <= 0:
+            return 0
+        # Tính progress của session hiện tại
+        current_session_time = self.main_time % self.session_duration
+        return min(current_session_time / self.session_duration * 100, 100)
 
-    def get_remaining_time(self):
-        """Lấy thời gian còn lại của session hiện tại"""
-        remaining = self.session_duration - self.time_elapsed
-        return max(0, remaining)
+    def get_state(self):
+        """Lấy trạng thái hiện tại của timer"""
+        return {
+            'main_running': self.main_running,
+            'break_running': self.break_running,
+            'main_time': self.main_time,
+            'break_time': self.break_time,
+            'formatted_main_time': self.format_time(self.main_time),
+            'formatted_break_time': self.format_time(self.break_time),
+            'current_session': self.current_session,
+            'target_sessions': self.target_sessions,
+            'session_progress': self.get_session_progress(),
+            'waiting_for_choice': self.waiting_for_user_choice,
+            'all_sessions_completed': self.all_sessions_completed
+        }
 
-    def set_session_duration(self, duration_seconds):
-        """Thiết lập thời lượng session mới"""
-        self.session_duration = duration_seconds
-        # Reset session completed flag nếu đang trong session
-        if self.time_elapsed < self.session_duration:
-            self.session_completed = False
-        # Trigger update để UI hiển thị progress mới
-        if self.on_session_update:
-            self.on_session_update()
-
-    def get_session_duration(self):
-        """Lấy thời lượng session hiện tại"""
-        return self.session_duration
-
-    def get_session_duration_formatted(self):
-        """Lấy thời lượng session dạng format"""
-        return self.format_time(self.session_duration)

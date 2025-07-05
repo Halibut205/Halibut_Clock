@@ -53,12 +53,14 @@ class TimerController:
         # Connect sound to UI buttons
         self.ui.play_sound = self.sound_manager.play_button_click
         
-        # Core callbacks
-        self.timer_core.on_timer_update = self.ui.update_timer_display
-        self.timer_core.on_break_update = self.ui.update_break_display
+        # Core callbacks - Updated for dual clock system
+        self.timer_core.on_main_timer_update = self.ui.update_main_timer_display
+        self.timer_core.on_break_timer_update = self.ui.update_break_timer_display
         self.timer_core.on_state_change = self.ui.update_button_state
         self.timer_core.on_session_update = self._update_session_display
-        self.timer_core.on_session_complete = self.ui.show_session_complete_message
+        self.timer_core.on_session_complete = self._handle_session_complete
+        self.timer_core.on_all_sessions_complete = self._handle_all_sessions_complete
+        self.timer_core.on_choice_required = self._show_user_choice_dialog
         
         # Task manager callbacks
         self.task_manager.on_task_added = self._on_task_added
@@ -66,25 +68,31 @@ class TimerController:
         self.task_manager.on_tasks_updated = self._refresh_task_display
 
     def _handle_start(self):
-        """Xử lý sự kiện Start"""
-        self.timer_core.start_timer()
+        """Xử lý sự kiện Start - Bắt đầu main timer"""
+        self.timer_core.start_main_timer()
         # Bắt đầu background music khi start timer
         self.sound_manager.start_background_music()
 
     def _handle_toggle(self):
-        """Xử lý sự kiện Pause/Resume"""
-        if self.timer_core.running:
-            self.timer_core.pause_timer()
-            # Pause background music khi pause timer
+        """Xử lý sự kiện Toggle - Chuyển đổi giữa main và break timer"""
+        if self.timer_core.is_main_running():
+            # Main đang chạy -> pause main, start break
+            self.timer_core.pause_main_start_break()
+            # Pause background music khi chuyển sang break
             self.sound_manager.pause_background_music()
-        else:
-            self.timer_core.resume_timer()
-            # Resume background music khi resume timer
+        elif self.timer_core.is_break_running():
+            # Break đang chạy -> pause break, start main
+            self.timer_core.pause_break_start_main()
+            # Resume background music khi quay lại main
             self.sound_manager.resume_background_music()
+        else:
+            # Cả hai đều freeze -> start main timer
+            self.timer_core.start_main_timer()
+            self.sound_manager.start_background_music()
 
     def _handle_reset(self):
-        """Xử lý sự kiện Reset"""
-        self.timer_core.reset_timer()
+        """Xử lý sự kiện Reset - Reset cả hai timer"""
+        self.timer_core.reset_timers()
         # Dừng background music khi reset
         self.sound_manager.stop_background_music()
 
@@ -150,6 +158,50 @@ class TimerController:
         # Show welcome screen
         show_welcome_screen(on_welcome_close)
 
+    def _handle_session_complete(self):
+        """Xử lý khi hoàn thành một session"""
+        # Play completion sound (rang.mp3)
+        self.sound_manager.play_completion_sound()
+        
+        # Pause background music
+        self.sound_manager.pause_background_music()
+        
+        # Show completion message
+        self.ui.show_session_complete_message()
+    
+    def _handle_all_sessions_complete(self):
+        """Xử lý khi hoàn thành tất cả sessions"""
+        # Play completion sound
+        self.sound_manager.play_completion_sound()
+        
+        # Stop background music
+        self.sound_manager.stop_background_music()
+        
+        # Show congratulations message
+        self.ui.show_all_sessions_complete_message()
+    
+    def _show_user_choice_dialog(self):
+        """Hiển thị dialog cho user chọn tiếp tục hay nghỉ"""
+        import tkinter.messagebox as messagebox
+        
+        choice = messagebox.askyesno(
+            "Session Complete! 🎉",
+            f"Completed session {self.timer_core.current_session}/{self.timer_core.target_sessions}!\n\n"
+            "What would you like to do next?\n\n"
+            "YES = Continue next session\n"
+            "NO = Take a break",
+            icon='question'
+        )
+        
+        if choice:
+            # User chose to continue
+            self.timer_core.choose_continue_session()
+            self.sound_manager.start_background_music()
+        else:
+            # User chose to take break
+            self.timer_core.choose_take_break()
+            # No background music during break
+
     def _on_task_added(self, task):
         """Callback khi task được thêm"""
         print(f"✅ Task added: {task['text']}")
@@ -185,13 +237,15 @@ class TimerController:
 
     def set_time(self, seconds):
         """Thiết lập thời gian timer (để mở rộng tính năng)"""
-        self.timer_core.time_elapsed = seconds
-        self.timer_core.on_timer_update(self.timer_core.format_time(seconds))
+        self.timer_core.main_time = seconds
+        if self.timer_core.on_main_timer_update:
+            self.timer_core.on_main_timer_update(self.timer_core.format_time(seconds))
 
     def add_time(self, seconds):
         """Thêm thời gian vào timer (để mở rộng tính năng)"""
-        self.timer_core.time_elapsed += seconds
-        self.timer_core.on_timer_update(self.timer_core.format_time(self.timer_core.time_elapsed))
+        self.timer_core.main_time += seconds
+        if self.timer_core.on_main_timer_update:
+            self.timer_core.on_main_timer_update(self.timer_core.format_time(self.timer_core.main_time))
 
     def toggle_sound(self):
         """Bật/tắt âm thanh"""
@@ -230,8 +284,6 @@ class TimerController:
             print(f"❌ Could not import tasks: {e}")
             return False
 
-    def _update_session_display(self):
+    def _update_session_display(self, current, target):
         """Update session display với current và target sessions"""
-        current = self.timer_core.current_session
-        target = self.timer_core.target_sessions
         self.ui.update_session_display(current, target)

@@ -11,6 +11,7 @@ class SoundManager:
     def __init__(self):
         self.sound_enabled = False
         self.button_sound = None
+        self.completion_sound = None  # New: rang.mp3 for session completion
         self.background_music_file = None
         self.music_volume = 0.3  # Default volume (30%)
         self.button_volume = 0.7  # Button volume (70%)
@@ -46,6 +47,20 @@ class SoundManager:
             print(f"[SOUND] Button sound file not found: {button_file}")
             self.button_sound = None
         
+        # Load completion sound (rang.mp3)
+        completion_file = os.path.join("sfx", "rang.mp3")
+        if os.path.exists(completion_file):
+            try:
+                self.completion_sound = pygame.mixer.Sound(completion_file)
+                self.completion_sound.set_volume(self.button_volume)
+                print(f"[SOUND] Loaded completion sound: {completion_file}")
+            except Exception as e:
+                print(f"[SOUND] Could not load completion sound {completion_file}: {e}")
+                self.completion_sound = None
+        else:
+            print(f"[SOUND] Completion sound file not found: {completion_file}")
+            self.completion_sound = None
+        
         # Check for background music
         music_file = os.path.join("sfx", "whitenoise_1.mp3")
         if os.path.exists(music_file):
@@ -62,6 +77,15 @@ class SoundManager:
                 self.button_sound.play()
             except Exception as e:
                 print(f"[SOUND] Error playing button sound: {e}")
+    
+    def play_completion_sound(self):
+        """Phát âm thanh khi hoàn thành session (rang.mp3)"""
+        if self.sound_enabled and self.completion_sound:
+            try:
+                self.completion_sound.play()
+                print("[SOUND] Played session completion sound")
+            except Exception as e:
+                print(f"[SOUND] Error playing completion sound: {e}")
     
     def start_background_music(self):
         """Bắt đầu phát background music (loop)"""
@@ -125,6 +149,12 @@ class SoundManager:
                 print(f"[SOUND] Button volume set to {int(self.button_volume * 100)}%")
             except Exception as e:
                 print(f"[SOUND] Error setting button volume: {e}")
+        if self.completion_sound:
+            try:
+                self.completion_sound.set_volume(self.button_volume)
+                print(f"[SOUND] Completion volume set to {int(self.button_volume * 100)}%")
+            except Exception as e:
+                print(f"[SOUND] Error setting completion volume: {e}")
     
     def get_music_volume(self):
         """Lấy music volume hiện tại"""
