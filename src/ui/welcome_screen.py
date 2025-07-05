@@ -13,6 +13,7 @@ class WelcomeScreen:
         self.root = root
         self.on_start_callback = on_start_callback
         self.dont_show_again = tk.BooleanVar()
+        self.play_sound = None  # Sound callback
         self.setup_window()
         self.create_widgets()
 
@@ -243,7 +244,8 @@ class WelcomeScreen:
             fg="white",
             bg="black",
             selectcolor="black",
-            font=tkfont.Font(family="Arial", size=10)
+            font=tkfont.Font(family="Arial", size=10),
+            command=self._on_checkbox_clicked
         )
         dont_show_cb.pack()
 
@@ -277,8 +279,15 @@ class WelcomeScreen:
         )
         tips_label.pack(pady=10)
 
+    def _on_checkbox_clicked(self):
+        """Xử lý click checkbox"""
+        if self.play_sound:
+            self.play_sound('click')
+
     def start_timer(self):
         """Chuyển sang main timer app"""
+        if self.play_sound:
+            self.play_sound('click')
         # Save setting if user checked "don't show again"
         if self.dont_show_again.get():
             mark_welcome_shown()
@@ -291,4 +300,14 @@ def show_welcome_screen(on_start_callback):
     """Show welcome screen"""
     root = tk.Tk()
     welcome = WelcomeScreen(root, on_start_callback)
+    
+    # Tạo sound manager cho welcome screen
+    try:
+        from ..managers.sound_manager import SoundManager
+        sound_manager = SoundManager()
+        welcome.play_sound = sound_manager.play_sound
+    except:
+        # Nếu không thể import sound manager, bỏ qua
+        pass
+    
     root.mainloop()

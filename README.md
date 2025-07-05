@@ -1,10 +1,27 @@
 # 🕐 Fliqlo Timer - Đồng Hồ Pomodoro Học Tập Của Halibut
 
-**Fliqlo Timer** là ứng dụng đồng hồ Pomodoro song ngữ, giao diện hiện đại, quản lý công việc và hỗ trợ âm thanh đa nền tảng. Lý tưởng cho học tập tập trung và theo dõi hiệu suất.
+---
 
-![Nền tảng](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)
-![Python](https://img.shields.io/badge/python-3.8%2B-green)
-![Giấy phép](https://img.shields.io/badge/license-MIT-yellow)
+## 👨‍💻 Tác Giả
+
+**Tác giả: Halibut**
+
+Ối zồi ôi ối zồi ôi
+Trình là gì mà là trình ai chấm
+Anh chỉ biết làm ba mẹ tự hào
+Xây căn nhà thật to
+Ở một mình 2 tấm
+Ối zồi ôi ối zồi ôi
+Cứ lên mạng phán xét
+Tưởng là mình oai lắm
+Nhìn vào sự nghiệp anh
+Thèm chảy nước miếng
+Giống mấy thằng biến thái
+Nó đang rình ai tắm
+
+---
+
+**Fliqlo Timer** là ứng dụng đồng hồ Pomodoro song ngữ, giao diện hiện đại, quản lý công việc và hỗ trợ âm thanh đa nền tảng. Lý tưởng cho học tập tập trung và theo dõi hiệu suất.
 
 ## ✨ Tính Năng Nổi Bật
 
@@ -158,14 +175,6 @@ python main.py
 ## 📜 Giấy Phép
 
 MIT License - Tự do sử dụng, chỉnh sửa và chia sẻ.
-
----
-
-## 👨‍💻 Tác Giả
-
-**Tác giả: Halibut**
-
-Đam mê công cụ tăng năng suất và thiết kế phần mềm đa văn hóa.
 
 ---
 
