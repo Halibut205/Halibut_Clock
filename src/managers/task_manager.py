@@ -10,7 +10,7 @@ class TaskManager:
     def __init__(self):
         self.tasks = []
         self.completed_tasks = []
-        self.data_file = "tasks_data.json"
+        self.data_file = os.path.join(os.path.dirname(__file__), "..", "..", "data", "tasks_data.json")
         self.load_tasks()
         
         # Callbacks

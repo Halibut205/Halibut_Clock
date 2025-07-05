@@ -4,7 +4,7 @@ UI Components Module - Quản lý giao diện người dùng
 
 import tkinter as tk
 from tkinter import font as tkfont
-from task_ui import TaskUI
+from .task_ui import TaskUI
 
 class FliqloUI:
     def __init__(self, root):

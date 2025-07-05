@@ -3,7 +3,13 @@ Main Application - Entry point của ứng dụng
 """
 
 import tkinter as tk
-from timer_controller import TimerController
+import sys
+import os
+
+# Add src directory to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+
+from src.core.timer_controller import TimerController
 
 class FliqloTimerApp:
     def __init__(self):

@@ -25,13 +25,16 @@ class SoundManager:
         """Load các file âm thanh"""
         if not self.enabled:
             return
+        
+        # Đường dẫn đến thư mục sfx
+        sfx_dir = os.path.join(os.path.dirname(__file__), "..", "..", "sfx")
             
         sound_files = {
-            'button_click': 'sfx/button_1.mp3',
-            'start': 'sfx/button_1.mp3',
-            'pause': 'sfx/button_1.mp3',
-            'reset': 'sfx/button_1.mp3',
-            'session_complete': 'sfx/button_1.mp3'
+            'button_click': os.path.join(sfx_dir, 'button_1.mp3'),
+            'start': os.path.join(sfx_dir, 'button_1.mp3'),
+            'pause': os.path.join(sfx_dir, 'button_1.mp3'),
+            'reset': os.path.join(sfx_dir, 'button_1.mp3'),
+            'session_complete': os.path.join(sfx_dir, 'button_1.mp3')
         }
         
         for sound_name, file_path in sound_files.items():

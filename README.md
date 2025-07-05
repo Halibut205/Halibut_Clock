@@ -1,130 +1,157 @@
 # Study Fliqlo Clock
 
-Đây là project linh tinh làm đồng hồ kiểu Fliqlo bằng Python/Tkinter/…
+Đây là đồng hồ count-up (tăng thời gian) bằng Python/Tkinter của Halibut.
 
-## 🚀 Cách chạy
+---
 
-1. Clone repo hoặc tải source
-2. Cài pygame: Chạy `install_dependencies.bat` hoặc `pip install pygame`
-3. Đặt file âm thanh `button_1.mp3` vào thư mục `sfx/`
-4. Chạy file `fliqlo_timer_runner.bat`
-5. Học 10 tiếng 1 ngày nhé
+## 🚀 Hướng dẫn chạy ứng dụng
 
-## 📋 Mô tả
+### 1. Cài đặt lần đầu
 
-Ứng dụng đếm tăng thời gian (count-up timer) với giao diện compact, nền đen, chữ trắng lớn. 
-Thiết kế nhỏ gọn với các nút to dễ bấm và task management tích hợp.
+#### **Windows**
+1. Clone repo theo cách của bạn:  
+    ```bash
+    git clone <repo_url>
+    ```
+2. Cài đặt: Double-click `setup.bat`
+3. Chạy app: Double-click `run.bat`
 
-## Cấu trúc Project
+#### **Linux/Mac**
+1. Clone repo theo cách của bạn:    
+    ```bash
+    git clone <repo_url>
+    ```
+2. Cài đặt:  
+    ```bash
+    chmod +x setup.sh && ./setup.sh
+    ```
+3. Chạy app:  
+    ```bash
+    chmod +x run.sh && ./run.sh
+    ```
+    hoặc  
+    ```bash
+    python3 main.py
+    ```
+
+### 2. Chạy hàng ngày
+
+- **Windows:** Double-click `run.bat`
+- **Linux/Mac:** `./run.sh` hoặc `python3 main.py`
+
+### 3. Nếu ngựa ngựa
+
+dùng Python:  
+```bash
+python main.py
+```
+
+### 4. Yêu cầu
+
+- Python 3.8 trở lên
+- Tkinter (thường có sẵn với Python)
+- Pygame (setup script sẽ tự cài)
+
+---
+
+## 📝 Mô tả ứng dụng
+
+- Đếm thời gian dạng count-up với giao diện nhỏ gọn, nền đen, chữ trắng lớn.
+- Nút bấm to, dễ thao tác.
+- Tích hợp quản lý tasks.
+
+---
+
+## 📁 Cấu trúc thư mục
+
+<details>
+<summary>Xem chi tiết</summary>
 
 ```
 Timer/
-├── main.py                    # Entry point của ứng dụng
-├── timer_controller.py        # Controller điều phối giữa UI và Logic
-├── timer_core.py             # Core logic của timer
-├── ui_components.py          # UI components và widgets
-├── sound_manager.py          # Quản lý âm thanh và SFX
-├── task_manager.py           # Quản lý tasks và tiến độ
-├── task_ui.py               # UI components cho task management
-├── sfx/                      # Thư mục chứa file âm thanh
-│   ├── button_1.mp3         # Âm thanh khi bấm nút (cần tự thêm)
-│   └── README.md            # Hướng dẫn về âm thanh
-├── fliqlo_timer.py          # File gốc (legacy)
-├── fliqlo_timer_runner.bat  # Batch file để chạy
-├── install_dependencies.bat # Script cài pygame
+├── main.py                  # Entry point
+├── config.py                # Cấu hình
 ├── requirements.txt         # Dependencies
-└── README.md               # File này
+├── README.md                # File này
+├── src/
+│   ├── core/
+│   │   ├── timer_core.py
+│   │   └── timer_controller.py
+│   ├── ui/
+│   │   ├── ui_components.py
+│   │   └── task_ui.py
+│   └── managers/
+│       ├── sound_manager.py
+│       └── task_manager.py
+├── data/
+│   └── tasks_data.json      # Lưu tasks
+├── sfx/
+│   ├── button_1.mp3         # Âm thanh (thêm thủ công)
+│   └── README.md
+├── assets/
+├── scripts/
+│   ├── fliqlo_timer_runner.bat
+│   └── install_dependencies.bat
+└── __pycache__/
 ```
+</details>
 
-## Các Module
+---
 
-### 1. `timer_core.py` - Timer Core Logic
-- Quản lý trạng thái timer chính và break timer
-- Logic đếm thời gian
-- Format thời gian
-- Callbacks cho UI updates
+## 🧩 Các module chính
 
-### 2. `ui_components.py` - UI Components
-- Tạo và quản lý giao diện người dùng
-- Các widget: labels, buttons
-- Styling và layout
-- Event handlers cho UI
+- **Core:**  
+  `timer_core.py` (logic timer), `timer_controller.py` (điều phối)
+- **UI:**  
+  `ui_components.py` (giao diện chính), `task_ui.py` (quản lý task)
+- **Managers:**  
+  `sound_manager.py` (âm thanh), `task_manager.py` (quản lý task)
+- **Khác:**  
+  `config.py` (cấu hình), `main.py` (khởi động app), `data/`, `sfx/`, `assets/`, `scripts/`
 
-### 3. `timer_controller.py` - Controller
-- Điều phối giữa UI và Core Logic
-- Xử lý user interactions
-- Update loop chính
-- API cho các tính năng mở rộng
+---
 
-### 5. `sound_manager.py` - Sound Effects
-- Quản lý âm thanh cho ứng dụng
-- Phát âm thanh khi bấm nút
-- Hỗ trợ bật/tắt âm thanh
-- Điều chỉnh âm lượng
+## ✅ Tính năng nổi bật
 
-### 6. `task_manager.py` - Task Management
-- Quản lý tasks (thêm, sửa, xóa, hoàn thành)
-- Lưu trữ persistent vào JSON file
-- Priority system và task statistics
-- Session-based task assignment
+- ⏰ Đếm thời gian dạng HH:MM:SS
+- 📚 Quản lý session (mỗi session = 1 giờ)
+- 🎯 Đặt mục tiêu số session/ngày
+- 🔄 Tự động chuyển session/break
+- 📊 Theo dõi tiến độ session (%)
+- 📝 Quản lý tasks: thêm, sửa, xóa, hoàn thành
+- ✅ Theo dõi tasks đã hoàn thành/còn lại
+- 🎨 Đánh dấu độ ưu tiên task
+- 💾 Tự động lưu tasks vào JSON
+- 📈 Thống kê tasks
+- ⏸️ Break timer tự động khi pause
+- 🔄 Resume break timer
+- 🎨 Giao diện Fliqlo-style (đen, trắng, cyan, vàng, cam)
+- 🖱️ Nút điều khiển to, có icon
+- 📱 Thiết kế nhỏ gọn (500x600px)
 
-### 7. `task_ui.py` - Task UI Components
-- Giao diện quản lý tasks
-- Listbox hiển thị active và completed tasks
-- Buttons cho các thao tác task
-- Task summary và progress display
+---
 
-### 8. `main.py` - Main Application
-- Entry point của ứng dụng
-- Khởi tạo và chạy app
+## 🎮 Hướng dẫn quản lý Task
 
-## ✅ Tính năng (Đang update)
+- **Thêm task:**  
+  Nhập vào ô "Task:" → Nhấn "Add" hoặc Enter → Task sẽ vào danh sách "📋 Active"
+- **Hoàn thành task:**  
+  Chọn task → Nhấn "✓" → Task chuyển sang "✅ Done"
+- **Chỉnh sửa/Xóa:**  
+  Chọn task → Nhấn "✏️" (sửa) hoặc "🗑️" (xóa)
+- **Quản lý:**  
+  - Tasks tự động lưu vào `data/tasks_data.json`
+  - Nhấn "Clear" để xóa tất cả completed tasks
+  - Task summary hiển thị tiến độ
 
-- ⏰ Timer chính với định dạng HH:MM:SS
-- 📚 **Session Management**: Đếm sessions (mỗi session = 1 giờ)
-- 🎯 **Target Sessions**: Thiết lập số session muốn hoàn thành trong ngày (1-20)
-- 🔄 **Auto Continue**: Tự động tiếp tục session tiếp theo hoặc dừng để break
-- 📊 **Progress Tracking**: Hiển thị tiến độ session hiện tại (%)
-- 📝 **Task Management**: Thêm, sửa, xóa, hoàn thành tasks
-- ✅ **Task Tracking**: Theo dõi tasks đã hoàn thành và còn lại
-- 🎨 **Priority System**: Đánh dấu độ ưu tiên tasks (cao, bình thường, thấp)
-- 💾 **Auto Save**: Tự động lưu tasks vào file JSON
-- 📈 **Task Statistics**: Hiển thị tỷ lệ hoàn thành tasks
-- ⏸️ Break timer tự động khi pause  
-- 🔄 Resume break timer từ thời điểm freeze
-- 🎨 Giao diện Fliqlo-style compact (đen, trắng, xanh cyan, vàng, cam)
-- 🖱️ **Large Buttons**: Nút điều khiển to, dễ bấm với icons
-- 📱 **Compact Design**: Cửa sổ nhỏ gọn 500x600px
+---
 
-## 💻 Yêu cầu
+## 🔧 Ưu điểm cấu trúc
 
-- Python 3.8 trở lên
-- Tkinter (có sẵn với Python)
-- Pygame (cho âm thanh)
+- **Phân chia module rõ ràng:** UI, logic, data tách biệt
+- **Dễ bảo trì, mở rộng**
+- **Import rõ ràng, organized**
+- **Cấu hình tập trung**
+- **Quản lý data riêng biệt**
+- **Scripts tiện dụng**
 
-## 🎮 Hướng dẫn sử dụng Task Management:
-
-### **Thêm Task:**
-1. Nhập task vào ô "New Task"
-2. Nhấn "Add Task" hoặc Enter
-3. Task sẽ xuất hiện trong danh sách "Active Tasks"
-
-### **Hoàn thành Task:**
-1. Chọn task trong danh sách "Active Tasks"
-2. Nhấn "✓ Complete"
-3. Task chuyển sang "Completed Tasks"
-
-### **Chỉnh sửa Task:**
-1. Chọn task cần sửa
-2. Nhấn "✏️ Edit"
-3. Nhập nội dung mới trong dialog
-
-### **Xóa Task:**
-1. Chọn task cần xóa
-2. Nhấn "🗑️ Delete"
-3. Xác nhận xóa
-
-### **Quản lý:**
-- Tasks tự động lưu vào file `tasks_data.json`
-- Có thể xóa tất cả completed tasks bằng "🧹 Clear All"
-- Task summary hiển thị tổng quan tiến độ

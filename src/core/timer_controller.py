@@ -4,10 +4,10 @@ Timer Controller Module - Điều phối giữa UI và Timer Core
 
 import tkinter as tk
 from datetime import datetime
-from timer_core import TimerCore
-from ui_components import FliqloUI
-from sound_manager import SoundManager
-from task_manager import TaskManager
+from .timer_core import TimerCore
+from ..ui.ui_components import FliqloUI
+from ..managers.sound_manager import SoundManager
+from ..managers.task_manager import TaskManager
 
 class TimerController:
     def __init__(self, root):
