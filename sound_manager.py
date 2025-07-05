@@ -30,7 +30,8 @@ class SoundManager:
             'button_click': 'sfx/button_1.mp3',
             'start': 'sfx/button_1.mp3',
             'pause': 'sfx/button_1.mp3',
-            'reset': 'sfx/button_1.mp3'
+            'reset': 'sfx/button_1.mp3',
+            'session_complete': 'sfx/button_1.mp3'
         }
         
         for sound_name, file_path in sound_files.items():
@@ -70,6 +71,10 @@ class SoundManager:
     def play_reset(self):
         """Phát âm thanh khi reset"""
         self.play_sound('reset', volume=0.4)
+
+    def play_session_complete(self):
+        """Phát âm thanh khi hoàn thành session"""
+        self.play_sound('session_complete', volume=0.6)
 
     def toggle_sound(self):
         """Bật/tắt âm thanh"""

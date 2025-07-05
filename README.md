@@ -23,6 +23,8 @@ Timer/
 ├── timer_core.py             # Core logic của timer
 ├── ui_components.py          # UI components và widgets
 ├── sound_manager.py          # Quản lý âm thanh và SFX
+├── task_manager.py           # Quản lý tasks và tiến độ
+├── task_ui.py               # UI components cho task management
 ├── sfx/                      # Thư mục chứa file âm thanh
 │   ├── button_1.mp3         # Âm thanh khi bấm nút (cần tự thêm)
 │   └── README.md            # Hướng dẫn về âm thanh
@@ -59,16 +61,37 @@ Timer/
 - Hỗ trợ bật/tắt âm thanh
 - Điều chỉnh âm lượng
 
-### 6. `main.py` - Main Application
+### 6. `task_manager.py` - Task Management
+- Quản lý tasks (thêm, sửa, xóa, hoàn thành)
+- Lưu trữ persistent vào JSON file
+- Priority system và task statistics
+- Session-based task assignment
+
+### 7. `task_ui.py` - Task UI Components
+- Giao diện quản lý tasks
+- Listbox hiển thị active và completed tasks
+- Buttons cho các thao tác task
+- Task summary và progress display
+
+### 8. `main.py` - Main Application
 - Entry point của ứng dụng
 - Khởi tạo và chạy app
 
 ## ✅ Tính năng (Đang update)
 
 - ⏰ Timer chính với định dạng HH:MM:SS
+- 📚 **Session Management**: Đếm sessions (mỗi session = 1 giờ)
+- 🎯 **Target Sessions**: Thiết lập số session muốn hoàn thành trong ngày (1-20)
+- 🔄 **Auto Continue**: Tự động tiếp tục session tiếp theo hoặc dừng để break
+- 📊 **Progress Tracking**: Hiển thị tiến độ session hiện tại (%)
+- 📝 **Task Management**: Thêm, sửa, xóa, hoàn thành tasks
+- ✅ **Task Tracking**: Theo dõi tasks đã hoàn thành và còn lại
+- 🎨 **Priority System**: Đánh dấu độ ưu tiên tasks (cao, bình thường, thấp)
+- 💾 **Auto Save**: Tự động lưu tasks vào file JSON
+- 📈 **Task Statistics**: Hiển thị tỷ lệ hoàn thành tasks
 - ⏸️ Break timer tự động khi pause  
 - 🔄 Resume break timer từ thời điểm freeze
-- 🎨 Giao diện Fliqlo-style (đen, trắng, xanh cyan)
+- 🎨 Giao diện Fliqlo-style (đen, trắng, xanh cyan, vàng, cam)
 - 🔊 Âm thanh SFX khi bấm nút (button_1.mp3)
 - 🎛️ Bật/tắt âm thanh
 - 🚀 Dễ dàng mở rộng và bảo trì
@@ -79,3 +102,30 @@ Timer/
 - Tkinter (có sẵn với Python)
 - Pygame (cho âm thanh)
 - File âm thanh `button_1.mp3` trong thư mục `sfx/`
+
+## 🎮 Hướng dẫn sử dụng Task Management:
+
+### **Thêm Task:**
+1. Nhập task vào ô "New Task"
+2. Nhấn "Add Task" hoặc Enter
+3. Task sẽ xuất hiện trong danh sách "Active Tasks"
+
+### **Hoàn thành Task:**
+1. Chọn task trong danh sách "Active Tasks"
+2. Nhấn "✓ Complete"
+3. Task chuyển sang "Completed Tasks"
+
+### **Chỉnh sửa Task:**
+1. Chọn task cần sửa
+2. Nhấn "✏️ Edit"
+3. Nhập nội dung mới trong dialog
+
+### **Xóa Task:**
+1. Chọn task cần xóa
+2. Nhấn "🗑️ Delete"
+3. Xác nhận xóa
+
+### **Quản lý:**
+- Tasks tự động lưu vào file `tasks_data.json`
+- Có thể xóa tất cả completed tasks bằng "🧹 Clear All"
+- Task summary hiển thị tổng quan tiến độ
