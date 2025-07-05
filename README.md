@@ -1,35 +1,8 @@
 # 🕐 Fliqlo Timer - Pomodoro Study Timer
 
-A **beautiful bilingual Pomodoro app** to help you focus on studying and working efficiently. Modern interface, task management, and background music support.
+A **beautiful bilingual Pomodoro app** by Halibut to help you focus on studying and working efficiently. Modern interface, task management, and cross-platform sound support.
 
----
-
-## ✨ Features
-
-### 🎯 **Core Timer Functions**
-- **Pomodoro Timer**: 25-minute focus sessions with 5-minute breaks
-- **Flexible Duration**: 15min, 25min, 30min, 45min, 1hr, 1.5hr, 2hr options
-- **Session Tracking**: Progress counter (e.g., Session: 3/8)
-- **Auto Continue**: Automatic break ↔ session transitions
-- **Session Reset**: Reset progress counter anytime
-
-### 📋 **Task Management**
-- **Add Tasks**: Create tasks for specific sessions
-- **Priority Levels**: 🔴 High, 🟡 Medium, 🟢 Low priority
-- **Task Progress**: Mark tasks as completed
-- **Active & Completed**: Separate lists for organization
-- **Task Editing**: Modify task text anytime
-
-### 🔊 **Background Music System**
-- **Whitenoise Support**: Automatic background music during sessions
-- **Smart Controls**: Music starts/pauses/stops with timer
-- **Loop Playback**: Continuous background audio
-- **Button Sounds**: Audio feedback for all interactions
-
-### 🌍 **Bilingual Interface**
-- **Vietnamese + English**: Dual language support
-- **Welcome Screen**: Professional onboarding experience
-- **Help System**: Built-in usage instructions
+07/05/2025 - What is Trình?
 
 ---
 
