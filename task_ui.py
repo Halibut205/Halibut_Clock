@@ -23,149 +23,133 @@ class TaskUI:
         self._create_task_widgets()
 
     def _create_task_widgets(self):
-        """Tạo các widget cho task management"""
-        # Main task frame
+        """Tạo các widget cho task management - COMPACT"""
+        # Main task frame - compact
         self.tasks_frame = tk.Frame(self.parent_frame, bg='black')
-        self.tasks_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        self.tasks_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # Task summary
+        # Task summary - compact
         summary_frame = tk.Frame(self.tasks_frame, bg='black')
-        summary_frame.pack(fill=tk.X, pady=5)
+        summary_frame.pack(fill=tk.X, pady=3)
         
         self.summary_label = tk.Label(
             summary_frame,
             text="Tasks: 0 total, 0 completed",
-            font=("Courier New", 12, "bold"),
+            font=("Arial", 10, "bold"),
             fg="lightgreen",
             bg="black"
         )
         self.summary_label.pack()
 
-        # Add task frame
+        # Add task frame - compact
         add_frame = tk.Frame(self.tasks_frame, bg='black')
-        add_frame.pack(fill=tk.X, pady=5)
+        add_frame.pack(fill=tk.X, pady=3)
 
-        tk.Label(add_frame, text="New Task:", fg="white", bg="black").pack(side=tk.LEFT)
+        tk.Label(add_frame, text="Task:", fg="white", bg="black", font=("Arial", 9)).pack(side=tk.LEFT)
         
-        self.task_entry = tk.Entry(add_frame, width=30, font=("Arial", 10))
-        self.task_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.task_entry = tk.Entry(add_frame, width=25, font=("Arial", 9))
+        self.task_entry.pack(side=tk.LEFT, padx=3, fill=tk.X, expand=True)
         self.task_entry.bind("<Return>", self._on_add_task_enter)
 
         self.add_btn = tk.Button(
             add_frame,
-            text="Add Task",
+            text="Add",
             command=self._on_add_task_clicked,
             bg="green",
             fg="white",
-            width=10
+            width=6,
+            font=("Arial", 8)
         )
-        self.add_btn.pack(side=tk.RIGHT, padx=5)
+        self.add_btn.pack(side=tk.RIGHT, padx=3)
 
-        # Tasks display frame
+        # Tasks display frame - compact horizontal layout
         display_frame = tk.Frame(self.tasks_frame, bg='black')
-        display_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        display_frame.pack(fill=tk.BOTH, expand=True, pady=3)
 
-        # Active tasks
+        # Active tasks - left side
         active_frame = tk.Frame(display_frame, bg='black')
-        active_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5)
+        active_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=3)
 
-        tk.Label(active_frame, text="📋 Active Tasks", fg="yellow", bg="black", 
-                font=("Courier New", 11, "bold")).pack()
+        tk.Label(active_frame, text="📋 Active", fg="yellow", bg="black", 
+                font=("Arial", 9, "bold")).pack()
 
-        # Active tasks listbox with scrollbar
-        active_list_frame = tk.Frame(active_frame, bg='black')
-        active_list_frame.pack(fill=tk.BOTH, expand=True)
-
+        # Active tasks listbox - smaller
         self.task_listbox = tk.Listbox(
-            active_list_frame,
-            height=6,
-            font=("Arial", 9),
+            active_frame,
+            height=4,  # Giảm từ 6
+            font=("Arial", 8),
             bg="gray20",
             fg="white",
             selectbackground="blue"
         )
-        
-        active_scrollbar = tk.Scrollbar(active_list_frame)
-        active_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.task_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        
-        self.task_listbox.config(yscrollcommand=active_scrollbar.set)
-        active_scrollbar.config(command=self.task_listbox.yview)
+        self.task_listbox.pack(fill=tk.BOTH, expand=True)
 
-        # Active tasks buttons
+        # Active tasks buttons - smaller
         active_btn_frame = tk.Frame(active_frame, bg='black')
-        active_btn_frame.pack(fill=tk.X, pady=2)
+        active_btn_frame.pack(fill=tk.X, pady=1)
 
         self.complete_btn = tk.Button(
             active_btn_frame,
-            text="✓ Complete",
+            text="✓",
             command=self._on_complete_task_clicked,
             bg="darkgreen",
             fg="white",
-            width=8
+            width=3,
+            font=("Arial", 8)
         )
-        self.complete_btn.pack(side=tk.LEFT, padx=2)
+        self.complete_btn.pack(side=tk.LEFT, padx=1)
 
         self.edit_btn = tk.Button(
             active_btn_frame,
-            text="✏️ Edit",
+            text="✏️",
             command=self._on_edit_task_clicked,
             bg="orange",
             fg="white",
-            width=8
+            width=3,
+            font=("Arial", 8)
         )
-        self.edit_btn.pack(side=tk.LEFT, padx=2)
+        self.edit_btn.pack(side=tk.LEFT, padx=1)
 
         self.delete_btn = tk.Button(
             active_btn_frame,
-            text="🗑️ Delete",
+            text="🗑️",
             command=self._on_delete_task_clicked,
             bg="darkred",
             fg="white",
-            width=8
+            width=3,
+            font=("Arial", 8)
         )
-        self.delete_btn.pack(side=tk.LEFT, padx=2)
+        self.delete_btn.pack(side=tk.LEFT, padx=1)
 
-        # Completed tasks
+        # Completed tasks - right side
         completed_frame = tk.Frame(display_frame, bg='black')
-        completed_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=5)
+        completed_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=3)
 
-        tk.Label(completed_frame, text="✅ Completed Tasks", fg="lightgreen", bg="black",
-                font=("Courier New", 11, "bold")).pack()
+        tk.Label(completed_frame, text="✅ Done", fg="lightgreen", bg="black",
+                font=("Arial", 9, "bold")).pack()
 
-        # Completed tasks listbox with scrollbar
-        completed_list_frame = tk.Frame(completed_frame, bg='black')
-        completed_list_frame.pack(fill=tk.BOTH, expand=True)
-
+        # Completed tasks listbox - smaller
         self.completed_listbox = tk.Listbox(
-            completed_list_frame,
-            height=6,
-            font=("Arial", 9),
+            completed_frame,
+            height=4,  # Giảm từ 6
+            font=("Arial", 8),
             bg="gray15",
             fg="lightgray",
             selectbackground="darkgreen"
         )
-        
-        completed_scrollbar = tk.Scrollbar(completed_list_frame)
-        completed_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.completed_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        
-        self.completed_listbox.config(yscrollcommand=completed_scrollbar.set)
-        completed_scrollbar.config(command=self.completed_listbox.yview)
+        self.completed_listbox.pack(fill=tk.BOTH, expand=True)
 
-        # Completed tasks buttons
-        completed_btn_frame = tk.Frame(completed_frame, bg='black')
-        completed_btn_frame.pack(fill=tk.X, pady=2)
-
+        # Clear button - smaller
         self.clear_completed_btn = tk.Button(
-            completed_btn_frame,
-            text="🧹 Clear All",
+            completed_frame,
+            text="Clear",
             command=self._on_clear_completed_clicked,
             bg="purple",
             fg="white",
-            width=12
+            width=8,
+            font=("Arial", 8)
         )
-        self.clear_completed_btn.pack()
+        self.clear_completed_btn.pack(pady=1)
 
     def _on_add_task_enter(self, event):
         """Xử lý Enter key trong task entry"""

@@ -32,20 +32,21 @@ class FliqloUI:
 
     def _setup_window(self):
         """Thiết lập cửa sổ chính"""
-        self.root.title("Fliqlo Timer - Session & Task Manager")
+        self.root.title("Fliqlo Timer")
         self.root.configure(bg='black')
-        self.root.geometry("900x650")
+        self.root.geometry("500x600")
+        self.root.resizable(False, False)  # Không cho resize
 
     def _create_widgets(self):
         """Tạo các widget UI"""
-        # Font lớn, đậm, dễ đọc kiểu Fliqlo
-        self.clock_font = tkfont.Font(family="Courier New", size=72, weight="bold")
-        self.break_font = tkfont.Font(family="Courier New", size=36, weight="bold")
-        self.info_font = tkfont.Font(family="Courier New", size=16, weight="bold")
+        # Font nhỏ gọn hơn
+        self.clock_font = tkfont.Font(family="Courier New", size=36, weight="bold")  # Giảm từ 72
+        self.break_font = tkfont.Font(family="Courier New", size=18, weight="bold")  # Giảm từ 36
+        self.info_font = tkfont.Font(family="Courier New", size=12, weight="bold")   # Giảm từ 16
 
-        # Session info frame
+        # Session info frame - compact
         self.session_frame = tk.Frame(self.root, bg='black')
-        self.session_frame.pack(pady=10)
+        self.session_frame.pack(pady=5)
 
         # Session counter
         self.session_label = tk.Label(
@@ -55,7 +56,7 @@ class FliqloUI:
             fg="yellow",
             bg="black"
         )
-        self.session_label.pack(side=tk.LEFT, padx=20)
+        self.session_label.pack(side=tk.LEFT, padx=10)
 
         # Progress indicator
         self.progress_label = tk.Label(
@@ -65,9 +66,9 @@ class FliqloUI:
             fg="orange",
             bg="black"
         )
-        self.progress_label.pack(side=tk.LEFT, padx=20)
+        self.progress_label.pack(side=tk.RIGHT, padx=10)
 
-        # Main timer label
+        # Main timer label - compact
         self.timer_label = tk.Label(
             self.root, 
             text="00:00:00", 
@@ -75,9 +76,9 @@ class FliqloUI:
             fg="white", 
             bg="black"
         )
-        self.timer_label.pack(pady=40)
+        self.timer_label.pack(pady=10)
 
-        # Break timer label (màu xanh)
+        # Break timer label - compact
         self.break_label = tk.Label(
             self.root, 
             text="", 
@@ -85,47 +86,146 @@ class FliqloUI:
             fg="cyan", 
             bg="black"
         )
-        self.break_label.pack(pady=10)
+        self.break_label.pack(pady=5)
 
-        # Settings frame
+        # Main control buttons - TO HƠN
+        self._create_main_buttons()
+
+        # Settings frame - compact
         self._create_settings()
 
-        # Button frame
-        self._create_buttons()
-
-        # Task management frame
+        # Task management frame - compact
         self.task_ui = TaskUI(self.root)
 
-    def _create_buttons(self):
-        """Tạo các nút điều khiển"""
+    def _create_main_buttons(self):
+        """Tạo các nút điều khiển chính - TO HƠN"""
         btn_frame = tk.Frame(self.root, bg='black')
-        btn_frame.pack()
+        btn_frame.pack(pady=10)
 
+        # Các nút to hơn với font lớn hơn
+        btn_font = tkfont.Font(family="Arial", size=14, weight="bold")
+        
         self.start_btn = tk.Button(
             btn_frame, 
-            text="Start", 
-            width=10, 
+            text="▶ START", 
+            font=btn_font,
+            width=12, 
+            height=2,
+            bg="green",
+            fg="white",
             command=self._on_start_clicked
         )
-        self.start_btn.grid(row=0, column=0, padx=5)
+        self.start_btn.grid(row=0, column=0, padx=8, pady=5)
 
         self.toggle_btn = tk.Button(
             btn_frame, 
-            text="Pause", 
-            width=10, 
+            text="⏸ PAUSE", 
+            font=btn_font,
+            width=12,
+            height=2,
+            bg="orange",
+            fg="white", 
             command=self._on_toggle_clicked
         )
-        self.toggle_btn.grid(row=0, column=1, padx=5)
+        self.toggle_btn.grid(row=0, column=1, padx=8, pady=5)
 
         self.reset_btn = tk.Button(
             btn_frame, 
-            text="Reset", 
-            width=10, 
+            text="🔄 RESET", 
+            font=btn_font,
+            width=12,
+            height=2,
+            bg="red",
+            fg="white",
             command=self._on_reset_clicked
         )
-        self.reset_btn.grid(row=0, column=2, padx=5)
+        self.reset_btn.grid(row=0, column=2, padx=8, pady=5)
 
     def _create_settings(self):
+        """Tạo phần cài đặt session - compact"""
+        settings_frame = tk.Frame(self.root, bg='black')
+        settings_frame.pack(pady=5)
+
+        # Target sessions setting - compact
+        tk.Label(settings_frame, text="Sessions:", fg="white", bg="black", font=("Arial", 9)).grid(row=0, column=0, padx=3)
+        self.sessions_var = tk.StringVar(value="8")
+        self.sessions_spinbox = tk.Spinbox(
+            settings_frame,
+            from_=1, to=20,
+            textvariable=self.sessions_var,
+            width=3,
+            font=("Arial", 9),
+            command=self._on_sessions_changed
+        )
+        self.sessions_spinbox.grid(row=0, column=1, padx=3)
+
+        # Auto continue setting - compact
+        self.auto_continue_var = tk.BooleanVar(value=True)
+        self.auto_continue_cb = tk.Checkbutton(
+            settings_frame,
+            text="Auto",
+            variable=self.auto_continue_var,
+            fg="white",
+            bg="black",
+            selectcolor="black",
+            font=("Arial", 9),
+            command=self._on_auto_continue_changed
+        )
+        self.auto_continue_cb.grid(row=0, column=2, padx=5)
+
+        # Reset sessions button - compact
+        self.reset_sessions_btn = tk.Button(
+            settings_frame,
+            text="Reset Sessions",
+            width=12,
+            font=("Arial", 8),
+            command=self._on_reset_sessions_clicked
+        )
+        self.reset_sessions_btn.grid(row=0, column=3, padx=5)
+
+    def _on_start_clicked(self):
+        """Tạo các nút điều khiển chính - TO HƠN"""
+        btn_frame = tk.Frame(self.root, bg='black')
+        btn_frame.pack(pady=10)
+
+        # Các nút to hơn với font lớn hơn
+        btn_font = tkfont.Font(family="Arial", size=14, weight="bold")
+        
+        self.start_btn = tk.Button(
+            btn_frame, 
+            text="▶ START", 
+            font=btn_font,
+            width=12, 
+            height=2,
+            bg="green",
+            fg="white",
+            command=self._on_start_clicked
+        )
+        self.start_btn.grid(row=0, column=0, padx=8, pady=5)
+
+        self.toggle_btn = tk.Button(
+            btn_frame, 
+            text="⏸ PAUSE", 
+            font=btn_font,
+            width=12,
+            height=2,
+            bg="orange",
+            fg="white", 
+            command=self._on_toggle_clicked
+        )
+        self.toggle_btn.grid(row=0, column=1, padx=8, pady=5)
+
+        self.reset_btn = tk.Button(
+            btn_frame, 
+            text="🔄 RESET", 
+            font=btn_font,
+            width=12,
+            height=2,
+            bg="red",
+            fg="white",
+            command=self._on_reset_clicked
+        )
+        self.reset_btn.grid(row=0, column=2, padx=8, pady=5)
         """Tạo phần cài đặt session"""
         settings_frame = tk.Frame(self.root, bg='black')
         settings_frame.pack(pady=10)
@@ -215,13 +315,13 @@ class FliqloUI:
     def update_button_state(self, state):
         """Cập nhật trạng thái các nút"""
         if state == "running":
-            self.toggle_btn.config(text="Pause")
+            self.toggle_btn.config(text="⏸ PAUSE", bg="orange")
         elif state == "paused":
-            self.toggle_btn.config(text="Resume")
+            self.toggle_btn.config(text="▶ RESUME", bg="blue")
         elif state == "reset":
-            self.toggle_btn.config(text="Pause")
+            self.toggle_btn.config(text="⏸ PAUSE", bg="orange")
         elif state == "session_complete":
-            self.toggle_btn.config(text="Resume")
+            self.toggle_btn.config(text="▶ RESUME", bg="blue")
 
     def update_session_display(self, current, target):
         """Cập nhật hiển thị session"""

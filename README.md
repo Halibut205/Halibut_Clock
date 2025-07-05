@@ -12,7 +12,8 @@
 
 ## 📋 Mô tả
 
-Ứng dụng đếm tăng thời gian (count-up timer) với giao diện nền đen, chữ trắng lớn.
+Ứng dụng đếm tăng thời gian (count-up timer) với giao diện compact, nền đen, chữ trắng lớn. 
+Thiết kế nhỏ gọn với các nút to dễ bấm và task management tích hợp.
 
 ## Cấu trúc Project
 
@@ -91,17 +92,15 @@ Timer/
 - 📈 **Task Statistics**: Hiển thị tỷ lệ hoàn thành tasks
 - ⏸️ Break timer tự động khi pause  
 - 🔄 Resume break timer từ thời điểm freeze
-- 🎨 Giao diện Fliqlo-style (đen, trắng, xanh cyan, vàng, cam)
-- 🔊 Âm thanh SFX khi bấm nút (button_1.mp3)
-- 🎛️ Bật/tắt âm thanh
-- 🚀 Dễ dàng mở rộng và bảo trì
+- 🎨 Giao diện Fliqlo-style compact (đen, trắng, xanh cyan, vàng, cam)
+- 🖱️ **Large Buttons**: Nút điều khiển to, dễ bấm với icons
+- 📱 **Compact Design**: Cửa sổ nhỏ gọn 500x600px
 
 ## 💻 Yêu cầu
 
 - Python 3.8 trở lên
 - Tkinter (có sẵn với Python)
 - Pygame (cho âm thanh)
-- File âm thanh `button_1.mp3` trong thư mục `sfx/`
 
 ## 🎮 Hướng dẫn sử dụng Task Management:
 
