@@ -15,6 +15,9 @@ class FliqloUI:
         self.on_start = None
         self.on_toggle = None
         self.on_reset = None
+        
+        # Sound manager callback
+        self.play_sound = None
 
     def _setup_window(self):
         """Thiết lập cửa sổ chính"""
@@ -82,16 +85,22 @@ class FliqloUI:
 
     def _on_start_clicked(self):
         """Xử lý sự kiện click nút Start"""
+        if self.play_sound:
+            self.play_sound('start')
         if self.on_start:
             self.on_start()
 
     def _on_toggle_clicked(self):
         """Xử lý sự kiện click nút Pause/Resume"""
+        if self.play_sound:
+            self.play_sound('pause')
         if self.on_toggle:
             self.on_toggle()
 
     def _on_reset_clicked(self):
         """Xử lý sự kiện click nút Reset"""
+        if self.play_sound:
+            self.play_sound('reset')
         if self.on_reset:
             self.on_reset()
 

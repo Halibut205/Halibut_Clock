@@ -5,14 +5,16 @@ Timer Controller Module - Điều phối giữa UI và Timer Core
 import tkinter as tk
 from timer_core import TimerCore
 from ui_components import FliqloUI
+from sound_manager import SoundManager
 
 class TimerController:
     def __init__(self, root):
         self.root = root
         
-        # Khởi tạo core logic và UI
+        # Khởi tạo core logic, UI và sound
         self.timer_core = TimerCore()
         self.ui = FliqloUI(root)
+        self.sound_manager = SoundManager()
         
         # Kết nối callbacks
         self._setup_callbacks()
@@ -26,6 +28,9 @@ class TimerController:
         self.ui.on_start = self._handle_start
         self.ui.on_toggle = self._handle_toggle
         self.ui.on_reset = self._handle_reset
+        
+        # Sound callback
+        self.ui.play_sound = self.sound_manager.play_sound
         
         # Core callbacks
         self.timer_core.on_timer_update = self.ui.update_timer_display
@@ -66,3 +71,11 @@ class TimerController:
         """Thêm thời gian vào timer (để mở rộng tính năng)"""
         self.timer_core.time_elapsed += seconds
         self.timer_core.on_timer_update(self.timer_core.format_time(self.timer_core.time_elapsed))
+
+    def toggle_sound(self):
+        """Bật/tắt âm thanh"""
+        return self.sound_manager.toggle_sound()
+
+    def set_volume(self, volume):
+        """Điều chỉnh âm lượng (0.0 - 1.0)"""
+        self.sound_manager.set_volume(volume)
