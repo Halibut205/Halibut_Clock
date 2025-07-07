@@ -45,6 +45,7 @@ class TimerController:
         self.ui.on_complete_task = self._handle_complete_task
         self.ui.on_delete_task = self._handle_delete_task
         self.ui.on_edit_task = self._handle_edit_task
+        self.ui.on_reactivate_task = self._handle_reactivate_task  # New callback
         self.ui.on_clear_completed = self._handle_clear_completed
         
         # Setup task UI callbacks
@@ -134,6 +135,14 @@ class TimerController:
         if 0 <= task_index < len(tasks):
             task = tasks[task_index]
             self.task_manager.edit_task(task['id'], new_text)
+
+    def _handle_reactivate_task(self, task_index):
+        """Xử lý sự kiện reactivate completed task"""
+        completed_tasks = self.task_manager.get_completed_tasks()
+        if 0 <= task_index < len(completed_tasks):
+            task = completed_tasks[task_index]
+            self.task_manager.reactivate_task(task['id'])
+            self.sound_manager.play_button_click()
 
     def _handle_clear_completed(self):
         """Xử lý sự kiện xóa tất cả completed tasks"""

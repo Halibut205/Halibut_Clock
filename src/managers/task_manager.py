@@ -56,6 +56,23 @@ class TaskManager:
                 return completed_task
         return None
 
+    def reactivate_task(self, task_id):
+        """Chuyển task từ completed về active (undo complete)"""
+        for i, task in enumerate(self.completed_tasks):
+            if task['id'] == task_id:
+                # Remove completed timestamp and move back to active
+                if 'completed_at' in task:
+                    del task['completed_at']
+                reactivated_task = self.completed_tasks.pop(i)
+                self.tasks.append(reactivated_task)
+                self.save_tasks()
+                
+                if self.on_tasks_updated:
+                    self.on_tasks_updated()
+                
+                return reactivated_task
+        return None
+
     def delete_task(self, task_id, from_completed=False):
         """Xóa task"""
         task_list = self.completed_tasks if from_completed else self.tasks

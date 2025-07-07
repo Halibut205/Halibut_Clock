@@ -38,6 +38,7 @@ class FliqloUI:
         self.on_complete_task = None
         self.on_delete_task = None
         self.on_edit_task = None
+        self.on_reactivate_task = None  # New callback for reactivating tasks
         self.on_clear_completed = None
         
         # Sound manager callback
@@ -344,6 +345,7 @@ class FliqloUI:
         self.task_ui.on_complete_task = self.on_complete_task
         self.task_ui.on_delete_task = self.on_delete_task
         self.task_ui.on_edit_task = self.on_edit_task
+        self.task_ui.on_reactivate_task = self.on_reactivate_task  # New callback
         self.task_ui.on_clear_completed = self.on_clear_completed
         self.task_ui.play_sound = self.play_sound  # Thiết lập sound callback
 
