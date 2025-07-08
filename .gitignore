@@ -40,14 +40,19 @@ Thumbs.db
 # Project specific
 data/tasks_data.json
 data/app_settings.json
+data/daily_stats.json
+data/*.json
+!data/README.md
+
+# Audio files (user should provide their own)
 sfx/*.mp3
 sfx/*.wav
 sfx/*.ogg
 !sfx/README.md
 
-# Test and temporary files
-test_*.py
-*_test.py
+# Test and temporary files - moved to tests/ folder
+# test_*.py
+# *_test.py
 *_diagnostic.py
 *_clean.py
 *.tmp

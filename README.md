@@ -29,8 +29,40 @@ A **beautiful Pomodoro app** to help you focus on studying and working efficient
 ### **📋 Task Management**
 - Add tasks for each session
 - Mark tasks as completed
-- Track productivity across sessions
-- Clean, organized task interface
+- Reactivate completed tasks with the "↩ Undo" button
+- Track your productivity across multiple sessions
+- Clear completed tasks when needed
+
+### **📊 Enhanced Daily Statistics**
+- **Access**: Click the "📊 Daily Stats" button on the main interface
+- **Separate Window**: Opens a dedicated statistics window with multiple tabs:
+  - **📅 Today Tab**: Current day's study time, break time, sessions, and tasks with:
+    - **Progress Cards**: Visual stat cards with trend indicators vs yesterday
+    - **Progress Bars**: Mini progress bars showing daily goal completion
+    - **Visual Indicators**: Color-coded efficiency meters and emoji feedback
+    - **Motivational Messages**: Dynamic encouragement based on your progress
+    - **Achievement Badges**: Unlock badges for study milestones (Goal Master, Focus Champion, etc.)
+    - **Enhanced Summary**: Study efficiency, session averages, and goal tracking
+  - **📊 Weekly Tab**: 7-day overview with enhanced daily breakdown table featuring:
+    - **Color-coded rows**: Today highlighted, high productivity days marked
+    - **Visual indicators**: Emoji badges for performance levels (🔥 4h+, 💪 2h+, ⏱️ 1h+)
+    - **Efficiency tracking**: Study vs break time ratios
+  - **📅 Monthly Tab**: Complete month statistics with:
+    - **Month Selector**: Choose any of the last 12 months to view
+    - **Enhanced Cards**: Shadow effects and gradient styling for monthly stats
+    - **Top 5 Study Days**: Best performing days with detailed breakdown
+    - **3-Month Comparison**: Visual comparison with productivity trends
+  - **📈 Charts Tab**: ASCII-based mini charts and visual progress tracking
+- **Visual Enhancements**:
+  - **Material Design**: Modern card-based interface with clean styling
+  - **Color Coding**: Performance-based colors (Green: Excellent, Orange: Good, Red: Improve)
+  - **Progress Indicators**: Real-time progress bars and visual feedback
+  - **Trend Analysis**: Compare current performance with previous periods
+  - **ASCII Charts**: Simple but effective visual trends for session data
+- **Real-time Updates**: Statistics update automatically as you study
+- **Data Export**: Export your statistics data to JSON format
+- **Reset Option**: Reset today's statistics if needed
+- **Persistent Storage**: All data saved to `data/daily_stats.json`
 
 ### **🔊 Audio System**
 - Button click sounds for feedback
@@ -87,6 +119,7 @@ A **beautiful Pomodoro app** to help you focus on studying and working efficient
 ### **Task Management**
 - Add tasks for each session using the task panel
 - Mark tasks as completed when finished
+- Reactivate completed tasks with the "↩ Undo" button
 - Track your productivity across multiple sessions
 - Clear completed tasks when needed
 
@@ -110,11 +143,30 @@ Timer/
 ├── requirements.txt     # Python dependencies
 ├── run.bat/.sh          # Launch scripts
 ├── setup.bat/.sh        # Installation scripts
+├── LICENSE              # MIT License
+├── CHANGELOG.md         # Version history
 │
 ├── src/                 # Source code
 │   ├── core/           # Timer logic
+│   │   ├── timer_core.py         # Dual clock system
+│   │   └── timer_controller.py   # Main controller
 │   ├── ui/             # User interface  
+│   │   ├── ui_components.py      # Main UI
+│   │   ├── task_ui.py           # Task management UI
+│   │   └── daily_stats_window.py # Statistics UI
 │   └── managers/       # Business logic
+│       ├── sound_manager.py      # Audio management
+│       ├── task_manager.py       # Task tracking
+│       └── daily_stats_manager.py # Statistics tracking
+│
+├── tests/              # Test files and demos
+│   ├── test_*.py              # Unit tests
+│   ├── demo_*.py              # Demo scripts
+│   └── README.md              # Test documentation
+│
+├── docs/               # Documentation
+│   ├── ENHANCED_UI_FEATURES.md    # UI feature docs
+│   └── README.md                  # Documentation overview
 │
 ├── sfx/                # Sound effects
 │   ├── button_1.mp3          # Button sounds
@@ -123,7 +175,8 @@ Timer/
 │
 └── data/               # User data (auto-created)
     ├── tasks_data.json       # Saved tasks
-    └── app_settings.json     # User preferences
+    ├── app_settings.json     # User preferences
+    └── daily_stats.json      # Daily statistics
 ```
 
 ---

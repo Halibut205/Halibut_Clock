@@ -6,18 +6,28 @@ import tkinter as tk
 from datetime import datetime
 from .timer_core import TimerCore
 from ..ui.ui_components import FliqloUI
+from ..ui.daily_stats_window import DailyStatsWindow
 from ..managers.sound_manager import SoundManager
 from ..managers.task_manager import TaskManager
+from ..managers.daily_stats_manager import DailyStatsManager
 
 class TimerController:
     def __init__(self, root):
         self.root = root
         
-        # Khởi tạo core logic, UI, sound và task manager
+        # Khởi tạo core logic, UI, sound, task manager và daily stats
         self.timer_core = TimerCore()
         self.ui = FliqloUI(root)
         self.sound_manager = SoundManager()
         self.task_manager = TaskManager()
+        self.daily_stats = DailyStatsManager()
+        
+        # Tracking variables for stats
+        self.last_main_time = 0
+        self.last_break_time = 0
+        
+        # Daily stats window
+        self.daily_stats_window = DailyStatsWindow(root, self.daily_stats)
         
         # Kết nối callbacks
         self._setup_callbacks()
@@ -39,6 +49,7 @@ class TimerController:
         self.ui.on_reset_sessions = self._handle_reset_sessions
         self.ui.on_session_duration_changed = self._handle_session_duration_changed  # New callback
         self.ui.on_help_clicked = self._handle_help_clicked  # Help callback
+        self.ui.on_stats_clicked = self._handle_stats_clicked  # Stats window callback
         
         # Task callbacks
         self.ui.on_add_task = self._handle_add_task
@@ -120,6 +131,8 @@ class TimerController:
         if 0 <= task_index < len(tasks):
             task = tasks[task_index]
             self.task_manager.complete_task(task['id'])
+            # Update daily stats - increment tasks completed
+            self.daily_stats.increment_tasks_completed()
             self.sound_manager.play_button_click()
 
     def _handle_delete_task(self, task_index):
@@ -167,8 +180,15 @@ class TimerController:
         # Show welcome screen
         show_welcome_screen(on_welcome_close)
 
+    def _handle_stats_clicked(self):
+        """Xử lý sự kiện click Daily Stats button"""
+        self.daily_stats_window.show()
+
     def _handle_session_complete(self):
         """Xử lý khi hoàn thành một session"""
+        # Update daily stats - increment sessions completed
+        self.daily_stats.increment_sessions_completed()
+        
         # Play completion sound (rang.mp3)
         self.sound_manager.play_completion_sound()
         
@@ -237,8 +257,30 @@ class TimerController:
         progress = self.timer_core.get_session_progress()
         self.ui.update_progress_display(progress)
         
+        # Cập nhật daily stats
+        self._update_daily_stats()
+        
         # Lặp lại sau 1 giây
         self.root.after(1000, self._update_loop)
+
+    def _update_daily_stats(self):
+        """Cập nhật daily stats"""
+        current_main_time = self.timer_core.main_time
+        current_break_time = self.timer_core.break_time
+        
+        # Update study time if main timer was running
+        if self.timer_core.is_main_running() and current_main_time > self.last_main_time:
+            study_increment = current_main_time - self.last_main_time
+            self.daily_stats.update_study_time(study_increment)
+        
+        # Update break time if break timer was running
+        if self.timer_core.is_break_running() and current_break_time > self.last_break_time:
+            break_increment = current_break_time - self.last_break_time
+            self.daily_stats.update_break_time(break_increment)
+        
+        # Save last times
+        self.last_main_time = current_main_time
+        self.last_break_time = current_break_time
 
     def get_timer_state(self):
         """Lấy trạng thái hiện tại của timer"""
@@ -292,6 +334,28 @@ class TimerController:
         except Exception as e:
             print(f"❌ Could not import tasks: {e}")
             return False
+
+    def _handle_reset_today_stats(self):
+        """Xử lý reset thống kê ngày hôm nay"""
+        import tkinter.messagebox as messagebox
+        
+        confirm = messagebox.askyesno(
+            "Reset Today's Statistics",
+            "Are you sure you want to reset today's statistics?\n\n"
+            "This will clear:\n"
+            "• Study time\n"
+            "• Break time\n"
+            "• Sessions completed\n"
+            "• Tasks completed\n\n"
+            "This action cannot be undone.",
+            icon='warning'
+        )
+        
+        if confirm:
+            self.daily_stats.reset_today()
+            # Refresh stats display
+            if hasattr(self.ui, 'daily_stats_ui'):
+                self.ui.daily_stats_ui.refresh_stats()
 
     def _update_session_display(self, current, target):
         """Update session display với current và target sessions"""

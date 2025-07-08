@@ -4,7 +4,7 @@ UI Components Module - Quản lý giao diện người dùng
 
 import tkinter as tk
 from tkinter import font as tkfont
-from .task_ui import TaskUI
+from .task_ui import TaskUI  # Import DailyStatsUI
 
 # Session duration options - định nghĩa local để tránh import issues
 SESSION_DURATION_OPTIONS = {
@@ -32,6 +32,7 @@ class FliqloUI:
         self.on_reset_sessions = None
         self.on_session_duration_changed = None  # New callback
         self.on_help_clicked = None  # Help callback
+        self.on_stats_clicked = None  # Stats window callback
         
         # Task callbacks
         self.on_add_task = None
@@ -48,7 +49,7 @@ class FliqloUI:
         """Thiết lập cửa sổ chính"""
         self.root.title("Fliqlo Timer")
         self.root.configure(bg='black')
-        self.root.geometry("500x600")
+        self.root.geometry("500x600")  # Trở lại kích thước ban đầu
         self.root.resizable(False, False)  # Không cho resize
 
     def _create_widgets(self):
@@ -102,7 +103,7 @@ class FliqloUI:
         )
         self.break_timer_label.pack(pady=5)
 
-        # Help button - visible at top
+        # Help and stats buttons frame
         help_frame = tk.Frame(self.root, bg='black')
         help_frame.pack(pady=5)
         
@@ -110,13 +111,26 @@ class FliqloUI:
             help_frame,
             text="❓ Trợ giúp / Help",
             font=tkfont.Font(family="Arial", size=10, weight="bold"),
-            width=20,
+            width=18,
             height=1,
             bg="purple",
             fg="white",
             command=self._on_help_clicked
         )
-        help_btn_top.pack()
+        help_btn_top.pack(side="left", padx=(0, 5))
+        
+        # Daily stats button
+        stats_btn = tk.Button(
+            help_frame,
+            text="📊 Daily Stats",
+            font=tkfont.Font(family="Arial", size=10, weight="bold"),
+            width=18,
+            height=1,
+            bg="#2c3e50",
+            fg="white",
+            command=self._on_stats_clicked
+        )
+        stats_btn.pack(side="left", padx=5)
 
         # Main control buttons - TO HƠN
         self._create_main_buttons()
@@ -289,6 +303,13 @@ class FliqloUI:
             self.play_sound()
         if self.on_help_clicked:
             self.on_help_clicked()
+
+    def _on_stats_clicked(self):
+        """Xử lý sự kiện click nút Daily Stats"""
+        if self.play_sound:
+            self.play_sound()
+        if self.on_stats_clicked:
+            self.on_stats_clicked()
 
     def update_main_timer_display(self, time_text):
         """Cập nhật hiển thị main timer (bỏ chữ Main)"""
