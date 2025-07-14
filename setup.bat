@@ -17,12 +17,30 @@ echo [INFO] Python found
 python --version
 
 echo.
-echo [INFO] Installing pygame for button sounds...
-pip install pygame
+echo [INFO] Installing dependencies from requirements.txt...
+pip install -r requirements.txt
 
 if %errorlevel% neq 0 (
-    echo [WARNING] Could not install pygame
-    echo [INFO] Buttons will work without sound
+    echo [WARNING] Could not install all dependencies from requirements.txt
+    echo [INFO] Trying individual installations...
+    
+    echo [INFO] Installing pygame for button sounds...
+    pip install pygame
+    
+    if %errorlevel% neq 0 (
+        echo [WARNING] Could not install pygame
+        echo [INFO] Buttons will work without sound
+    )
+    
+    echo [INFO] Installing matplotlib for charts...
+    pip install matplotlib
+    
+    if %errorlevel% neq 0 (
+        echo [WARNING] Could not install matplotlib
+        echo [INFO] Charts will show placeholder text
+    )
+) else (
+    echo [SUCCESS] All dependencies installed successfully!
 )
 
 echo.
@@ -47,8 +65,19 @@ if not exist "sfx\whitenoise_1.mp3" (
 echo.
 echo [SUCCESS] Setup completed!
 echo.
+echo Features available:
+echo - Timer with Pomodoro technique
+echo - Daily statistics tracking
+echo - Interactive charts and data visualization
+echo - Sound effects (if pygame installed)
+echo - Export functionality for data and charts
+echo.
 echo To run the app:
 echo 1. Double-click 'run.bat'
 echo 2. Or run 'python main.py' from this directory
+echo.
+echo To test charts functionality:
+echo - Run 'python quick_test_matplotlib.py'
+echo - Or run 'python demo_charts.py'
 echo.
 pause

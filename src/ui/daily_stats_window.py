@@ -5,6 +5,16 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime, timedelta, date
 
+# Import matplotlib for charts
+try:
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+    import matplotlib.dates as mdates
+    from matplotlib.figure import Figure
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
+
 class DailyStatsWindow:
     def __init__(self, parent, stats_manager):
         self.parent = parent
@@ -20,14 +30,14 @@ class DailyStatsWindow:
             self.refresh_data()
             return
             
-        # Tạo cửa sổ mới
+        # Tạo cửa sổ mới với kích thước lớn hơn
         self.window = tk.Toplevel(self.parent)
         self.window.title("📊 Daily Statistics - Fliqlo Timer")
-        self.window.geometry("800x600")
+        self.window.geometry("1200x800")  # Tăng từ 800x600 lên 1200x800
         self.window.configure(bg='#f5f5f5')
         
         # Đặt icon và không cho resize quá nhỏ
-        self.window.minsize(700, 500)
+        self.window.minsize(1000, 700)  # Tăng minsize từ 700x500 lên 1000x700
         
         # Xử lý khi đóng cửa sổ
         self.window.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -611,28 +621,17 @@ class DailyStatsWindow:
         history_frame = ttk.Frame(self.notebook, padding="15")
         self.notebook.add(history_frame, text="📈 Charts")
         
-        # Chart placeholder
+        # Chart header
         chart_label = tk.Label(
             history_frame,
-            text="📈 Study Time Trend (Last 7 Days)",
+            text="📈 Study Time Trend & Analytics",
             font=("Arial", 14, "bold"),
             bg='white'
         )
         chart_label.pack(pady=(0, 10))
         
-        # Placeholder for chart (would need matplotlib)
-        chart_frame = tk.Frame(history_frame, bg='white', relief="sunken", bd=1)
-        chart_frame.pack(fill="both", expand=True)
-        
-        placeholder_label = tk.Label(
-            chart_frame,
-            text="📊 Chart functionality\n(Requires matplotlib)\n\nShowing study time trends,\nsession completion rates,\nand productivity patterns",
-            font=("Arial", 12),
-            bg='white',
-            fg='#7f8c8d',
-            justify="center"
-        )
-        placeholder_label.pack(expand=True)
+        # Create matplotlib charts
+        self.create_matplotlib_charts(history_frame)
     
     def create_control_buttons(self, parent):
         """Tạo các nút điều khiển với thiết kế Material Design"""
@@ -681,6 +680,18 @@ class DailyStatsWindow:
             **button_config
         )
         export_btn.pack(side="left", padx=5)
+        
+        # Export Charts button (only show if matplotlib available)
+        if MATPLOTLIB_AVAILABLE:
+            export_charts_btn = tk.Button(
+                button_frame,
+                text="📊 Export Charts",
+                command=self.export_charts,
+                bg="#9b59b6",
+                fg="white",
+                **button_config
+            )
+            export_charts_btn.pack(side="left", padx=5)
         
         # Spacer
         spacer = tk.Frame(button_frame, bg='#f5f5f5')
@@ -1229,6 +1240,252 @@ class DailyStatsWindow:
             except Exception as e:
                 messagebox.showerror("Export Failed", f"Could not export data:\n{e}")
 
+    def export_charts(self):
+        """Xuất biểu đồ thành file hình ảnh với thiết kế đẹp"""
+        if not MATPLOTLIB_AVAILABLE:
+            messagebox.showwarning("Export Charts", "Matplotlib is required to export charts.\nPlease install it with: pip install matplotlib")
+            return
+        
+        from tkinter import filedialog
+        import os
+        
+        # Chọn thư mục để lưu
+        folder = filedialog.askdirectory(title="Choose folder to save charts")
+        if not folder:
+            return
+        
+        try:
+            # Get data
+            recent_days = self.stats_manager.get_recent_days(14)
+            if not recent_days:
+                messagebox.showwarning("Export Charts", "No data available to export.")
+                return
+            
+            # Prepare data
+            dates = []
+            study_hours = []
+            break_hours = []
+            sessions = []
+            tasks = []
+            efficiency_values = []
+            goal_progress = []
+            
+            for day in recent_days:
+                date_obj = datetime.strptime(day["date"], "%Y-%m-%d")
+                dates.append(date_obj)
+                study_hours.append(day["study_time"] / 3600)
+                break_hours.append(day["break_time"] / 3600)
+                sessions.append(day["sessions_completed"])
+                tasks.append(day["tasks_completed"])
+                
+                # Calculate efficiency
+                study_time = day["study_time"]
+                break_time = day["break_time"] 
+                total_time = study_time + break_time
+                if total_time > 0:
+                    efficiency = (study_time / total_time) * 100
+                else:
+                    efficiency = 0
+                efficiency_values.append(efficiency)
+                
+                # Calculate goal progress
+                daily_goal_seconds = 4 * 3600
+                progress = min((study_time / daily_goal_seconds) * 100, 100)
+                goal_progress.append(progress)
+            
+            # 1. Create and save enhanced study time chart
+            plt.style.use('default')
+            fig, ax = plt.subplots(figsize=(14, 8), dpi=300, facecolor='white')
+            ax.set_facecolor('#fafbfc')
+            
+            # Plot study time with beautiful styling
+            ax.plot(dates, study_hours, marker='o', linewidth=3, markersize=8, 
+                   color='#2ecc71', label='📚 Study Time', alpha=0.9,
+                   markerfacecolor='#27ae60', markeredgecolor='white', markeredgewidth=2)
+            ax.fill_between(dates, study_hours, alpha=0.2, color='#2ecc71')
+            
+            # Plot break time
+            ax.plot(dates, break_hours, marker='s', linewidth=2.5, markersize=6,
+                   color='#e67e22', label='☕ Break Time', alpha=0.8,
+                   markerfacecolor='#d35400', markeredgecolor='white', markeredgewidth=1.5)
+            
+            # Add daily goal line
+            daily_goal = 4
+            ax.axhline(y=daily_goal, color='#3498db', linestyle='--', linewidth=2, 
+                      alpha=0.7, label=f'🎯 Daily Goal ({daily_goal}h)')
+            
+            # Beautiful styling
+            ax.set_title('📈 Study Time & Break Analysis (Last 14 Days)', 
+                        fontsize=18, fontweight='bold', pad=25, color='#2c3e50')
+            ax.set_xlabel('Date', fontsize=14, color='#34495e', fontweight='500')
+            ax.set_ylabel('Hours', fontsize=14, color='#34495e', fontweight='500')
+            ax.grid(True, alpha=0.4, linestyle='-', linewidth=0.5, color='#bdc3c7')
+            ax.set_axisbelow(True)
+            
+            # Enhanced legend
+            legend = ax.legend(loc='upper left', frameon=True, fancybox=True, 
+                              shadow=True, fontsize=12, facecolor='white', 
+                              edgecolor='#bdc3c7', framealpha=0.95)
+            legend.get_frame().set_linewidth(1)
+            
+            # Format axes
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+            ax.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+            plt.setp(ax.xaxis.get_majorticklabels(), rotation=35, ha='right', 
+                    fontsize=12, color='#5d6d7e')
+            plt.setp(ax.yaxis.get_majorticklabels(), fontsize=12, color='#5d6d7e')
+            
+            # Style borders
+            for spine in ax.spines.values():
+                spine.set_color('#d5dbdb')
+                spine.set_linewidth(1)
+            
+            plt.tight_layout(pad=2.0)
+            plt.savefig(os.path.join(folder, 'study_time_trend.png'), 
+                       dpi=300, bbox_inches='tight', facecolor='white')
+            plt.close()
+            
+            # 2. Create and save enhanced sessions & tasks chart
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10), dpi=300, facecolor='white')
+            
+            # Sessions chart
+            ax1.set_facecolor('#fafbfc')
+            bars1 = ax1.bar(dates, sessions, color='#9b59b6', alpha=0.8, 
+                           edgecolor='#8e44ad', linewidth=1.5, capsize=4)
+            
+            # Add value labels on bars
+            for bar in bars1:
+                height = bar.get_height()
+                if height > 0:
+                    ax1.text(bar.get_x() + bar.get_width()/2., height + 0.1,
+                            f'{int(height)}', ha='center', va='bottom', 
+                            fontsize=11, fontweight='bold', color='#2c3e50',
+                            bbox=dict(boxstyle="round,pad=0.3", facecolor='white', 
+                                    alpha=0.8, edgecolor='#bdc3c7'))
+            
+            ax1.set_title('🎯 Daily Sessions Completed', fontsize=16, fontweight='bold', 
+                         pad=15, color='#2c3e50')
+            ax1.set_ylabel('Sessions', fontsize=12, color='#34495e', fontweight='500')
+            ax1.grid(True, alpha=0.4, axis='y', linestyle='-', linewidth=0.5, color='#bdc3c7')
+            ax1.set_axisbelow(True)
+            
+            # Tasks chart
+            ax2.set_facecolor('#fafbfc')
+            bars2 = ax2.bar(dates, tasks, color='#e74c3c', alpha=0.8,
+                           edgecolor='#c0392b', linewidth=1.5, capsize=4)
+            
+            # Add value labels on bars
+            for bar in bars2:
+                height = bar.get_height()
+                if height > 0:
+                    ax2.text(bar.get_x() + bar.get_width()/2., height + 0.1,
+                            f'{int(height)}', ha='center', va='bottom', 
+                            fontsize=11, fontweight='bold', color='#2c3e50',
+                            bbox=dict(boxstyle="round,pad=0.3", facecolor='white', 
+                                    alpha=0.8, edgecolor='#bdc3c7'))
+            
+            ax2.set_title('✅ Daily Tasks Completed', fontsize=16, fontweight='bold', 
+                         pad=15, color='#2c3e50')
+            ax2.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
+            ax2.set_ylabel('Tasks', fontsize=12, color='#34495e', fontweight='500')
+            ax2.grid(True, alpha=0.4, axis='y', linestyle='-', linewidth=0.5, color='#bdc3c7')
+            ax2.set_axisbelow(True)
+            
+            # Format axes for both charts
+            for ax in [ax1, ax2]:
+                ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+                ax.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+                plt.setp(ax.xaxis.get_majorticklabels(), rotation=35, ha='right',
+                        fontsize=11, color='#5d6d7e')
+                plt.setp(ax.yaxis.get_majorticklabels(), fontsize=11, color='#5d6d7e')
+                
+                for spine in ax.spines.values():
+                    spine.set_color('#d5dbdb')
+                    spine.set_linewidth(1)
+            
+            plt.tight_layout(pad=2.0)
+            plt.savefig(os.path.join(folder, 'sessions_tasks_completed.png'), 
+                       dpi=300, bbox_inches='tight', facecolor='white')
+            plt.close()
+            
+            # 3. Create and save enhanced efficiency chart
+            fig, ax = plt.subplots(figsize=(14, 8), dpi=300, facecolor='white')
+            ax.set_facecolor('#fafbfc')
+            
+            # Plot efficiency
+            line1 = ax.plot(dates, efficiency_values, marker='o', linewidth=3, markersize=8,
+                           color='#1abc9c', label='⚡ Study Efficiency (%)', alpha=0.9,
+                           markerfacecolor='#16a085', markeredgecolor='white', markeredgewidth=2)
+            ax.fill_between(dates, efficiency_values, alpha=0.2, color='#1abc9c')
+            
+            # Create second y-axis for goal progress
+            ax2 = ax.twinx()
+            ax2.set_facecolor('transparent')
+            line2 = ax2.plot(dates, goal_progress, marker='D', linewidth=2.5, markersize=6,
+                            color='#3498db', label='🎯 Goal Progress (%)', alpha=0.8,
+                            markerfacecolor='#2980b9', markeredgecolor='white', markeredgewidth=1.5)
+            
+            # Beautiful styling
+            ax.set_title('⚡ Study Efficiency & Goal Achievement Analysis', 
+                        fontsize=18, fontweight='bold', pad=25, color='#2c3e50')
+            ax.set_xlabel('Date', fontsize=14, color='#34495e', fontweight='500')
+            ax.set_ylabel('Efficiency (%)', fontsize=14, color='#16a085', fontweight='600')
+            ax2.set_ylabel('Goal Progress (%)', fontsize=14, color='#2980b9', fontweight='600')
+            
+            # Set limits
+            ax.set_ylim(0, 105)
+            ax2.set_ylim(0, 105)
+            
+            # Grid and reference lines
+            ax.grid(True, alpha=0.4, linestyle='-', linewidth=0.5, color='#bdc3c7')
+            ax.set_axisbelow(True)
+            
+            excellent_line = ax.axhline(y=80, color='#27ae60', linestyle='--', 
+                                       linewidth=2, alpha=0.6, label='💪 Excellent (80%)')
+            goal_line = ax2.axhline(y=100, color='#e74c3c', linestyle='--', 
+                                   linewidth=2, alpha=0.6, label='🏆 Goal Achievement (100%)')
+            
+            # Enhanced legend
+            lines = line1 + line2 + [excellent_line, goal_line]
+            labels = [l.get_label() for l in lines]
+            legend = ax.legend(lines, labels, loc='upper left', frameon=True, 
+                              fancybox=True, shadow=True, fontsize=11,
+                              facecolor='white', edgecolor='#bdc3c7', framealpha=0.95)
+            legend.get_frame().set_linewidth(1)
+            
+            # Format axes
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+            ax.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+            plt.setp(ax.xaxis.get_majorticklabels(), rotation=35, ha='right',
+                    fontsize=12, color='#5d6d7e')
+            plt.setp(ax.yaxis.get_majorticklabels(), fontsize=12, color='#16a085')
+            plt.setp(ax2.yaxis.get_majorticklabels(), fontsize=12, color='#2980b9')
+            
+            # Style borders
+            for spine in ax.spines.values():
+                spine.set_color('#d5dbdb')
+                spine.set_linewidth(1)
+            for spine in ax2.spines.values():
+                spine.set_color('#d5dbdb')
+                spine.set_linewidth(1)
+            
+            # Performance zones
+            ax.axhspan(0, 40, alpha=0.05, color='red')
+            ax.axhspan(40, 60, alpha=0.05, color='orange') 
+            ax.axhspan(60, 80, alpha=0.05, color='yellow')
+            ax.axhspan(80, 100, alpha=0.05, color='green')
+            
+            plt.tight_layout(pad=2.0)
+            plt.savefig(os.path.join(folder, 'efficiency_analysis.png'), 
+                       dpi=300, bbox_inches='tight', facecolor='white')
+            plt.close()
+            
+            messagebox.showinfo("Export Successful", 
+                f"📊 Beautiful charts exported to:\n{folder}\n\n✨ Files created:\n• study_time_trend.png (14×8 @ 300 DPI)\n• sessions_tasks_completed.png (14×10 @ 300 DPI)\n• efficiency_analysis.png (14×8 @ 300 DPI)\n\n🎨 Professional quality for reports and presentations!")
+            
+        except Exception as e:
+            messagebox.showerror("Export Failed", f"Could not export charts:\n{e}")
+
     def on_close(self):
         """Xử lý khi đóng cửa sổ"""
         self.window.destroy()
@@ -1307,3 +1564,494 @@ class DailyStatsWindow:
                 return f"{hours}h"
             else:
                 return f"{hours}h {minutes}m"
+
+    def create_matplotlib_charts(self, parent):
+        """Tạo biểu đồ matplotlib cho data visualization"""
+        if not MATPLOTLIB_AVAILABLE:
+            # Fallback to placeholder if matplotlib not available
+            self.create_chart_placeholder(parent)
+            return
+        
+        try:
+            # Create notebook for multiple charts
+            chart_notebook = ttk.Notebook(parent)
+            chart_notebook.pack(fill="both", expand=True)
+            
+            # Study Time Trend Chart
+            self.create_study_time_chart(chart_notebook)
+            
+            # Daily Sessions Chart (separate tab)
+            self.create_sessions_chart(chart_notebook)
+            
+            # Daily Tasks Chart (separate tab)
+            self.create_tasks_chart(chart_notebook)
+            
+            # Efficiency and Progress Chart
+            self.create_efficiency_chart(chart_notebook)
+            
+        except Exception as e:
+            print(f"Error creating charts: {e}")
+            self.create_chart_placeholder(parent)
+    
+    def create_study_time_chart(self, parent):
+        """Tạo biểu đồ thời gian học với thiết kế đẹp"""
+        # Create frame for study time chart
+        study_frame = ttk.Frame(parent, padding="15")
+        parent.add(study_frame, text="📚 Study Time")
+        
+        # Get last 14 days of data
+        recent_days = self.stats_manager.get_recent_days(14)
+        
+        if not recent_days:
+            tk.Label(study_frame, text="No data available", font=("Arial", 12)).pack(expand=True)
+            return
+        
+        # Prepare data
+        dates = []
+        study_hours = []
+        break_hours = []
+        
+        for day in recent_days:
+            date_obj = datetime.strptime(day["date"], "%Y-%m-%d")
+            dates.append(date_obj)
+            study_hours.append(day["study_time"] / 3600)  # Convert to hours
+            break_hours.append(day["break_time"] / 3600)
+        
+        # Create matplotlib figure with beautiful styling
+        plt.style.use('default')  # Reset to clean style
+        fig = Figure(figsize=(12, 7), dpi=100, facecolor='#f8f9fa')
+        ax = fig.add_subplot(111, facecolor='white')
+        
+        # Create gradient background for better visual appeal
+        ax.set_facecolor('#fafbfc')
+        
+        # Plot study time with enhanced styling
+        study_line = ax.plot(dates, study_hours, 
+                           marker='o', linewidth=3, markersize=8, 
+                           color='#2ecc71', label='📚 Study Time', 
+                           alpha=0.9, markerfacecolor='#27ae60',
+                           markeredgecolor='white', markeredgewidth=2,
+                           zorder=3)
+        
+        # Add area fill under study time line for visual impact
+        ax.fill_between(dates, study_hours, alpha=0.2, color='#2ecc71', zorder=1)
+        
+        # Plot break time with contrasting style
+        break_line = ax.plot(dates, break_hours, 
+                           marker='s', linewidth=2.5, markersize=6,
+                           color='#e67e22', label='☕ Break Time', 
+                           alpha=0.8, markerfacecolor='#d35400',
+                           markeredgecolor='white', markeredgewidth=1.5,
+                           zorder=2)
+        
+        # Add daily goal line with enhanced styling
+        daily_goal = 4  # 4 hours
+        goal_line = ax.axhline(y=daily_goal, color='#3498db', linestyle='--', 
+                              linewidth=2, alpha=0.7, 
+                              label=f'🎯 Daily Goal ({daily_goal}h)')
+        
+        # Customize chart with beautiful typography
+        ax.set_title('📈 Study Time & Break Analysis', 
+                    fontsize=16, fontweight='bold', pad=25,
+                    color='#2c3e50', fontfamily='sans-serif')
+        ax.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
+        ax.set_ylabel('Hours', fontsize=12, color='#34495e', fontweight='500')
+        
+        # Enhanced grid styling
+        ax.grid(True, alpha=0.4, linestyle='-', linewidth=0.5, color='#bdc3c7')
+        ax.set_axisbelow(True)  # Grid behind data
+        
+        # Beautiful legend with shadow
+        legend = ax.legend(loc='upper left', frameon=True, fancybox=True, 
+                          shadow=True, fontsize=11, 
+                          facecolor='white', edgecolor='#bdc3c7',
+                          framealpha=0.95, borderpad=1)
+        legend.get_frame().set_linewidth(1)
+        
+        # Format x-axis with better styling
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right', 
+                fontsize=11, color='#5d6d7e', fontweight='500')
+        
+        # Style y-axis
+        plt.setp(ax.yaxis.get_majorticklabels(), fontsize=11, color='#5d6d7e', fontweight='500')
+        
+        # Set better axis limits with more padding
+        if max(study_hours) > 0:
+            ax.set_ylim(0, max(max(study_hours), daily_goal) * 1.15)
+        
+        # Remove top and right spines for cleaner look
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        
+        # Add subtle border
+        for spine in ['left', 'bottom']:
+            ax.spines[spine].set_color('#d5dbdb')
+            ax.spines[spine].set_linewidth(1)
+        
+        # Adjust layout with better margins
+        fig.subplots_adjust(left=0.1, right=0.95, top=0.9, bottom=0.15)
+        
+        # Tight layout with padding
+        fig.tight_layout(pad=2.0)
+        
+        # Add to tkinter
+        canvas = FigureCanvasTkAgg(fig, study_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill="both", expand=True, padx=5, pady=5)
+    
+    def create_sessions_chart(self, parent):
+        """Tạo biểu đồ sessions riêng biệt với thiết kế đẹp"""
+        # Create frame for sessions chart
+        session_frame = ttk.Frame(parent, padding="15")
+        parent.add(session_frame, text="🎯 Daily Sessions")
+        
+        # Get last 14 days of data
+        recent_days = self.stats_manager.get_recent_days(14)
+        
+        if not recent_days:
+            tk.Label(session_frame, text="No data available", font=("Arial", 12)).pack(expand=True)
+            return
+        
+        # Prepare data
+        dates = []
+        sessions = []
+        
+        for day in recent_days:
+            date_obj = datetime.strptime(day["date"], "%Y-%m-%d")
+            dates.append(date_obj)
+            sessions.append(day["sessions_completed"])
+        
+        # Create matplotlib figure with beautiful styling for sessions only
+        fig = Figure(figsize=(14, 8), dpi=100, facecolor='#f8f9fa')
+        ax = fig.add_subplot(111, facecolor='#fafbfc')
+        
+        # Create bars with optimal width for text spacing
+        bars = ax.bar(dates, sessions, 
+                     color='#9b59b6', alpha=0.8, 
+                     edgecolor='#8e44ad', linewidth=1.5,
+                     label='🎯 Sessions', capsize=4, width=0.6)
+        
+        ax.set_title('🎯 Daily Sessions Completed - Detailed Analysis', 
+                    fontsize=16, fontweight='bold', pad=20,
+                    color='#2c3e50', fontfamily='sans-serif')
+        ax.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
+        ax.set_ylabel('Sessions', fontsize=12, color='#34495e', fontweight='500')
+        ax.grid(True, alpha=0.4, axis='y', linestyle='-', linewidth=0.5, color='#bdc3c7')
+        ax.set_axisbelow(True)
+        
+        # Add value labels on bars with better styling and no overlap
+        for bar in bars:
+            height = bar.get_height()
+            if height > 0:
+                ax.text(bar.get_x() + bar.get_width()/2., height + 0.3,
+                        f'{int(height)}', ha='center', va='bottom', 
+                        fontsize=12, fontweight='bold', color='#2c3e50',
+                        bbox=dict(boxstyle="round,pad=0.5", facecolor='white', 
+                                alpha=0.98, edgecolor='#8e44ad', linewidth=1.5),
+                        zorder=20)
+        
+        # Add session target line (example: 6 sessions per day)
+        target_sessions = 6
+        ax.axhline(y=target_sessions, color='#3498db', linestyle='--', 
+                  linewidth=2, alpha=0.7, 
+                  label=f'🎯 Target ({target_sessions} sessions/day)')
+        
+        # Set y-axis limits to ensure labels are fully visible
+        if sessions:
+            max_sessions = max(sessions)
+            ax.set_ylim(0, max(max_sessions * 1.4, target_sessions * 1.2))
+        
+        # Format x-axis with enhanced styling
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right',
+                fontsize=11, color='#5d6d7e', fontweight='500')
+        plt.setp(ax.yaxis.get_majorticklabels(), fontsize=11, color='#5d6d7e', fontweight='500')
+        
+        # Style axis borders
+        for spine in ax.spines.values():
+            spine.set_color('#d5dbdb')
+            spine.set_linewidth(1)
+        
+        # Remove top and right spines
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        
+        # Enhanced legend
+        legend = ax.legend(loc='upper left', frameon=True, fancybox=True, 
+                          shadow=True, fontsize=11, 
+                          facecolor='white', edgecolor='#bdc3c7',
+                          framealpha=0.95, borderpad=1)
+        legend.get_frame().set_linewidth(1)
+        
+        # Add session performance zones
+        if sessions:
+            ax.axhspan(0, 2, alpha=0.05, color='red', zorder=0)  # Low productivity
+            ax.axhspan(2, 4, alpha=0.05, color='orange', zorder=0)  # Fair productivity  
+            ax.axhspan(4, 6, alpha=0.05, color='yellow', zorder=0)  # Good productivity
+            ax.axhspan(6, max(max_sessions * 1.4, target_sessions * 1.2), alpha=0.05, color='green', zorder=0)  # Excellent productivity
+        
+        # Adjust layout with better margins
+        fig.subplots_adjust(left=0.1, right=0.95, top=0.9, bottom=0.15)
+        fig.tight_layout(pad=2.0)
+        
+        # Add to tkinter
+        canvas = FigureCanvasTkAgg(fig, session_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill="both", expand=True, padx=5, pady=5)
+    
+    def create_tasks_chart(self, parent):
+        """Tạo biểu đồ tasks riêng biệt với thiết kế đẹp"""
+        # Create frame for tasks chart
+        task_frame = ttk.Frame(parent, padding="15")
+        parent.add(task_frame, text="✅ Daily Tasks")
+        
+        # Get last 14 days of data
+        recent_days = self.stats_manager.get_recent_days(14)
+        
+        if not recent_days:
+            tk.Label(task_frame, text="No data available", font=("Arial", 12)).pack(expand=True)
+            return
+        
+        # Prepare data
+        dates = []
+        tasks = []
+        
+        for day in recent_days:
+            date_obj = datetime.strptime(day["date"], "%Y-%m-%d")
+            dates.append(date_obj)
+            tasks.append(day["tasks_completed"])
+        
+        # Create matplotlib figure with beautiful styling for tasks only
+        fig = Figure(figsize=(14, 8), dpi=100, facecolor='#f8f9fa')
+        ax = fig.add_subplot(111, facecolor='#fafbfc')
+        
+        # Create bars with optimal width for text spacing
+        bars = ax.bar(dates, tasks, 
+                     color='#e74c3c', alpha=0.8,
+                     edgecolor='#c0392b', linewidth=1.5,
+                     label='✅ Tasks', capsize=4, width=0.6)
+        
+        ax.set_title('✅ Daily Tasks Completed - Detailed Analysis', 
+                    fontsize=16, fontweight='bold', pad=20,
+                    color='#2c3e50', fontfamily='sans-serif')
+        ax.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
+        ax.set_ylabel('Tasks', fontsize=12, color='#34495e', fontweight='500')
+        ax.grid(True, alpha=0.4, axis='y', linestyle='-', linewidth=0.5, color='#bdc3c7')
+        ax.set_axisbelow(True)
+        
+        # Add value labels on bars with better styling and no overlap
+        for bar in bars:
+            height = bar.get_height()
+            if height > 0:
+                ax.text(bar.get_x() + bar.get_width()/2., height + 0.3,
+                        f'{int(height)}', ha='center', va='bottom', 
+                        fontsize=12, fontweight='bold', color='#2c3e50',
+                        bbox=dict(boxstyle="round,pad=0.5", facecolor='white', 
+                                alpha=0.98, edgecolor='#c0392b', linewidth=1.5),
+                        zorder=20)
+        
+        # Add task target line (example: 8 tasks per day)
+        target_tasks = 8
+        ax.axhline(y=target_tasks, color='#27ae60', linestyle='--', 
+                  linewidth=2, alpha=0.7, 
+                  label=f'✅ Target ({target_tasks} tasks/day)')
+        
+        # Set y-axis limits to ensure labels are fully visible
+        if tasks:
+            max_tasks = max(tasks)
+            ax.set_ylim(0, max(max_tasks * 1.4, target_tasks * 1.2))
+        
+        # Format x-axis with enhanced styling
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right',
+                fontsize=11, color='#5d6d7e', fontweight='500')
+        plt.setp(ax.yaxis.get_majorticklabels(), fontsize=11, color='#5d6d7e', fontweight='500')
+        
+        # Style axis borders
+        for spine in ax.spines.values():
+            spine.set_color('#d5dbdb')
+            spine.set_linewidth(1)
+        
+        # Remove top and right spines
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        
+        # Enhanced legend
+        legend = ax.legend(loc='upper left', frameon=True, fancybox=True, 
+                          shadow=True, fontsize=11, 
+                          facecolor='white', edgecolor='#bdc3c7',
+                          framealpha=0.95, borderpad=1)
+        legend.get_frame().set_linewidth(1)
+        
+        # Add task performance zones
+        if tasks:
+            ax.axhspan(0, 3, alpha=0.05, color='red', zorder=0)  # Low productivity
+            ax.axhspan(3, 5, alpha=0.05, color='orange', zorder=0)  # Fair productivity  
+            ax.axhspan(5, 8, alpha=0.05, color='yellow', zorder=0)  # Good productivity
+            ax.axhspan(8, max(max_tasks * 1.4, target_tasks * 1.2), alpha=0.05, color='green', zorder=0)  # Excellent productivity
+        
+        # Adjust layout with better margins
+        fig.subplots_adjust(left=0.1, right=0.95, top=0.9, bottom=0.15)
+        fig.tight_layout(pad=2.0)
+        
+        # Add to tkinter
+        canvas = FigureCanvasTkAgg(fig, task_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill="both", expand=True, padx=5, pady=5)
+    
+    def create_efficiency_chart(self, parent):
+        """Tạo biểu đồ hiệu suất với thiết kế đẹp"""
+        # Create frame for efficiency chart
+        efficiency_frame = ttk.Frame(parent, padding="15")
+        parent.add(efficiency_frame, text="⚡ Efficiency")
+        
+        # Get last 14 days of data
+        recent_days = self.stats_manager.get_recent_days(14)
+        
+        if not recent_days:
+            tk.Label(efficiency_frame, text="No data available", font=("Arial", 12)).pack(expand=True)
+            return
+        
+        # Prepare data
+        dates = []
+        efficiency_values = []
+        goal_progress = []
+        
+        for day in recent_days:
+            date_obj = datetime.strptime(day["date"], "%Y-%m-%d")
+            dates.append(date_obj)
+            
+            # Calculate efficiency
+            study_time = day["study_time"]
+            break_time = day["break_time"]
+            total_time = study_time + break_time
+            
+            if total_time > 0:
+                efficiency = (study_time / total_time) * 100
+            else:
+                efficiency = 0
+            efficiency_values.append(efficiency)
+            
+            # Calculate goal progress (assuming 4-hour daily goal)
+            daily_goal_seconds = 4 * 3600
+            progress = min((study_time / daily_goal_seconds) * 100, 100)
+            goal_progress.append(progress)
+        
+        # Create matplotlib figure with enhanced styling and larger size for better visibility
+        fig = Figure(figsize=(14, 8), dpi=100, facecolor='#f8f9fa')
+        ax = fig.add_subplot(111, facecolor='#fafbfc')
+        
+        # Plot efficiency with enhanced styling
+        line1 = ax.plot(dates, efficiency_values, 
+                       marker='o', linewidth=3, markersize=8,
+                       color='#1abc9c', label='⚡ Study Efficiency (%)', 
+                       alpha=0.9, markerfacecolor='#16a085',
+                       markeredgecolor='white', markeredgewidth=2,
+                       zorder=3)
+        
+        # Add area fill under efficiency line
+        ax.fill_between(dates, efficiency_values, alpha=0.2, color='#1abc9c', zorder=1)
+        
+        # Create second y-axis for goal progress
+        ax2 = ax.twinx()
+        ax2.patch.set_alpha(0)  # Make background transparent
+        
+        line2 = ax2.plot(dates, goal_progress, 
+                        marker='D', linewidth=2.5, markersize=6,
+                        color='#3498db', label='🎯 Goal Progress (%)', 
+                        alpha=0.8, markerfacecolor='#2980b9',
+                        markeredgecolor='white', markeredgewidth=1.5,
+                        zorder=2)
+        
+        # Customize chart with beautiful typography
+        ax.set_title('⚡ Study Efficiency & Goal Achievement Analysis', 
+                    fontsize=16, fontweight='bold', pad=25,
+                    color='#2c3e50', fontfamily='sans-serif')
+        ax.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
+        ax.set_ylabel('Efficiency (%)', fontsize=12, color='#16a085', fontweight='600')
+        ax2.set_ylabel('Goal Progress (%)', fontsize=12, color='#2980b9', fontweight='600')
+        
+        # Set y-axis limits with some padding
+        ax.set_ylim(0, 105)
+        ax2.set_ylim(0, 105)
+        
+        # Enhanced grid styling
+        ax.grid(True, alpha=0.4, linestyle='-', linewidth=0.5, color='#bdc3c7')
+        ax.set_axisbelow(True)
+        
+        # Add reference lines with better styling
+        excellent_line = ax.axhline(y=80, color='#27ae60', linestyle='--', 
+                                   linewidth=2, alpha=0.6, 
+                                   label='💪 Excellent (80%)')
+        goal_line = ax2.axhline(y=100, color='#e74c3c', linestyle='--', 
+                               linewidth=2, alpha=0.6,
+                               label='🏆 Goal Achievement (100%)')
+        
+        # Format x-axis with better styling and proper spacing
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right',
+                fontsize=11, color='#5d6d7e', fontweight='500')
+        
+        # Style y-axis labels with better visibility
+        plt.setp(ax.yaxis.get_majorticklabels(), fontsize=11, color='#16a085', fontweight='500')
+        plt.setp(ax2.yaxis.get_majorticklabels(), fontsize=11, color='#2980b9', fontweight='500')
+        
+        # Remove top spine for cleaner look
+        ax.spines['top'].set_visible(False)
+        ax2.spines['top'].set_visible(False)
+        
+        # Style axis borders with better contrast
+        for spine_name in ['left', 'bottom', 'right']:
+            if spine_name in ax.spines:
+                ax.spines[spine_name].set_color('#d5dbdb')
+                ax.spines[spine_name].set_linewidth(1)
+        for spine_name in ['right']:
+            if spine_name in ax2.spines:
+                ax2.spines[spine_name].set_color('#d5dbdb')
+                ax2.spines[spine_name].set_linewidth(1)
+        
+        # Adjust layout with better margins for text visibility
+        fig.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.15)
+        
+        # Beautiful legend with multiple entries
+        lines = line1 + line2 + [excellent_line, goal_line]
+        labels = [l.get_label() for l in lines]
+        legend = ax.legend(lines, labels, loc='upper left', frameon=True, 
+                          fancybox=True, shadow=True, fontsize=11,
+                          facecolor='white', edgecolor='#bdc3c7',
+                          framealpha=0.95, borderpad=1)
+        legend.get_frame().set_linewidth(1)
+        
+        # Add performance zones with subtle background colors
+        ax.axhspan(0, 40, alpha=0.05, color='red', zorder=0)  # Poor zone
+        ax.axhspan(40, 60, alpha=0.05, color='orange', zorder=0)  # Fair zone  
+        ax.axhspan(60, 80, alpha=0.05, color='yellow', zorder=0)  # Good zone
+        ax.axhspan(80, 100, alpha=0.05, color='green', zorder=0)  # Excellent zone
+        
+        # Tight layout with padding
+        fig.tight_layout(pad=2.0)
+        
+        # Add to tkinter
+        canvas = FigureCanvasTkAgg(fig, efficiency_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill="both", expand=True, padx=5, pady=5)
+    
+    def create_chart_placeholder(self, parent):
+        """Tạo placeholder khi matplotlib không có sẵn"""
+        chart_frame = tk.Frame(parent, bg='white', relief="sunken", bd=1)
+        chart_frame.pack(fill="both", expand=True)
+        
+        placeholder_label = tk.Label(
+            chart_frame,
+            text="📊 Chart functionality requires matplotlib\n\nTo enable charts:\n1. Run: pip install matplotlib\n2. Restart the application\n\nFeatures:\n• Study time trends\n• Session completion rates\n• Efficiency analysis\n• Goal progress tracking",
+            font=("Arial", 12),
+            bg='white',
+            fg='#7f8c8d',
+            justify="center"
+        )
+        placeholder_label.pack(expand=True)

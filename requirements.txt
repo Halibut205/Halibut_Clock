@@ -3,6 +3,9 @@
 # pygame - for button sound effects
 pygame>=2.0.0
 
+# matplotlib - for data visualization and charts
+matplotlib>=3.5.0
+
 # Note: All other dependencies are built-in Python modules:
 # - tkinter (GUI framework)
 # - json (data persistence) 

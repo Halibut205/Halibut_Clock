@@ -16,16 +16,26 @@ echo "[INFO] Python found"
 python3 --version
 
 echo
-echo "[INFO] Installing dependencies..."
-pip3 install pygame playsound
+echo "[INFO] Installing dependencies from requirements.txt..."
+pip3 install -r requirements.txt
 
 if [ $? -ne 0 ]; then
-    echo "[WARNING] Failed to install all audio dependencies"
-    echo "[INFO] Trying to install pygame only..."
+    echo "[WARNING] Failed to install dependencies from requirements.txt"
+    echo "[INFO] Trying individual installations..."
+    
+    echo "[INFO] Installing pygame for audio..."
     pip3 install pygame
     if [ $? -ne 0 ]; then
         echo "[WARNING] Could not install pygame, app will use system beep"
     fi
+    
+    echo "[INFO] Installing matplotlib for charts..."
+    pip3 install matplotlib
+    if [ $? -ne 0 ]; then
+        echo "[WARNING] Could not install matplotlib, charts will show placeholder"
+    fi
+else
+    echo "[SUCCESS] All dependencies installed successfully!"
 fi
 
 echo
@@ -45,8 +55,19 @@ fi
 echo
 echo "[SUCCESS] Setup completed!"
 echo
+echo "Features available:"
+echo "- Timer with Pomodoro technique"
+echo "- Daily statistics tracking"
+echo "- Interactive charts and data visualization"
+echo "- Sound effects (if pygame installed)"
+echo "- Export functionality for data and charts"
+echo
 echo "To run the app:"
 echo "1. Run 'python3 main.py' from this directory"
-echo "2. Or run './scripts/run.sh' (if executable)"
+echo "2. Or run './run.sh' (if available)"
+echo
+echo "To test charts functionality:"
+echo "- Run 'python3 quick_test_matplotlib.py'"
+echo "- Or run 'python3 demo_charts.py'"
 echo
 read -p "Press Enter to continue..."

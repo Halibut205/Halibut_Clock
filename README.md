@@ -1,6 +1,10 @@
 # 🕐 Fliqlo Timer - Pomodoro Study Timer
 
-A **beautiful Pomodoro app** to help you focus on studying and working efficiently. Features **continuous timing system** for flexible time management, task tracking, and cross-platform sound support.
+A **beautiful Pomodoro app** to help you focus on studying and working efficiently. Features **continuous timing system** for flexible time management, task tracking, cross-platform sound support, and **advanced data visualization with separated charts**.
+
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)
+![Python](https://img.shields.io/badge/python-3.8%2B-green)
+![License](https://img.shields.io/badge/license-MIT-yellow)
 
 ---
 
@@ -33,102 +37,113 @@ A **beautiful Pomodoro app** to help you focus on studying and working efficient
 - Track your productivity across multiple sessions
 - Clear completed tasks when needed
 
-### **📊 Enhanced Daily Statistics**
-- **Access**: Click the "📊 Daily Stats" button on the main interface
-- **Separate Window**: Opens a dedicated statistics window with multiple tabs:
-  - **📅 Today Tab**: Current day's study time, break time, sessions, and tasks with:
-    - **Progress Cards**: Visual stat cards with trend indicators vs yesterday
-    - **Progress Bars**: Mini progress bars showing daily goal completion
-    - **Visual Indicators**: Color-coded efficiency meters and emoji feedback
-    - **Motivational Messages**: Dynamic encouragement based on your progress
-    - **Achievement Badges**: Unlock badges for study milestones (Goal Master, Focus Champion, etc.)
-    - **Enhanced Summary**: Study efficiency, session averages, and goal tracking
-  - **📊 Weekly Tab**: 7-day overview with enhanced daily breakdown table featuring:
-    - **Color-coded rows**: Today highlighted, high productivity days marked
-    - **Visual indicators**: Emoji badges for performance levels (🔥 4h+, 💪 2h+, ⏱️ 1h+)
-    - **Efficiency tracking**: Study vs break time ratios
-  - **📅 Monthly Tab**: Complete month statistics with:
-    - **Month Selector**: Choose any of the last 12 months to view
-    - **Enhanced Cards**: Shadow effects and gradient styling for monthly stats
-    - **Top 5 Study Days**: Best performing days with detailed breakdown
-    - **3-Month Comparison**: Visual comparison with productivity trends
-  - **📈 Charts Tab**: ASCII-based mini charts and visual progress tracking
-- **Visual Enhancements**:
-  - **Material Design**: Modern card-based interface with clean styling
-  - **Color Coding**: Performance-based colors (Green: Excellent, Orange: Good, Red: Improve)
-  - **Progress Indicators**: Real-time progress bars and visual feedback
-  - **Trend Analysis**: Compare current performance with previous periods
-  - **ASCII Charts**: Simple but effective visual trends for session data
-- **Real-time Updates**: Statistics update automatically as you study
-- **Data Export**: Export your statistics data to JSON format
-- **Reset Option**: Reset today's statistics if needed
-- **Persistent Storage**: All data saved to `data/daily_stats.json`
+### **📊 Advanced Data Visualization**
+- **Separated Charts**: Daily Sessions and Tasks in dedicated tabs
+- **Study Time Analysis**: Combined study time and break time trends
+- **Efficiency Tracking**: Dual y-axis charts with performance zones
+- **Goal Progress**: Visual progress indicators with target lines
+- **Professional Styling**: Enhanced matplotlib charts with beautiful design
+- **Export Functionality**: Save charts as high-quality PNG files
 
-### **🔊 Audio System**
-- Button click sounds for feedback
-- Background white noise during work sessions
-- Session completion alert (rang.mp3)
-- Automatic audio management (pause during breaks)
+### **📈 Statistics Dashboard**
+- **Daily Stats**: Track study time, sessions, tasks, and efficiency
+- **Weekly Overview**: 7-day performance analysis with visual indicators
+- **Monthly Trends**: Long-term progress tracking and goal achievement
+- **Performance Zones**: Color-coded productivity levels
+- **Achievement Badges**: Unlock rewards based on your productivity
+
+### **🎵 Audio Experience**
+- **Smart Sound System**: Session completion alerts
+- **Background Music**: Optional focus-enhancing audio
+- **Cross-Platform Support**: Works on Windows, macOS, and Linux
+- **Customizable Audio**: Easy to replace with your own sound files
 
 ---
 
-##  Quick Start
+## 🚀 Quick Start
 
-### **Windows**
-1. Download the ZIP file or clone this repository
-2. Extract to your desired folder
-3. Double-click `setup.bat` to install dependencies
-4. Double-click `run.bat` to launch the application
+### **Windows Users**
+```bash
+# Double-click to install and run:
+setup.bat    # Install dependencies
+run.bat      # Launch the application
+```
 
-**Note**: Use `run_debug.bat` for debug output, or `run_silent.vbs` for completely silent operation.
+### **macOS/Linux Users**
+```bash
+# Make scripts executable and run:
+chmod +x setup.sh run.sh
+./setup.sh   # Install dependencies  
+./run.sh     # Launch the application
+```
 
-### **macOS/Linux**
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/your-username/fliqlo-timer.git
-    cd fliqlo-timer
-    ```
-2. Make setup script executable and run:
-    ```bash
-    chmod +x setup.sh
-    ./setup.sh
-    ```
-3. Launch the application:
-    ```bash
-    ./run.sh
-    ```
+### **Manual Installation**
+```bash
+# Clone the repository
+git clone https://github.com/Halibut205/Study_Fliqlo_Clock.git
+cd Study_Fliqlo_Clock
 
----
+# Install dependencies
+pip install -r requirements.txt
 
-## 🎮 How to Use
-
-### **Basic Operation**
-1. **Set Session Duration**: Choose from 15 minutes to 2 hours
-2. **Set Target Sessions**: Choose how many sessions you want to complete (1-20)
-3. **Click START**: Timer begins counting, break timer stays at 00:00:00
-4. **Click PAUSE**: Timer freezes (preserves current time), break timer starts
-5. **Click RESUME**: Break timer freezes, main timer continues from previous time
-6. **Session Complete**: Hear the notification sound and choose your next action
-
-### **Session Management**
-- When a session completes, you'll hear **rang.mp3** notification
-- Choose **YES** to start the next session immediately
-- Choose **NO** to take a break (break timer will run)
-- Complete all sessions to receive a congratulatory message
-
-### **Task Management**
-- Add tasks for each session using the task panel
-- Mark tasks as completed when finished
-- Reactivate completed tasks with the "↩ Undo" button
-- Track your productivity across multiple sessions
-- Clear completed tasks when needed
+# Run the application
+python main.py
+```
 
 ---
 
-## 🛠️ Technical Requirements
+## 📸 Screenshots
+
+### Main Timer Interface
+- Clean, modern design with dual timer system
+- Real-time session progress tracking
+- Easy-to-use controls for start/pause/reset
+
+### Task Management
+- Add and track tasks for each study session
+- Visual completion indicators
+- Flexible task reactivation system
+
+### Statistics Dashboard
+- **Study Time Chart**: Track daily study and break patterns
+- **Sessions Chart**: Monitor daily session completion
+- **Tasks Chart**: Visualize task completion trends  
+- **Efficiency Analysis**: Performance tracking with dual y-axis display
+
+### Chart Features
+- Professional matplotlib styling
+- Separated tabs for better data organization
+- Export functionality for reports and presentations
+- Performance zones and target lines
+
+---
+
+## ⚙️ Configuration
+
+### **Timer Settings**
+- **Session Duration**: 15, 20, 25, 30, 45, 60, 90, or 120 minutes
+- **Target Sessions**: 1-20 sessions per day
+- **Sound Alerts**: Enable/disable session completion sounds
+
+### **Statistics Settings**
+- **Chart Display**: Toggle between different chart views
+- **Export Options**: Save charts as PNG files
+- **Data Management**: Reset daily stats or export data
+
+### **Audio Settings**
+- **Sound Files**: Located in `sfx/` directory
+- **Volume Control**: System volume controls
+- **Custom Sounds**: Replace default files with your own
+
+---
+
+## 🛠️ Requirements
 
 - **Python**: 3.8 or higher
-- **Dependencies**: pygame (for audio)
+- **Dependencies**: 
+  - `pygame` (for audio support)
+  - `matplotlib>=3.5.0` (for advanced charts)
+  - `tkinter` (usually included with Python)
 - **Platform**: Windows, macOS, Linux
 - **Audio Files**: Included in `sfx/` directory
 
@@ -144,7 +159,6 @@ Timer/
 ├── run.bat/.sh          # Launch scripts
 ├── setup.bat/.sh        # Installation scripts
 ├── LICENSE              # MIT License
-├── CHANGELOG.md         # Version history
 │
 ├── src/                 # Source code
 │   ├── core/           # Timer logic
@@ -153,15 +167,14 @@ Timer/
 │   ├── ui/             # User interface  
 │   │   ├── ui_components.py      # Main UI
 │   │   ├── task_ui.py           # Task management UI
-│   │   └── daily_stats_window.py # Statistics UI
+│   │   └── daily_stats_window.py # Statistics UI with separated charts
 │   └── managers/       # Business logic
 │       ├── sound_manager.py      # Audio management
 │       ├── task_manager.py       # Task tracking
 │       └── daily_stats_manager.py # Statistics tracking
 │
-├── tests/              # Test files and demos
+├── tests/              # Test files
 │   ├── test_*.py              # Unit tests
-│   ├── demo_*.py              # Demo scripts
 │   └── README.md              # Test documentation
 │
 ├── docs/               # Documentation
@@ -181,12 +194,55 @@ Timer/
 
 ---
 
+## 🆕 Recent Updates
+
+### **v2.0 - Advanced Charts & Separated Views**
+- ✅ **Separated Charts**: Daily Sessions and Tasks now in dedicated tabs
+- ✅ **Enhanced Styling**: Professional matplotlib styling with beautiful design
+- ✅ **Performance Zones**: Color-coded productivity levels in charts
+- ✅ **Export Functionality**: Save charts as high-quality PNG files
+- ✅ **Efficiency Tracking**: Dual y-axis charts with transparency fixes
+- ✅ **Target Lines**: Visual goal indicators for sessions and tasks
+
+### **Chart Improvements**
+- **Study Time Chart**: Combined study/break analysis with goal tracking
+- **Sessions Chart**: Dedicated tab with 6 sessions/day target line
+- **Tasks Chart**: Separate visualization with 8 tasks/day target
+- **Efficiency Chart**: Dual y-axis with study efficiency and goal progress
+
+---
+
 ## 🤝 Contributing
 
 Feel free to submit issues, fork the repository, and create pull requests for any improvements.
 
+### **Development Setup**
+```bash
+# Clone and setup development environment
+git clone https://github.com/Halibut205/Study_Fliqlo_Clock.git
+cd Study_Fliqlo_Clock
+pip install -r requirements.txt
+
+# Run tests
+python tests/test_daily_stats.py
+python tests/test_enhanced_charts.py
+```
+
 ---
 
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)
-![Python](https://img.shields.io/badge/python-3.8%2B-green)
-![License](https://img.shields.io/badge/license-MIT-yellow)
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Fliqlo**: Inspiration for the clean, minimalist timer design
+- **Pomodoro Technique**: Time management methodology
+- **Matplotlib**: Advanced charting and visualization library
+- **Python Community**: For the excellent libraries and tools
+
+---
+
+**Start your productive study sessions today!** 🚀📚

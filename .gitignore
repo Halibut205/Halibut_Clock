@@ -50,9 +50,11 @@ sfx/*.wav
 sfx/*.ogg
 !sfx/README.md
 
-# Test and temporary files - moved to tests/ folder
-# test_*.py
-# *_test.py
+# Test and temporary files
+demo_*.py
+*_demo.py
+test_efficiency_chart.py
+simple_efficiency_test.py
 *_diagnostic.py
 *_clean.py
 *.tmp

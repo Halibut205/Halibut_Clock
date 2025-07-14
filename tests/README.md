@@ -1,32 +1,52 @@
-# Tests & Demos
+# Tests Directory
 
-This directory contains test files and demo scripts for the Fliqlo Timer application.
+This directory contains test files for the Timer application.
 
-## Files
+## Test Files
 
-### Test Files
-- `test_daily_stats.py` - Unit tests for daily statistics functionality
-- `test_enhanced_ui.py` - Tests for enhanced UI features
-- `test_features.py` - General feature tests
-- `test_monthly_stats.py` - Monthly statistics tests
+### Core Functionality Tests
+- **`test_daily_stats.py`** - Tests for daily statistics tracking and management
+- **`test_monthly_stats.py`** - Tests for monthly statistics aggregation and analysis
 
-### Demo Files
-- `demo_stats_window.py` - Demo of the statistics window
-- `visual_demo.py` - Visual demonstration of UI components
+### UI and Chart Tests  
+- **`test_enhanced_ui.py`** - Tests for enhanced user interface components
+- **`test_enhanced_charts.py`** - Tests for matplotlib chart generation with separated sessions/tasks
+- **`test_charts.py`** - Basic chart functionality tests
+- **`test_features.py`** - Tests for advanced features and integrations
+
+### Demo and Visual Tests
+- **`visual_demo.py`** - Visual demonstration of UI components and features
 
 ## Running Tests
 
-To run tests, navigate to the project root directory and run:
-
-```bash
-python -m pytest tests/
-```
-
-Or run individual test files:
-
+To run individual tests:
 ```bash
 python tests/test_daily_stats.py
+python tests/test_enhanced_charts.py
 ```
+
+## Test Coverage
+
+The tests cover:
+- ✅ Daily statistics tracking and calculation
+- ✅ Chart generation and matplotlib integration  
+- ✅ Separated sessions and tasks visualization
+- ✅ Enhanced UI components and styling
+- ✅ Monthly statistics aggregation
+- ✅ Visual components and user experience
+
+## Requirements
+
+Tests require:
+- `matplotlib>=3.5.0` for chart testing
+- `tkinter` for UI testing (usually included with Python)
+- All main application dependencies
+
+## Notes
+
+- Charts are tested with both separated tabs (sessions/tasks) and combined views
+- UI tests include enhanced styling and professional appearance
+- All efficiency chart transparency issues have been resolved
 
 ## Running Demos
 
