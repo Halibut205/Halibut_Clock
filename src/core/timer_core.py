@@ -1,20 +1,31 @@
 """
 Timer Core Module - Dual Clock System (Main + Break)
+Handles the core timing logic with session management and unlimited sessions support.
 """
 
+from typing import Optional, Callable
+
+
 class TimerCore:
+    """
+    Core timer logic with dual clock system and unlimited sessions.
+    
+    Manages the main timing functionality including session tracking,
+    dual clock system (main/break), and unlimited session support.
+    """
+    
     def __init__(self):
         # Dual clock system
         self.main_running = False
         self.break_running = False
-        self.main_time = 0  # Main timer elapsed time
-        self.break_time = 0  # Break timer elapsed time
+        self.main_time = 0  # Main timer elapsed time (seconds)
+        self.break_time = 0  # Break timer elapsed time (seconds)
         
         # Session management
         self.current_session = 0
         self.target_sessions = 8
-        self.session_duration = 3600  # 1 hour = 3600 seconds
-        self.break_duration = 300  # 5 minutes = 300 seconds
+        self.session_duration = 3600  # 1 hour default
+        self.break_duration = 300  # 5 minutes default
         self.auto_continue = False
         self.last_session_check = 0  # Track last session completion time
         
@@ -23,11 +34,11 @@ class TimerCore:
         self.all_sessions_completed = False
         self.waiting_for_user_choice = False
         
-        # Callbacks để update UI
-        self.on_main_timer_update = None
-        self.on_break_timer_update = None
-        self.on_state_change = None
-        self.on_session_update = None
+        # UI callback functions
+        self.on_main_timer_update: Optional[Callable] = None
+        self.on_break_timer_update: Optional[Callable] = None
+        self.on_state_change: Optional[Callable] = None
+        self.on_session_update: Optional[Callable] = None
         self.on_session_complete = None
         self.on_all_sessions_complete = None
         self.on_choice_required = None  # New callback for user choice
@@ -126,11 +137,15 @@ class TimerCore:
         if self.on_session_update:
             self.on_session_update(self.current_session, self.target_sessions)
         
-        # Check if all sessions completed
+        # Check if reached target sessions (but still allow continuing)
         if self.current_session >= self.target_sessions:
             self.all_sessions_completed = True
+            # Vẫn cho phép tiếp tục, chỉ thay đổi thông báo
             if self.on_all_sessions_complete:
                 self.on_all_sessions_complete()
+            # Vẫn hiển thị choice dialog để có thể tiếp tục
+            if self.on_choice_required:
+                self.on_choice_required()
         else:
             # Play completion sound và show choice dialog
             if self.on_session_complete:
@@ -140,16 +155,22 @@ class TimerCore:
 
     def choose_continue_session(self):
         """User chọn tiếp tục session tiếp theo"""
-        if self.waiting_for_user_choice and not self.all_sessions_completed:
+        if self.waiting_for_user_choice:  # Bỏ điều kiện not self.all_sessions_completed
             self.session_completed = False
             self.waiting_for_user_choice = False
+            # Reset all_sessions_completed nếu user chọn tiếp tục
+            if self.all_sessions_completed:
+                self.all_sessions_completed = False
             self.start_main_timer()
 
     def choose_take_break(self):
         """User chọn nghỉ break"""
-        if self.waiting_for_user_choice and not self.all_sessions_completed:
+        if self.waiting_for_user_choice:  # Bỏ điều kiện not self.all_sessions_completed
             self.session_completed = False
             self.waiting_for_user_choice = False
+            # Reset all_sessions_completed nếu user chọn tiếp tục
+            if self.all_sessions_completed:
+                self.all_sessions_completed = False
             self.start_break_timer()
 
     # Getters for UI

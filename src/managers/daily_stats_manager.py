@@ -3,10 +3,17 @@ Daily Statistics Manager - Quản lý thống kê học tập hàng ngày
 """
 import json
 import os
-from datetime import datetime, date
-from typing import Dict, Any, Optional
+from datetime import datetime, date, timedelta
+from typing import Dict, Any, Optional, List
 
 class DailyStatsManager:
+    """
+    Manages daily study statistics and data persistence.
+    
+    Handles tracking of study time, break time, sessions completed,
+    and tasks completed with flexible data querying capabilities.
+    """
+    
     def __init__(self, data_folder="data"):
         self.data_folder = data_folder
         self.stats_file = os.path.join(data_folder, "daily_stats.json")
@@ -107,9 +114,8 @@ class DailyStatsManager:
             "total_time": self.format_time(today_stats["study_time"] + today_stats["break_time"])
         }
     
-    def get_recent_days(self, days: int = 7) -> list:
+    def get_recent_days(self, days: int = 7) -> List[Dict[str, Any]]:
         """Lấy thống kê của N ngày gần đây"""
-        from datetime import timedelta
         recent_stats = []
         
         for i in range(days):
@@ -123,15 +129,7 @@ class DailyStatsManager:
                 recent_stats.append(stats)
             else:
                 # Tạo entry trống cho ngày không có dữ liệu
-                recent_stats.append({
-                    "date": date_key,
-                    "study_time": 0,
-                    "break_time": 0,
-                    "sessions_completed": 0,
-                    "tasks_completed": 0,
-                    "formatted_study_time": "00:00:00",
-                    "formatted_break_time": "00:00:00"
-                })
+                recent_stats.append(self._create_empty_day_stats(date_key))
         
         return recent_stats
     
@@ -154,7 +152,6 @@ class DailyStatsManager:
     
     def get_monthly_data(self, year: int = None, month: int = None) -> Dict[str, Any]:
         """Lấy thống kê theo tháng"""
-        from datetime import datetime
         from calendar import monthrange
         
         # Nếu không chỉ định, lấy tháng hiện tại
@@ -167,10 +164,7 @@ class DailyStatsManager:
         days_in_month = monthrange(year, month)[1]
         
         monthly_stats = []
-        total_study = 0
-        total_break = 0
-        total_sessions = 0
-        total_tasks = 0
+        totals = {"study": 0, "break": 0, "sessions": 0, "tasks": 0}
         active_days = 0
         
         # Duyệt qua tất cả ngày trong tháng
@@ -184,24 +178,16 @@ class DailyStatsManager:
                 monthly_stats.append(day_stats)
                 
                 # Tính tổng
-                total_study += day_stats["study_time"]
-                total_break += day_stats["break_time"]
-                total_sessions += day_stats["sessions_completed"]
-                total_tasks += day_stats["tasks_completed"]
+                totals["study"] += day_stats["study_time"]
+                totals["break"] += day_stats["break_time"]
+                totals["sessions"] += day_stats["sessions_completed"]
+                totals["tasks"] += day_stats["tasks_completed"]
                 
                 if day_stats["study_time"] > 0:
                     active_days += 1
             else:
                 # Ngày không có dữ liệu
-                monthly_stats.append({
-                    "date": date_key,
-                    "study_time": 0,
-                    "break_time": 0,
-                    "sessions_completed": 0,
-                    "tasks_completed": 0,
-                    "formatted_study_time": "00:00:00",
-                    "formatted_break_time": "00:00:00"
-                })
+                monthly_stats.append(self._create_empty_day_stats(date_key))
         
         return {
             "year": year,
@@ -209,18 +195,17 @@ class DailyStatsManager:
             "month_name": datetime(year, month, 1).strftime("%B %Y"),
             "days_in_month": days_in_month,
             "daily_stats": monthly_stats,
-            "total_study_time": self.format_time(total_study),
-            "total_break_time": self.format_time(total_break),
-            "total_sessions": total_sessions,
-            "total_tasks": total_tasks,
+            "total_study_time": self.format_time(totals["study"]),
+            "total_break_time": self.format_time(totals["break"]),
+            "total_sessions": totals["sessions"],
+            "total_tasks": totals["tasks"],
             "active_days": active_days,
-            "average_daily_study": self.format_time(total_study // days_in_month),
+            "average_daily_study": self.format_time(totals["study"] // days_in_month),
             "productivity_rate": f"{(active_days / days_in_month * 100):.1f}%"
         }
     
-    def get_month_comparison(self, months_back: int = 3) -> list:
+    def get_month_comparison(self, months_back: int = 3) -> List[Dict[str, Any]]:
         """So sánh thống kê của N tháng gần đây"""
-        from datetime import datetime, timedelta
         import calendar
         
         comparisons = []
@@ -247,11 +232,11 @@ class DailyStatsManager:
         
         return comparisons
     
-    def get_best_days_in_month(self, year: int = None, month: int = None, top_n: int = 5) -> list:
+    def get_best_days_in_month(self, year: int = None, month: int = None, top_n: int = 5) -> List[Dict[str, Any]]:
         """Lấy những ngày học tập tốt nhất trong tháng"""
         monthly_data = self.get_monthly_data(year, month)
         
-        # Sắp xếp theo thời gian học (study_time)
+        # Lọc những ngày có hoạt động học tập
         daily_stats = monthly_data["daily_stats"]
         active_days = [day for day in daily_stats if day["study_time"] > 0]
         
@@ -271,3 +256,266 @@ class DailyStatsManager:
         if today_key in self.stats_data:
             del self.stats_data[today_key]
             self.save_stats()
+
+    def _create_empty_day_stats(self, date_key: str) -> Dict[str, Any]:
+        """Tạo entry trống cho ngày không có dữ liệu"""
+        return {
+            "date": date_key,
+            "study_time": 0,
+            "break_time": 0,
+            "sessions_completed": 0,
+            "tasks_completed": 0,
+            "formatted_study_time": "00:00:00",
+            "formatted_break_time": "00:00:00"
+        }
+
+    def get_data_range(self, start_date=None, end_date=None, days=None) -> List[Dict[str, Any]]:
+        """
+        Lấy dữ liệu trong khoảng thời gian linh hoạt
+        
+        Args:
+            start_date: Ngày bắt đầu (datetime.date hoặc string YYYY-MM-DD)
+            end_date: Ngày kết thúc (datetime.date hoặc string YYYY-MM-DD)
+            days: Số ngày gần đây (ưu tiên nếu start_date = None)
+        
+        Returns:
+            List dữ liệu đã được sắp xếp theo thời gian
+        """
+        # Xác định end_date
+        if end_date is None:
+            end_date = date.today()
+        elif isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+        
+        # Xác định start_date
+        if start_date is None:
+            if days is None:
+                days = 30  # Mặc định 30 ngày
+            start_date = end_date - timedelta(days=days-1)
+        elif isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+        
+        # Tạo danh sách ngày trong khoảng thời gian
+        current_date = start_date
+        range_stats = []
+        
+        while current_date <= end_date:
+            date_key = current_date.isoformat()
+            
+            if date_key in self.stats_data:
+                stats = self.stats_data[date_key].copy()
+                stats["formatted_study_time"] = self.format_time(stats["study_time"])
+                stats["formatted_break_time"] = self.format_time(stats["break_time"])
+                range_stats.append(stats)
+            else:
+                # Tạo entry trống cho ngày không có dữ liệu
+                range_stats.append(self._create_empty_day_stats(date_key))
+            
+            current_date += timedelta(days=1)
+        
+        return range_stats
+
+    def get_yearly_data(self, year=None) -> Dict[str, Any]:
+        """
+        Lấy toàn bộ dữ liệu của một năm
+        
+        Args:
+            year: Năm cần lấy dữ liệu (nếu None thì lấy năm hiện tại)
+        
+        Returns:
+            Dictionary chứa thống kê tổng hợp của năm
+        """
+        if year is None:
+            year = datetime.now().year
+        
+        yearly_stats = []
+        totals = {"study": 0, "break": 0, "sessions": 0, "tasks": 0}
+        active_days = 0
+        
+        # Duyệt qua tất cả 12 tháng
+        for month in range(1, 13):
+            monthly_data = self.get_monthly_data(year, month)
+            
+            # Chuyển đổi total_study_time từ string sang seconds để tính tổng
+            month_study_seconds = self.time_to_seconds(monthly_data["total_study_time"])
+            month_break_seconds = self.time_to_seconds(monthly_data["total_break_time"])
+            
+            # Thêm tháng vào yearly_stats
+            yearly_stats.append({
+                "month": month,
+                "month_name": monthly_data["month_name"],
+                "total_study_time": monthly_data["total_study_time"],
+                "total_break_time": monthly_data["total_break_time"],
+                "total_sessions": monthly_data["total_sessions"],
+                "total_tasks": monthly_data["total_tasks"],
+                "active_days": monthly_data["active_days"],
+                "days_in_month": monthly_data["days_in_month"],
+                "productivity_rate": monthly_data["productivity_rate"],
+                "daily_stats": monthly_data["daily_stats"]
+            })
+            
+            # Tích lũy thống kê tổng
+            totals["study"] += month_study_seconds
+            totals["break"] += month_break_seconds
+            totals["sessions"] += monthly_data["total_sessions"]
+            totals["tasks"] += monthly_data["total_tasks"]
+            active_days += monthly_data["active_days"]
+        
+        return {
+            "year": year,
+            "monthly_stats": yearly_stats,
+            "total_study_time": self.format_time(totals["study"]),
+            "total_break_time": self.format_time(totals["break"]),
+            "total_sessions": totals["sessions"],
+            "total_tasks": totals["tasks"],
+            "active_days": active_days,
+            "average_daily_study": self.format_time(totals["study"] // 365) if totals["study"] > 0 else "00:00:00",
+            "study_hours_per_month": totals["study"] / 3600 / 12 if totals["study"] > 0 else 0,
+            "productivity_rate": f"{(active_days / 365 * 100):.1f}%"
+        }
+
+    def time_to_seconds(self, time_str: str) -> int:
+        """
+        Chuyển đổi chuỗi thời gian HH:MM:SS thành giây
+        
+        Args:
+            time_str: Chuỗi thời gian dạng "HH:MM:SS"
+        
+        Returns:
+            Số giây (int)
+        """
+        try:
+            parts = time_str.split(":")
+            return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+        except (ValueError, IndexError):
+            return 0
+
+    def get_available_years(self) -> List[int]:
+        """Lấy danh sách các năm có dữ liệu"""
+        if not self.stats_data:
+            return []
+        
+        years = set()
+        for date_key in self.stats_data.keys():
+            try:
+                year = int(date_key.split('-')[0])
+                years.add(year)
+            except (ValueError, IndexError):
+                continue
+        
+        return sorted(list(years), reverse=True)
+
+    def get_available_months_in_year(self, year: int) -> List[int]:
+        """Lấy danh sách các tháng có dữ liệu trong năm"""
+        if not self.stats_data:
+            return []
+        
+        months = set()
+        year_str = str(year)
+        
+        for date_key in self.stats_data.keys():
+            if date_key.startswith(year_str):
+                try:
+                    month = int(date_key.split('-')[1])
+                    months.add(month)
+                except (ValueError, IndexError):
+                    continue
+        
+        return sorted(list(months))
+
+    def get_data_summary(self) -> Dict[str, Any]:
+        """
+        Lấy tóm tắt tổng thể về dữ liệu
+        
+        Returns:
+            Dictionary chứa thống kê tổng quan
+        """
+        if not self.stats_data:
+            return {
+                "total_days_recorded": 0,
+                "earliest_date": None,
+                "latest_date": None,
+                "total_study_hours": 0,
+                "total_sessions": 0,
+                "total_tasks": 0,
+                "average_study_per_day": 0,
+                "available_years": [],
+                "total_years": 0
+            }
+        
+        dates = sorted(self.stats_data.keys())
+        total_study = sum(day.get("study_time", 0) for day in self.stats_data.values())
+        total_sessions = sum(day.get("sessions_completed", 0) for day in self.stats_data.values())
+        total_tasks = sum(day.get("tasks_completed", 0) for day in self.stats_data.values())
+        available_years = self.get_available_years()
+        
+        return {
+            "total_days_recorded": len(self.stats_data),
+            "earliest_date": dates[0],
+            "latest_date": dates[-1],
+            "total_study_hours": total_study / 3600,
+            "total_sessions": total_sessions,
+            "total_tasks": total_tasks,
+            "average_study_per_day": total_study / len(self.stats_data) / 3600 if len(self.stats_data) > 0 else 0,
+            "available_years": available_years,
+            "total_years": len(available_years)
+        }
+    
+    def get_monthly_average_study_time(self, year: int = None, month: int = None) -> float:
+        """
+        Tính trung bình thời gian học tập theo ngày trong tháng
+        
+        Args:
+            year: Năm (mặc định là năm hiện tại)
+            month: Tháng (mặc định là tháng hiện tại)
+            
+        Returns:
+            float: Trung bình giờ học/ngày trong tháng (giờ)
+        """
+        if year is None or month is None:
+            current_date = date.today()
+            year = year or current_date.year
+            month = month or current_date.month
+        
+        # Lấy dữ liệu tháng
+        monthly_data = self.get_monthly_data(year, month)
+        
+        if not monthly_data:
+            return 4.0  # Default 4h nếu không có dữ liệu
+        
+        # Tính tổng thời gian học và số ngày có dữ liệu
+        total_study_seconds = 0
+        days_with_data = 0
+        
+        for day_data in monthly_data.values():
+            if isinstance(day_data, dict) and 'study_time' in day_data:
+                study_time = day_data['study_time']
+                if study_time > 0:  # Chỉ tính những ngày có học
+                    total_study_seconds += study_time
+                    days_with_data += 1
+        
+        if days_with_data == 0:
+            return 4.0  # Default 4h nếu không có ngày nào có dữ liệu
+        
+        # Trả về trung bình theo giờ
+        average_seconds_per_day = total_study_seconds / days_with_data
+        return average_seconds_per_day / 3600  # Convert to hours
+    
+    def get_dynamic_daily_goal(self, target_date: date = None) -> float:
+        """
+        Tính daily goal động dựa trên trung bình tháng
+        
+        Args:
+            target_date: Ngày cần tính goal (mặc định là hôm nay)
+            
+        Returns:
+            float: Daily goal tính theo giờ
+        """
+        if target_date is None:
+            target_date = date.today()
+        
+        # Lấy trung bình tháng hiện tại
+        monthly_avg = self.get_monthly_average_study_time(target_date.year, target_date.month)
+        
+        # Đảm bảo goal tối thiểu là 2h, tối đa là 8h
+        return max(2.0, min(8.0, monthly_avg))

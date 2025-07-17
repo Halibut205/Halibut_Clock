@@ -1,25 +1,29 @@
 """
-Enhanced Sound Manager - Button sounds + Background music with volume control
+Enhanced Sound Manager - Manages button sounds and background music with volume control
 """
 
 import os
+from typing import Optional
 import pygame
 
+
 class SoundManager:
-    """Quản lý âm thanh button + background music với pygame"""
+    """Manages audio feedback for button interactions and background music"""
     
     def __init__(self):
         self.sound_enabled = False
-        self.button_sound = None
-        self.completion_sound = None  # New: rang.mp3 for session completion
-        self.background_music_file = None
+        self.button_sound: Optional[pygame.mixer.Sound] = None
+        self.completion_sound: Optional[pygame.mixer.Sound] = None
+        self.background_music_file: Optional[str] = None
         self.music_volume = 0.3  # Default volume (30%)
         self.button_volume = 0.7  # Button volume (70%)
         self.music_playing = False
+        self.music_muted = False  # New: mute state
+        self.volume_before_mute = 0.3  # Store volume before muting
         self._init_pygame()
     
     def _init_pygame(self):
-        """Khởi tạo pygame mixer"""
+        """Initialize pygame mixer with optimized settings"""
         try:
             # Initialize mixer with better settings for music
             pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=1024)
@@ -133,12 +137,45 @@ class SoundManager:
     def set_music_volume(self, volume):
         """Đặt volume cho background music (0.0 - 1.0)"""
         self.music_volume = max(0.0, min(1.0, volume))
-        if self.sound_enabled and self.music_playing:
+        # Update volume_before_mute if not currently muted
+        if not self.music_muted:
+            self.volume_before_mute = self.music_volume
+        
+        if self.sound_enabled and self.music_playing and not self.music_muted:
             try:
                 pygame.mixer.music.set_volume(self.music_volume)
                 print(f"[SOUND] Music volume set to {int(self.music_volume * 100)}%")
             except Exception as e:
                 print(f"[SOUND] Error setting music volume: {e}")
+
+    def mute_background_music(self):
+        """Mute background music while keeping it playing"""
+        if self.sound_enabled and self.music_playing and not self.music_muted:
+            try:
+                self.volume_before_mute = self.music_volume
+                pygame.mixer.music.set_volume(0.0)
+                self.music_muted = True
+                print("[SOUND] Background music muted")
+            except Exception as e:
+                print(f"[SOUND] Error muting background music: {e}")
+
+    def unmute_background_music(self):
+        """Unmute background music and restore previous volume"""
+        if self.sound_enabled and self.music_playing and self.music_muted:
+            try:
+                pygame.mixer.music.set_volume(self.volume_before_mute)
+                self.music_muted = False
+                print(f"[SOUND] Background music unmuted (volume: {int(self.volume_before_mute * 100)}%)")
+            except Exception as e:
+                print(f"[SOUND] Error unmuting background music: {e}")
+
+    def toggle_mute_background_music(self):
+        """Toggle mute/unmute background music"""
+        if self.music_muted:
+            self.unmute_background_music()
+        else:
+            self.mute_background_music()
+        return self.music_muted
     
     def set_button_volume(self, volume):
         """Đặt volume cho button sounds (0.0 - 1.0)"""
@@ -171,6 +208,18 @@ class SoundManager:
     def is_music_playing(self):
         """Kiểm tra xem music có đang play không"""
         return self.music_playing
+
+    def is_music_muted(self):
+        """Kiểm tra xem music có bị mute không"""
+        return self.music_muted
+
+    def get_mute_status(self):
+        """Lấy trạng thái mute và volume"""
+        return {
+            "muted": self.music_muted,
+            "current_volume": self.music_volume if not self.music_muted else 0.0,
+            "volume_before_mute": self.volume_before_mute
+        }
     
     def cleanup(self):
         """Dọn dẹp resources"""

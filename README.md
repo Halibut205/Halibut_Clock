@@ -27,8 +27,10 @@ A **beautiful Pomodoro app** to help you focus on studying and working efficient
 ### **🎯 Smart Session Management**
 - Customizable session duration (15 min to 2 hours)
 - Flexible target sessions (1-20 sessions)
+- **🚀 Unlimited Sessions**: Continue beyond your daily target (e.g., 9/8, 10/8 sessions)
 - Session completion notifications with sound alerts
 - Progress tracking with visual indicators
+- **Extra Mode**: Special motivational messages when exceeding targets
 
 ### **📋 Task Management**
 - Add tasks for each session

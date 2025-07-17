@@ -1,26 +1,30 @@
 """
-Task Manager Module - Quản lý các task và tiến độ hoàn thành
+Task Manager Module - Manages tasks and completion tracking
 """
 
 import json
 import os
 from datetime import datetime
+from typing import List, Dict, Any, Optional, Callable
+
 
 class TaskManager:
+    """Manages task creation, completion, and persistence"""
+    
     def __init__(self):
-        self.tasks = []
-        self.completed_tasks = []
+        self.tasks: List[Dict[str, Any]] = []
+        self.completed_tasks: List[Dict[str, Any]] = []
         self.data_file = os.path.join(os.path.dirname(__file__), "..", "..", "data", "tasks_data.json")
         self.load_tasks()
         
-        # Callbacks
-        self.on_task_added = None
-        self.on_task_completed = None
-        self.on_task_deleted = None
-        self.on_tasks_updated = None
+        # Event callbacks
+        self.on_task_added: Optional[Callable] = None
+        self.on_task_completed: Optional[Callable] = None
+        self.on_task_deleted: Optional[Callable] = None
+        self.on_tasks_updated: Optional[Callable] = None
 
-    def add_task(self, task_text, session_target=None):
-        """Thêm task mới"""
+    def add_task(self, task_text: str, session_target: Optional[int] = None) -> Dict[str, Any]:
+        """Add a new task with optional session target"""
         task = {
             'id': len(self.tasks) + len(self.completed_tasks) + 1,
             'text': task_text,

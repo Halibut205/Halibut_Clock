@@ -1,24 +1,29 @@
 """
-UI Components Module - Quản lý giao diện người dùng
+UI Components Module - Main user interface components for the Fliqlo Timer
 """
 
 import tkinter as tk
 from tkinter import font as tkfont
-from .task_ui import TaskUI  # Import DailyStatsUI
+from typing import Optional, Callable, Dict, Any
 
-# Session duration options - định nghĩa local để tránh import issues
-SESSION_DURATION_OPTIONS = {
-    "15 min": 15 * 60,    # 900 seconds
-    "25 min": 25 * 60,    # 1500 seconds (Pomodoro)
-    "30 min": 30 * 60,    # 1800 seconds
-    "45 min": 45 * 60,    # 2700 seconds
-    "1 hour": 60 * 60,    # 3600 seconds (default)
-    "1.5 hours": 90 * 60, # 5400 seconds
-    "2 hours": 120 * 60   # 7200 seconds
+from .task_ui import TaskUI
+
+# Session duration options mapping
+SESSION_DURATION_OPTIONS: Dict[str, int] = {
+    "15 min": 15 * 60,      # 900 seconds
+    "25 min": 25 * 60,      # 1500 seconds (Pomodoro)
+    "30 min": 30 * 60,      # 1800 seconds
+    "45 min": 45 * 60,      # 2700 seconds
+    "1 hour": 60 * 60,      # 3600 seconds (default)
+    "1.5 hours": 90 * 60,   # 5400 seconds
+    "2 hours": 120 * 60     # 7200 seconds
 }
 
+
 class FliqloUI:
-    def __init__(self, root):
+    """Main UI class for the Fliqlo Timer interface"""
+    
+    def __init__(self, root: tk.Tk):
         self.root = root
         self._setup_window()
         self._create_widgets()
@@ -33,6 +38,7 @@ class FliqloUI:
         self.on_session_duration_changed = None  # New callback
         self.on_help_clicked = None  # Help callback
         self.on_stats_clicked = None  # Stats window callback
+        self.on_mute_clicked = None  # Mute/unmute background music callback
         
         # Task callbacks
         self.on_add_task = None
@@ -131,6 +137,19 @@ class FliqloUI:
             command=self._on_stats_clicked
         )
         stats_btn.pack(side="left", padx=5)
+
+        # Mute button for background music
+        self.mute_btn = tk.Button(
+            help_frame,
+            text="🔊 Sound",
+            font=tkfont.Font(family="Arial", size=10, weight="bold"),
+            width=12,
+            height=1,
+            bg="#27ae60",
+            fg="white",
+            command=self._on_mute_clicked
+        )
+        self.mute_btn.pack(side="left", padx=5)
 
         # Main control buttons - TO HƠN
         self._create_main_buttons()
@@ -311,6 +330,18 @@ class FliqloUI:
         if self.on_stats_clicked:
             self.on_stats_clicked()
 
+    def _on_mute_clicked(self):
+        """Xử lý sự kiện click nút Mute"""
+        if self.play_sound:
+            self.play_sound()
+        if self.on_mute_clicked:
+            is_muted = self.on_mute_clicked()
+            # Update button appearance based on mute state
+            if is_muted:
+                self.mute_btn.config(text="🔇 Muted", bg="#e74c3c")
+            else:
+                self.mute_btn.config(text="🔊 Sound", bg="#27ae60")
+
     def update_main_timer_display(self, time_text):
         """Cập nhật hiển thị main timer (bỏ chữ Main)"""
         self.main_timer_label.config(text=time_text)
@@ -346,18 +377,26 @@ class FliqloUI:
         """Cập nhật hiển thị tiến độ"""
         self.progress_label.config(text=f"Progress: {progress:.1f}%")
 
+    def update_mute_button(self, is_muted):
+        """Cập nhật trạng thái hiển thị nút mute"""
+        if is_muted:
+            self.mute_btn.config(text="🔇 Muted", bg="#e74c3c")
+        else:
+            self.mute_btn.config(text="🔊 Sound", bg="#27ae60")
+
     def show_session_complete_message(self):
         """Hiển thị thông báo hoàn thành session"""
         pass  # Message will be handled by controller via choice dialog
 
     def show_all_sessions_complete_message(self):
-        """Hiển thị thông báo hoàn thành tất cả sessions"""
+        """Hiển thị thông báo hoàn thành tất cả sessions (nhưng vẫn có thể tiếp tục)"""
         import tkinter.messagebox as msgbox
         msgbox.showinfo(
-            "🎉 Congratulations! 🎉", 
-            f"You completed all {self.sessions_var.get()} sessions today!\n\n"
-            "🌟 Amazing work! You are a productivity champion! 🌟\n\n"
-            "Take a well-deserved rest and celebrate your achievement!"
+            "� Target Achieved! �", 
+            f"🎉 You completed your target of {self.sessions_var.get()} sessions! 🎉\n\n"
+            "🌟 You are a productivity champion! 🌟\n\n"
+            "🚀 You can continue working if you want to go BEYOND your target!\n\n"
+            "The choice is yours - celebrate this achievement! 🏆"
         )
 
     def setup_task_callbacks(self):

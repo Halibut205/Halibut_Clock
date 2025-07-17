@@ -4,6 +4,8 @@ Timer Controller Module - Điều phối giữa UI và Timer Core
 
 import tkinter as tk
 from datetime import datetime
+from typing import Optional
+
 from .timer_core import TimerCore
 from ..ui.ui_components import FliqloUI
 from ..ui.daily_stats_window import DailyStatsWindow
@@ -11,18 +13,21 @@ from ..managers.sound_manager import SoundManager
 from ..managers.task_manager import TaskManager
 from ..managers.daily_stats_manager import DailyStatsManager
 
+
 class TimerController:
-    def __init__(self, root):
+    """Main controller coordinating timer core, UI, and managers"""
+    
+    def __init__(self, root: tk.Tk):
         self.root = root
         
-        # Khởi tạo core logic, UI, sound, task manager và daily stats
+        # Initialize core components
         self.timer_core = TimerCore()
         self.ui = FliqloUI(root)
         self.sound_manager = SoundManager()
         self.task_manager = TaskManager()
         self.daily_stats = DailyStatsManager()
         
-        # Tracking variables for stats
+        # Tracking variables for stats updates
         self.last_main_time = 0
         self.last_break_time = 0
         
@@ -50,6 +55,7 @@ class TimerController:
         self.ui.on_session_duration_changed = self._handle_session_duration_changed  # New callback
         self.ui.on_help_clicked = self._handle_help_clicked  # Help callback
         self.ui.on_stats_clicked = self._handle_stats_clicked  # Stats window callback
+        self.ui.on_mute_clicked = self._handle_mute_clicked  # Mute callback
         
         # Task callbacks
         self.ui.on_add_task = self._handle_add_task
@@ -184,6 +190,13 @@ class TimerController:
         """Xử lý sự kiện click Daily Stats button"""
         self.daily_stats_window.show()
 
+    def _handle_mute_clicked(self):
+        """Xử lý sự kiện click Mute button"""
+        is_muted = self.sound_manager.toggle_mute_background_music()
+        # Update UI button appearance
+        self.ui.update_mute_button(is_muted)
+        return is_muted
+
     def _handle_session_complete(self):
         """Xử lý khi hoàn thành một session"""
         # Update daily stats - increment sessions completed
@@ -213,14 +226,24 @@ class TimerController:
         """Hiển thị dialog cho user chọn tiếp tục hay nghỉ"""
         import tkinter.messagebox as messagebox
         
-        choice = messagebox.askyesno(
-            "Session Complete! 🎉",
-            f"Completed session {self.timer_core.current_session}/{self.timer_core.target_sessions}!\n\n"
-            "What would you like to do next?\n\n"
-            "YES = Continue next session\n"
-            "NO = Take a break",
-            icon='question'
-        )
+        # Kiểm tra xem đã vượt qua target sessions chưa
+        if self.timer_core.current_session > self.timer_core.target_sessions:
+            # Đã vượt qua target - hiển thị thông báo khuyến khích
+            title = "🚀 Beyond Target! 🚀"
+            message = (f"Amazing! You've completed {self.timer_core.current_session}/{self.timer_core.target_sessions} sessions!\n\n"
+                      f"🌟 You're now in EXTRA MODE! 🌟\n\n"
+                      f"You can continue as long as you want:\n\n"
+                      f"YES = Keep going! (Session {self.timer_core.current_session + 1})\n"
+                      f"NO = Take a well-deserved break")
+        else:
+            # Chưa đạt target - thông báo bình thường
+            title = "Session Complete! 🎉"
+            message = (f"Completed session {self.timer_core.current_session}/{self.timer_core.target_sessions}!\n\n"
+                      f"What would you like to do next?\n\n"
+                      f"YES = Continue next session\n"
+                      f"NO = Take a break")
+        
+        choice = messagebox.askyesno(title, message, icon='question')
         
         if choice:
             # User chose to continue

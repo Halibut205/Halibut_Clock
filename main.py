@@ -1,13 +1,16 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Main Application - Entry point của ứng dụng
+Fliqlo Timer - Main Application Entry Point
+A beautiful Pomodoro timer with dual clock system and unlimited sessions support.
 """
 
-import tkinter as tk
 import sys
 import os
+import tkinter as tk
+from typing import Optional
 
-# Hide console window if running with pythonw.exe or in production mode
+# Console window management for production deployment
 if sys.executable.endswith('pythonw.exe'):
     # Running with pythonw.exe - console already hidden
     pass
@@ -16,17 +19,20 @@ elif '--hide-console' in sys.argv:
     try:
         import ctypes
         ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
-    except:
+    except ImportError:
         pass
 
-# Add src directory to path
+# Add src directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.core.timer_controller import TimerController
 from src.ui.welcome_screen import show_welcome_screen
 from src.ui.app_settings import should_show_welcome
 
+
 class FliqloTimerApp:
+    """Main application class for the Fliqlo Timer"""
+    
     def __init__(self):
         self.root = None
         self.controller = None

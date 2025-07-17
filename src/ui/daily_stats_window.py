@@ -4,6 +4,9 @@ Daily Statistics Window - Cửa sổ thống kê học tập hàng ngày riêng 
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime, timedelta, date
+import calendar
+import shutil
+import os
 
 # Import matplotlib for charts
 try:
@@ -20,6 +23,7 @@ class DailyStatsWindow:
         self.parent = parent
         self.stats_manager = stats_manager
         self.window = None
+        self.current_data = []  # Để lưu dữ liệu hiện tại trong Data Explorer
         
     def show(self):
         """Hiển thị cửa sổ thống kê"""
@@ -88,6 +92,12 @@ class DailyStatsWindow:
         
         # Tab 4: History & Charts
         self.create_history_tab()
+        
+        # Tab 5: Yearly Overview
+        self.create_yearly_tab()
+        
+        # Tab 6: All Data Explorer
+        self.create_data_explorer_tab()
         
         # Control buttons frame
         self.create_control_buttons(main_frame)
@@ -289,13 +299,14 @@ class DailyStatsWindow:
         goal_header = tk.Frame(goal_frame, bg='white')
         goal_header.pack(fill="x")
         
-        tk.Label(
+        self.goal_title_label = tk.Label(
             goal_header,
-            text="🎯 Daily Goal (4h):",
+            text="🎯 Daily Goal (Auto):",
             font=("Segoe UI", 11, "bold"),
             bg='white',
             fg='#2c3e50'
-        ).pack(side="left")
+        )
+        self.goal_title_label.pack(side="left")
         
         self.goal_label = tk.Label(
             goal_header,
@@ -633,6 +644,230 @@ class DailyStatsWindow:
         # Create matplotlib charts
         self.create_matplotlib_charts(history_frame)
     
+    def create_yearly_tab(self):
+        """Tạo tab thống kê theo năm"""
+        yearly_frame = ttk.Frame(self.notebook, padding="15")
+        self.notebook.add(yearly_frame, text="📅 Yearly Stats")
+        
+        # Year selector frame
+        year_selector_frame = tk.Frame(yearly_frame, bg='white')
+        year_selector_frame.pack(fill="x", pady=(0, 15))
+        
+        tk.Label(
+            year_selector_frame,
+            text="📅 Select Year:",
+            font=("Arial", 12, "bold"),
+            bg='white'
+        ).pack(side="left", padx=(0, 10))
+        
+        # Year selection
+        self.year_var = tk.StringVar()
+        self.year_combo = ttk.Combobox(
+            year_selector_frame,
+            textvariable=self.year_var,
+            state="readonly",
+            width=10
+        )
+        self.year_combo.pack(side="left", padx=5)
+        self.year_combo.bind("<<ComboboxSelected>>", self.on_year_changed)
+        
+        # Populate years
+        self.populate_year_options()
+        
+        # Yearly summary cards
+        yearly_summary_frame = tk.Frame(yearly_frame, bg='white')
+        yearly_summary_frame.pack(fill="x", pady=(0, 15))
+        
+        # Total study hours
+        self.create_yearly_card(yearly_summary_frame, "📚 Total Study", "yearly_study", "#27ae60", 0, 0)
+        
+        # Active days
+        self.create_yearly_card(yearly_summary_frame, "📅 Active Days", "yearly_active", "#3498db", 0, 1)
+        
+        # Average per month
+        self.create_yearly_card(yearly_summary_frame, "📊 Monthly Avg", "yearly_monthly_avg", "#e67e22", 0, 2)
+        
+        # Total sessions
+        self.create_yearly_card(yearly_summary_frame, "🎯 Total Sessions", "yearly_sessions", "#9b59b6", 0, 3)
+        
+        # Monthly breakdown table
+        monthly_frame = ttk.LabelFrame(yearly_frame, text="📋 Monthly Breakdown", padding="15")
+        monthly_frame.pack(fill="both", expand=True)
+        
+        # Create treeview for monthly data
+        monthly_columns = ("Month", "Study Time", "Break Time", "Sessions", "Tasks", "Active Days", "Productivity")
+        self.yearly_tree = ttk.Treeview(monthly_frame, columns=monthly_columns, show="headings", height=12)
+        
+        # Define headings
+        for col in monthly_columns:
+            self.yearly_tree.heading(col, text=col)
+            self.yearly_tree.column(col, width=120, anchor="center")
+        
+        # Configure row colors
+        self.yearly_tree.tag_configure('high_month', background='#e8f5e8', foreground='#2e7d32')
+        self.yearly_tree.tag_configure('medium_month', background='#fff3e0', foreground='#f57c00')
+        self.yearly_tree.tag_configure('low_month', background='#ffebee', foreground='#d32f2f')
+        self.yearly_tree.tag_configure('current_month', background='#e3f2fd', foreground='#1565c0')
+        
+        # Scrollbar
+        yearly_scrollbar = ttk.Scrollbar(monthly_frame, orient="vertical", command=self.yearly_tree.yview)
+        self.yearly_tree.configure(yscrollcommand=yearly_scrollbar.set)
+        
+        # Pack
+        self.yearly_tree.pack(side="left", fill="both", expand=True)
+        yearly_scrollbar.pack(side="right", fill="y")
+    
+    def create_data_explorer_tab(self):
+        """Tạo tab khám phá dữ liệu toàn diện"""
+        explorer_frame = ttk.Frame(self.notebook, padding="15")
+        self.notebook.add(explorer_frame, text="🔍 Data Explorer")
+        
+        # Control panel
+        control_panel = tk.Frame(explorer_frame, bg='white', relief="raised", bd=1)
+        control_panel.pack(fill="x", pady=(0, 15))
+        
+        # Date range selector
+        date_range_frame = tk.Frame(control_panel, bg='white')
+        date_range_frame.pack(fill="x", padx=15, pady=10)
+        
+        tk.Label(
+            date_range_frame,
+            text="📅 Date Range:",
+            font=("Arial", 11, "bold"),
+            bg='white'
+        ).pack(side="left", padx=(0, 10))
+        
+        # Quick range buttons
+        quick_ranges = [
+            ("Last 7 Days", 7),
+            ("Last 30 Days", 30),
+            ("Last 90 Days", 90),
+            ("Last 6 Months", 180),
+            ("Last Year", 365),
+            ("All Data", None)
+        ]
+        
+        for text, days in quick_ranges:
+            btn = tk.Button(
+                date_range_frame,
+                text=text,
+                command=lambda d=days: self.load_data_range(d),
+                bg="#3498db",
+                fg="white",
+                font=("Arial", 9),
+                relief="flat",
+                padx=10,
+                pady=5,
+                cursor="hand2"
+            )
+            btn.pack(side="left", padx=2)
+        
+        # Custom date range
+        custom_range_frame = tk.Frame(control_panel, bg='white')
+        custom_range_frame.pack(fill="x", padx=15, pady=(0, 10))
+        
+        tk.Label(
+            custom_range_frame,
+            text="🗓️ Custom Range:",
+            font=("Arial", 11, "bold"),
+            bg='white'
+        ).pack(side="left", padx=(0, 10))
+        
+        tk.Label(custom_range_frame, text="From:", bg='white').pack(side="left", padx=(10, 5))
+        self.start_date_var = tk.StringVar()
+        self.start_date_entry = tk.Entry(custom_range_frame, textvariable=self.start_date_var, width=12)
+        self.start_date_entry.pack(side="left", padx=2)
+        
+        tk.Label(custom_range_frame, text="To:", bg='white').pack(side="left", padx=(10, 5))
+        self.end_date_var = tk.StringVar()
+        self.end_date_entry = tk.Entry(custom_range_frame, textvariable=self.end_date_var, width=12)
+        self.end_date_entry.pack(side="left", padx=2)
+        
+        custom_load_btn = tk.Button(
+            custom_range_frame,
+            text="Load Range",
+            command=self.load_custom_range,
+            bg="#27ae60",
+            fg="white",
+            font=("Arial", 9),
+            relief="flat",
+            padx=15,
+            cursor="hand2"
+        )
+        custom_load_btn.pack(side="left", padx=10)
+        
+        # Data summary
+        summary_frame = tk.Frame(explorer_frame, bg='white', relief="raised", bd=1)
+        summary_frame.pack(fill="x", pady=(0, 15))
+        
+        summary_header = tk.Label(
+            summary_frame,
+            text="📊 Data Summary",
+            font=("Arial", 12, "bold"),
+            bg='white',
+            fg='#2c3e50'
+        )
+        summary_header.pack(pady=(10, 5))
+        
+        self.summary_text = tk.Text(
+            summary_frame,
+            height=4,
+            font=("Consolas", 10),
+            bg='#f8f9fa',
+            fg='#2c3e50',
+            relief="flat",
+            wrap="word"
+        )
+        self.summary_text.pack(fill="x", padx=15, pady=(0, 10))
+        
+        # Detailed data table
+        table_frame = ttk.LabelFrame(explorer_frame, text="📋 Detailed Data", padding="10")
+        table_frame.pack(fill="both", expand=True)
+        
+        # Create treeview for all data
+        data_columns = ("Date", "Study Time", "Break Time", "Sessions", "Tasks", "Efficiency", "Goal Progress")
+        self.explorer_tree = ttk.Treeview(table_frame, columns=data_columns, show="headings", height=15)
+        
+        # Define headings with better widths
+        column_widths = {
+            "Date": 100,
+            "Study Time": 100,
+            "Break Time": 100,
+            "Sessions": 80,
+            "Tasks": 70,
+            "Efficiency": 90,
+            "Goal Progress": 100
+        }
+        
+        for col in data_columns:
+            self.explorer_tree.heading(col, text=col)
+            self.explorer_tree.column(col, width=column_widths.get(col, 100), anchor="center")
+        
+        # Configure advanced row colors
+        self.explorer_tree.tag_configure('excellent_day', background='#e8f5e8', foreground='#2e7d32')
+        self.explorer_tree.tag_configure('great_day', background='#f3e5f5', foreground='#7b1fa2')
+        self.explorer_tree.tag_configure('good_day', background='#e3f2fd', foreground='#1565c0')
+        self.explorer_tree.tag_configure('fair_day', background='#fff3e0', foreground='#f57c00')
+        self.explorer_tree.tag_configure('poor_day', background='#ffebee', foreground='#d32f2f')
+        self.explorer_tree.tag_configure('no_data', background='#f5f5f5', foreground='#9e9e9e')
+        self.explorer_tree.tag_configure('today', background='#fffde7', foreground='#f57f17')
+        
+        # Scrollbars
+        v_scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.explorer_tree.yview)
+        h_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal", command=self.explorer_tree.xview)
+        self.explorer_tree.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+        
+        # Pack table and scrollbars
+        self.explorer_tree.grid(row=0, column=0, sticky="nsew")
+        v_scrollbar.grid(row=0, column=1, sticky="ns")
+        h_scrollbar.grid(row=1, column=0, sticky="ew")
+        
+        table_frame.grid_rowconfigure(0, weight=1)
+        table_frame.grid_columnconfigure(0, weight=1)
+        
+        # Initialize with last 30 days
+        self.load_data_range(30)
+    
     def create_control_buttons(self, parent):
         """Tạo các nút điều khiển với thiết kế Material Design"""
         button_frame = tk.Frame(parent, bg='#f5f5f5')
@@ -751,6 +986,14 @@ class DailyStatsWindow:
         # Update monthly data if tab exists
         if hasattr(self, 'month_combo'):
             self.refresh_monthly_data()
+        
+        # Update yearly data if tab exists
+        if hasattr(self, 'year_combo'):
+            self.refresh_yearly_data()
+        
+        # Update data explorer if tab exists
+        if hasattr(self, 'explorer_tree'):
+            self.refresh_explorer_data()
     
     def update_stat_card_with_trend(self, stat_type, current_value, yesterday_data):
         """Cập nhật stat card với trend indicators và visual enhancements"""
@@ -790,7 +1033,8 @@ class DailyStatsWindow:
         if stat_type == "study_time" and hasattr(self, f"today_{stat_type}_progress"):
             progress_bar = getattr(self, f"today_{stat_type}_progress")
             current_seconds = self.time_to_seconds(current_value)
-            daily_goal = 4 * 3600  # 4 hours
+            daily_goal_hours = self.stats_manager.get_dynamic_daily_goal()
+            daily_goal = daily_goal_hours * 3600  # Convert to seconds
             
             # Calculate progress percentage
             progress = min((current_seconds / daily_goal) * 100, 100)
@@ -1111,8 +1355,13 @@ class DailyStatsWindow:
         # Update session chart
         self.update_session_chart()
         
-        # Daily goal with enhanced visual progress
-        daily_goal_seconds = 4 * 60 * 60  # 4 hours
+        # Daily goal with enhanced visual progress (dynamic)
+        daily_goal_hours = self.stats_manager.get_dynamic_daily_goal()
+        daily_goal_seconds = daily_goal_hours * 3600
+        
+        # Update goal title with current goal
+        self.goal_title_label.config(text=f"🎯 Daily Goal ({daily_goal_hours:.1f}h):")
+        
         if study_seconds > 0:
             goal_progress = min((study_seconds / daily_goal_seconds) * 100, 100)
             
@@ -1288,8 +1537,10 @@ class DailyStatsWindow:
                     efficiency = 0
                 efficiency_values.append(efficiency)
                 
-                # Calculate goal progress
-                daily_goal_seconds = 4 * 3600
+                # Calculate goal progress (dynamic)
+                day_date = datetime.strptime(day["date"], "%Y-%m-%d").date()
+                daily_goal_hours = self.stats_manager.get_dynamic_daily_goal(day_date)
+                daily_goal_seconds = daily_goal_hours * 3600
                 progress = min((study_time / daily_goal_seconds) * 100, 100)
                 goal_progress.append(progress)
             
@@ -1309,10 +1560,10 @@ class DailyStatsWindow:
                    color='#e67e22', label='☕ Break Time', alpha=0.8,
                    markerfacecolor='#d35400', markeredgecolor='white', markeredgewidth=1.5)
             
-            # Add daily goal line
-            daily_goal = 4
+            # Add daily goal line (dynamic average)
+            daily_goal = self.stats_manager.get_dynamic_daily_goal()
             ax.axhline(y=daily_goal, color='#3498db', linestyle='--', linewidth=2, 
-                      alpha=0.7, label=f'🎯 Daily Goal ({daily_goal}h)')
+                      alpha=0.7, label=f'🎯 Monthly Avg Goal ({daily_goal:.1f}h)')
             
             # Beautiful styling
             ax.set_title('📈 Study Time & Break Analysis (Last 14 Days)', 
@@ -2055,3 +2306,283 @@ class DailyStatsWindow:
             justify="center"
         )
         placeholder_label.pack(expand=True)
+
+    # Yearly tab methods
+    def create_yearly_card(self, parent, title, stat_type, color, row, col):
+        """Tạo card thống kê năm với thiết kế đẹp"""
+        card_frame = tk.Frame(parent, bg=color, relief="raised", bd=2)
+        card_frame.grid(row=row, column=col, padx=8, pady=8, sticky="nsew", ipadx=12, ipady=8)
+        
+        parent.grid_columnconfigure(col, weight=1)
+        
+        title_label = tk.Label(
+            card_frame,
+            text=title,
+            font=("Segoe UI", 10, "bold"),
+            bg=color,
+            fg="white"
+        )
+        title_label.pack(pady=(5, 2))
+        
+        value_label = tk.Label(
+            card_frame,
+            text="--",
+            font=("Consolas", 14, "bold"),
+            bg=color,
+            fg="white"
+        )
+        value_label.pack()
+        
+        setattr(self, f"{stat_type}_label", value_label)
+
+    def populate_year_options(self):
+        """Tạo danh sách các năm để chọn"""
+        available_years = self.stats_manager.get_available_years()
+        
+        if not available_years:
+            # Nếu chưa có dữ liệu, thêm năm hiện tại
+            from datetime import datetime
+            available_years = [datetime.now().year]
+        
+        self.year_combo['values'] = available_years
+        self.year_combo.set(available_years[0])  # Set năm mới nhất làm mặc định
+
+    def on_year_changed(self, event=None):
+        """Xử lý khi thay đổi năm"""
+        self.refresh_yearly_data()
+
+    def refresh_yearly_data(self):
+        """Cập nhật dữ liệu năm"""
+        if not hasattr(self, 'year_combo'):
+            return
+            
+        selected_year = self.year_combo.get()
+        if not selected_year:
+            return
+        
+        try:
+            year = int(selected_year)
+        except ValueError:
+            return
+        
+        # Get yearly data
+        yearly_data = self.stats_manager.get_yearly_data(year)
+        
+        # Update cards
+        self.yearly_study_label.config(text=yearly_data["total_study_time"])
+        self.yearly_active_label.config(text=f"{yearly_data['active_days']}/365")
+        self.yearly_monthly_avg_label.config(text=f"{yearly_data['study_hours_per_month']:.1f}h")
+        self.yearly_sessions_label.config(text=str(yearly_data["total_sessions"]))
+        
+        # Update monthly breakdown table
+        self.update_yearly_table(yearly_data)
+
+    def update_yearly_table(self, yearly_data):
+        """Cập nhật bảng thống kê tháng trong năm"""
+        # Clear existing items
+        for item in self.yearly_tree.get_children():
+            self.yearly_tree.delete(item)
+        
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        selected_year = int(self.year_combo.get())
+        
+        for month_data in yearly_data["monthly_stats"]:
+            month = month_data["month"]
+            
+            # Calculate efficiency for the month
+            total_study = self.stats_manager.time_to_seconds(month_data["total_study_time"])
+            total_break = self.stats_manager.time_to_seconds(month_data["total_break_time"])
+            total_time = total_study + total_break
+            
+            if total_time > 0:
+                efficiency = (total_study / total_time) * 100
+                efficiency_text = f"{efficiency:.1f}%"
+            else:
+                efficiency_text = "--"
+            
+            # Determine row styling based on study hours
+            study_hours = total_study / 3600
+            if month == current_month and selected_year == current_year:
+                tag = 'current_month'
+            elif study_hours >= 80:  # 80+ hours per month = excellent
+                tag = 'high_month'
+            elif study_hours >= 40:  # 40+ hours per month = medium
+                tag = 'medium_month'
+            elif study_hours > 0:
+                tag = 'low_month'
+            else:
+                tag = ''
+            
+            # Add visual indicators
+            study_display = month_data["total_study_time"]
+            if study_hours >= 80:
+                study_display += " 🔥"
+            elif study_hours >= 40:
+                study_display += " 💪"
+            elif study_hours > 0:
+                study_display += " ⏱️"
+            
+            self.yearly_tree.insert("", "end", values=(
+                month_data["month_name"],
+                study_display,
+                month_data["total_break_time"],
+                f"{month_data['total_sessions']} 🎯" if month_data['total_sessions'] > 0 else "0",
+                f"{month_data['total_tasks']} ✅" if month_data['total_tasks'] > 0 else "0",
+                f"{month_data['active_days']}/{month_data['days_in_month']}",
+                month_data["productivity_rate"]
+            ), tags=(tag,))
+
+    # Data Explorer methods
+    def load_data_range(self, days):
+        """Load data for specified number of days"""
+        if days is None:
+            # Load all available data
+            data_summary = self.stats_manager.get_data_summary()
+            if data_summary["earliest_date"]:
+                start_date = data_summary["earliest_date"]
+                end_date = data_summary["latest_date"]
+                self.current_data = self.stats_manager.get_data_range(start_date, end_date)
+            else:
+                self.current_data = []
+        else:
+            self.current_data = self.stats_manager.get_data_range(days=days)
+        
+        self.update_explorer_display()
+
+    def load_custom_range(self):
+        """Load data for custom date range"""
+        try:
+            start_date = self.start_date_var.get()
+            end_date = self.end_date_var.get()
+            
+            if not start_date or not end_date:
+                messagebox.showwarning("Invalid Range", "Please enter both start and end dates in YYYY-MM-DD format.")
+                return
+            
+            # Validate date format
+            from datetime import datetime
+            start_obj = datetime.strptime(start_date, "%Y-%m-%d")
+            end_obj = datetime.strptime(end_date, "%Y-%m-%d")
+            
+            if start_obj > end_obj:
+                messagebox.showwarning("Invalid Range", "Start date must be before end date.")
+                return
+            
+            self.current_data = self.stats_manager.get_data_range(start_date, end_date)
+            self.update_explorer_display()
+            
+        except ValueError:
+            messagebox.showerror("Invalid Date", "Please enter dates in YYYY-MM-DD format (e.g., 2024-01-15).")
+
+    def update_explorer_display(self):
+        """Update the data explorer display"""
+        self.update_data_summary()
+        self.update_explorer_table()
+
+    def update_data_summary(self):
+        """Update data summary text"""
+        if not hasattr(self, 'summary_text'):
+            return
+        
+        if not self.current_data:
+            summary = "📊 No data available for selected range."
+        else:
+            total_study = sum(day["study_time"] for day in self.current_data)
+            total_sessions = sum(day["sessions_completed"] for day in self.current_data)
+            total_tasks = sum(day["tasks_completed"] for day in self.current_data)
+            active_days = len([day for day in self.current_data if day["study_time"] > 0])
+            
+            first_date = self.current_data[0]["date"]
+            last_date = self.current_data[-1]["date"]
+            
+            summary = f"""📊 Summary for {first_date} to {last_date} ({len(self.current_data)} days):
+📚 Total Study Time: {self.stats_manager.format_time(total_study)} ({total_study/3600:.1f} hours)
+🎯 Total Sessions: {total_sessions} | ✅ Total Tasks: {total_tasks}
+📅 Active Days: {active_days}/{len(self.current_data)} ({active_days/len(self.current_data)*100:.1f}%)
+⚡ Average per Day: {self.stats_manager.format_time(total_study//len(self.current_data)) if len(self.current_data) > 0 else '00:00:00'}"""
+        
+        self.summary_text.delete(1.0, "end")
+        self.summary_text.insert(1.0, summary)
+
+    def update_explorer_table(self):
+        """Update the data explorer table"""
+        if not hasattr(self, 'explorer_tree'):
+            return
+        
+        # Clear existing items
+        for item in self.explorer_tree.get_children():
+            self.explorer_tree.delete(item)
+        
+        if not self.current_data:
+            return
+        
+        today_key = self.stats_manager.get_today_key()
+        
+        for day in self.current_data:
+            # Calculate efficiency
+            study_time = day["study_time"]
+            break_time = day["break_time"]
+            total_time = study_time + break_time
+            
+            if total_time > 0:
+                efficiency = (study_time / total_time) * 100
+                efficiency_text = f"{efficiency:.1f}%"
+            else:
+                efficiency_text = "--"
+            
+            # Calculate goal progress (4 hours)
+            daily_goal_seconds = 4 * 3600
+            if study_time > 0:
+                goal_progress = min((study_time / daily_goal_seconds) * 100, 100)
+                goal_text = f"{goal_progress:.1f}%"
+            else:
+                goal_text = "--"
+            
+            # Determine row styling
+            study_hours = study_time / 3600
+            if day["date"] == today_key:
+                tag = 'today'
+            elif study_time == 0:
+                tag = 'no_data'
+            elif study_hours >= 6:  # 6+ hours = excellent
+                tag = 'excellent_day'
+            elif study_hours >= 4:  # 4+ hours = great
+                tag = 'great_day'
+            elif study_hours >= 2:  # 2+ hours = good
+                tag = 'good_day'
+            elif study_hours >= 1:  # 1+ hour = fair
+                tag = 'fair_day'
+            else:
+                tag = 'poor_day'
+            
+            # Format date nicely
+            try:
+                date_obj = datetime.strptime(day["date"], "%Y-%m-%d")
+                formatted_date = date_obj.strftime("%m/%d (%a)")
+            except:
+                formatted_date = day["date"]
+            
+            # Add visual indicators
+            study_display = day["formatted_study_time"]
+            if study_hours >= 4:
+                study_display += " 🔥"
+            elif study_hours >= 2:
+                study_display += " 💪"
+            elif study_time > 0:
+                study_display += " ⏱️"
+            
+            self.explorer_tree.insert("", "end", values=(
+                formatted_date,
+                study_display,
+                day["formatted_break_time"],
+                f"{day['sessions_completed']} 🎯" if day['sessions_completed'] > 0 else "0",
+                f"{day['tasks_completed']} ✅" if day['tasks_completed'] > 0 else "0",
+                efficiency_text,
+                goal_text
+            ), tags=(tag,))
+
+    def refresh_explorer_data(self):
+        """Refresh current data in explorer"""
+        if hasattr(self, 'current_data'):
+            self.update_explorer_display()
