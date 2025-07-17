@@ -1895,11 +1895,11 @@ class DailyStatsWindow:
                            markeredgecolor='white', markeredgewidth=1.5,
                            zorder=2)
         
-        # Add daily goal line with enhanced styling
-        daily_goal = 4  # 4 hours
+        # Add daily goal line with enhanced styling (dynamic)
+        daily_goal = self.stats_manager.get_dynamic_daily_goal()
         goal_line = ax.axhline(y=daily_goal, color='#3498db', linestyle='--', 
                               linewidth=2, alpha=0.7, 
-                              label=f'🎯 Daily Goal ({daily_goal}h)')
+                              label=f'🎯 Daily Goal ({daily_goal:.1f}h)')
         
         # Customize chart with beautiful typography
         ax.set_title('📈 Study Time & Break Analysis', 
@@ -2003,8 +2003,8 @@ class DailyStatsWindow:
                                 alpha=0.98, edgecolor='#8e44ad', linewidth=1.5),
                         zorder=20)
         
-        # Add session target line (example: 6 sessions per day)
-        target_sessions = 6
+        # Add session target line (dynamic: sessions trung bình tháng + 2)
+        target_sessions = self.stats_manager.get_dynamic_session_goal()
         ax.axhline(y=target_sessions, color='#3498db', linestyle='--', 
                   linewidth=2, alpha=0.7, 
                   label=f'🎯 Target ({target_sessions} sessions/day)')
@@ -2187,8 +2187,10 @@ class DailyStatsWindow:
                 efficiency = 0
             efficiency_values.append(efficiency)
             
-            # Calculate goal progress (assuming 4-hour daily goal)
-            daily_goal_seconds = 4 * 3600
+            # Calculate goal progress (dynamic daily goal)
+            day_date = datetime.strptime(day["date"], "%Y-%m-%d").date()
+            daily_goal_hours = self.stats_manager.get_dynamic_daily_goal(day_date)
+            daily_goal_seconds = daily_goal_hours * 3600
             progress = min((study_time / daily_goal_seconds) * 100, 100)
             goal_progress.append(progress)
         
@@ -2531,8 +2533,10 @@ class DailyStatsWindow:
             else:
                 efficiency_text = "--"
             
-            # Calculate goal progress (4 hours)
-            daily_goal_seconds = 4 * 3600
+            # Calculate goal progress (dynamic daily goal)
+            day_date = datetime.strptime(day["date"], "%Y-%m-%d").date()
+            daily_goal_hours = self.stats_manager.get_dynamic_daily_goal(day_date)
+            daily_goal_seconds = daily_goal_hours * 3600
             if study_time > 0:
                 goal_progress = min((study_time / daily_goal_seconds) * 100, 100)
                 goal_text = f"{goal_progress:.1f}%"

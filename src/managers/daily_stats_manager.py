@@ -501,6 +501,65 @@ class DailyStatsManager:
         average_seconds_per_day = total_study_seconds / days_with_data
         return average_seconds_per_day / 3600  # Convert to hours
     
+    def get_monthly_average_sessions(self, year: int = None, month: int = None) -> float:
+        """
+        Tính trung bình số sessions theo ngày trong tháng
+        
+        Args:
+            year: Năm (mặc định là năm hiện tại)
+            month: Tháng (mặc định là tháng hiện tại)
+            
+        Returns:
+            float: Trung bình sessions/ngày trong tháng
+        """
+        if year is None or month is None:
+            current_date = date.today()
+            year = year or current_date.year
+            month = month or current_date.month
+        
+        # Lấy dữ liệu tháng
+        monthly_data = self.get_monthly_data(year, month)
+        
+        if not monthly_data:
+            return 4.0  # Default 4 sessions nếu không có dữ liệu
+        
+        # Tính tổng sessions và số ngày có dữ liệu
+        total_sessions = 0
+        days_with_data = 0
+        
+        for day_data in monthly_data.values():
+            if isinstance(day_data, dict) and 'sessions_completed' in day_data:
+                sessions = day_data['sessions_completed']
+                if sessions > 0:  # Chỉ tính những ngày có sessions
+                    total_sessions += sessions
+                    days_with_data += 1
+        
+        if days_with_data == 0:
+            return 4.0  # Default 4 sessions nếu không có ngày nào có dữ liệu
+        
+        # Trả về trung bình sessions
+        return total_sessions / days_with_data
+
+    def get_dynamic_session_goal(self, target_date: date = None) -> int:
+        """
+        Tính daily session goal động dựa trên trung bình sessions của tháng + 2
+        
+        Args:
+            target_date: Ngày cần tính goal (mặc định là hôm nay)
+            
+        Returns:
+            int: Daily session goal (sessions trung bình + 2)
+        """
+        if target_date is None:
+            target_date = date.today()
+        
+        # Lấy trung bình sessions tháng hiện tại
+        monthly_avg_sessions = self.get_monthly_average_sessions(target_date.year, target_date.month)
+        
+        # Trung bình + 2, tối thiểu 3, tối đa 12
+        goal = max(3, min(12, int(round(monthly_avg_sessions + 2))))
+        return goal
+
     def get_dynamic_daily_goal(self, target_date: date = None) -> float:
         """
         Tính daily goal động dựa trên trung bình tháng

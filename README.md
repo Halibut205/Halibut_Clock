@@ -28,6 +28,8 @@ A **beautiful Pomodoro app** to help you focus on studying and working efficient
 - Customizable session duration (15 min to 2 hours)
 - Flexible target sessions (1-20 sessions)
 - **🚀 Unlimited Sessions**: Continue beyond your daily target (e.g., 9/8, 10/8 sessions)
+- **🧠 Dynamic Session Goals**: Daily session targets adapt based on your monthly average + 2
+- **⏰ Dynamic Study Goals**: Daily study time targets adapt based on your monthly average
 - Session completion notifications with sound alerts
 - Progress tracking with visual indicators
 - **Extra Mode**: Special motivational messages when exceeding targets
@@ -43,7 +45,8 @@ A **beautiful Pomodoro app** to help you focus on studying and working efficient
 - **Separated Charts**: Daily Sessions and Tasks in dedicated tabs
 - **Study Time Analysis**: Combined study time and break time trends
 - **Efficiency Tracking**: Dual y-axis charts with performance zones
-- **Goal Progress**: Visual progress indicators with target lines
+- **Goal Progress**: Visual progress indicators with adaptive target lines
+- **Dynamic Targets**: Session goals automatically adjust based on your performance
 - **Professional Styling**: Enhanced matplotlib charts with beautiful design
 - **Export Functionality**: Save charts as high-quality PNG files
 
@@ -117,6 +120,32 @@ python main.py
 - Separated tabs for better data organization
 - Export functionality for reports and presentations
 - Performance zones and target lines
+- **Dynamic Goals**: Automatically adapting session targets
+
+---
+
+## 🧠 Smart Features
+
+### **Dynamic Goals System**
+The timer intelligently adapts both your daily session and study time goals based on your performance:
+
+#### **📊 Dynamic Session Goals**
+- **Calculation**: Monthly average sessions + 2
+- **Range**: 3-12 sessions (minimum-maximum)
+- **Default**: 6 sessions for new users
+- **Example**: If you average 5 sessions/day this month, your goal becomes 7 sessions
+
+#### **⏰ Dynamic Study Time Goals**  
+- **Calculation**: Monthly average study hours
+- **Range**: 2-8 hours (minimum-maximum)
+- **Default**: 4 hours for new users
+- **Example**: If you average 3.5 hours/day this month, your goal becomes 3.5 hours
+
+This ensures your goals are:
+- ✅ **Realistic**: Based on your actual performance history
+- ✅ **Personalized**: Adapts to your unique study patterns
+- ✅ **Adaptive**: Automatically adjusts as you improve
+- ✅ **Motivating**: Encourages steady, sustainable progress
 
 ---
 
@@ -124,7 +153,7 @@ python main.py
 
 ### **Timer Settings**
 - **Session Duration**: 15, 20, 25, 30, 45, 60, 90, or 120 minutes
-- **Target Sessions**: 1-20 sessions per day
+- **Target Sessions**: 1-20 sessions per day (or use dynamic goals)
 - **Sound Alerts**: Enable/disable session completion sounds
 
 ### **Statistics Settings**
@@ -197,6 +226,13 @@ Timer/
 ---
 
 ## 🆕 Recent Updates
+
+### **v2.1 - Dynamic Goals System**
+- ✅ **Smart Session Targets**: Daily session goals adapt to your monthly performance (avg + 2)
+- ✅ **Dynamic Study Goals**: Daily study time goals based on your monthly average
+- ✅ **Adaptive Charts**: All target lines automatically adjust to your habits
+- ✅ **Performance-Based**: Goals range from 3-12 sessions and 2-8 hours
+- ✅ **Intelligent Defaults**: New users start with 6 sessions and 4 hours goals
 
 ### **v2.0 - Advanced Charts & Separated Views**
 - ✅ **Separated Charts**: Daily Sessions and Tasks now in dedicated tabs
