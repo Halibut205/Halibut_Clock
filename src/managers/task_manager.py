@@ -98,6 +98,32 @@ class TaskManager:
         """Lấy tasks cho session cụ thể"""
         return [task for task in self.tasks if task.get('session_target') == session_number]
 
+    def move_task_up(self, task_index: int) -> bool:
+        """Di chuyển task lên trên trong danh sách"""
+        if task_index > 0 and task_index < len(self.tasks):
+            # Hoán đổi vị trí với task phía trên
+            self.tasks[task_index], self.tasks[task_index - 1] = self.tasks[task_index - 1], self.tasks[task_index]
+            self.save_tasks()
+            
+            if self.on_tasks_updated:
+                self.on_tasks_updated()
+            
+            return True
+        return False
+
+    def move_task_down(self, task_index: int) -> bool:
+        """Di chuyển task xuống dưới trong danh sách"""
+        if task_index >= 0 and task_index < len(self.tasks) - 1:
+            # Hoán đổi vị trí với task phía dưới
+            self.tasks[task_index], self.tasks[task_index + 1] = self.tasks[task_index + 1], self.tasks[task_index]
+            self.save_tasks()
+            
+            if self.on_tasks_updated:
+                self.on_tasks_updated()
+            
+            return True
+        return False
+
     def get_all_active_tasks(self):
         """Lấy tất cả tasks chưa hoàn thành"""
         return self.tasks.copy()
@@ -177,9 +203,8 @@ class TaskManager:
                     data = json.load(f)
                     self.tasks = data.get('tasks', [])
                     self.completed_tasks = data.get('completed_tasks', [])
-                    print(f"✅ Loaded {len(self.tasks)} active tasks and {len(self.completed_tasks)} completed tasks")
             else:
-                print("📝 No existing tasks file found, starting fresh")
+                pass  # Starting fresh with empty task lists
         except Exception as e:
             print(f"❌ Could not load tasks: {e}")
             self.tasks = []

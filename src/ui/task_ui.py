@@ -19,7 +19,9 @@ class TaskUI:
         self.on_complete_task = None
         self.on_delete_task = None
         self.on_edit_task = None
-        self.on_reactivate_task = None  # New callback for reactivating tasks
+        self.on_reactivate_task = None
+        self.on_move_task_up = None
+        self.on_move_task_down = None
         self.play_sound = None  # Sound callback
         
         self._create_task_widgets()
@@ -122,6 +124,29 @@ class TaskUI:
             font=("Arial", 8)
         )
         self.delete_btn.pack(side=tk.LEFT, padx=1)
+
+        # Move up/down buttons
+        self.move_up_btn = tk.Button(
+            active_btn_frame,
+            text="⬆️",
+            command=self._on_move_task_up_clicked,
+            bg="steelblue",
+            fg="white",
+            width=3,
+            font=("Arial", 8)
+        )
+        self.move_up_btn.pack(side=tk.LEFT, padx=1)
+
+        self.move_down_btn = tk.Button(
+            active_btn_frame,
+            text="⬇️",
+            command=self._on_move_task_down_clicked,
+            bg="steelblue",
+            fg="white",
+            width=3,
+            font=("Arial", 8)
+        )
+        self.move_down_btn.pack(side=tk.LEFT, padx=1)
 
         # Completed tasks - right side
         completed_frame = tk.Frame(display_frame, bg='black')
@@ -234,6 +259,30 @@ class TaskUI:
             if messagebox.askyesno("Clear Completed", "Clear all completed tasks?"):
                 if hasattr(self, 'on_clear_completed') and self.on_clear_completed:
                     self.on_clear_completed()
+
+    def _on_move_task_up_clicked(self):
+        """Xử lý sự kiện di chuyển task lên trên"""
+        if self.play_sound:
+            self.play_sound()
+        selection = self.task_listbox.curselection()
+        if selection and self.on_move_task_up:
+            index = selection[0]
+            if index > 0:  # Không thể di chuyển lên nếu đã ở đầu danh sách
+                self.on_move_task_up(index)
+                # Giữ selection sau khi di chuyển
+                self.task_listbox.selection_set(index - 1)
+
+    def _on_move_task_down_clicked(self):
+        """Xử lý sự kiện di chuyển task xuống dưới"""
+        if self.play_sound:
+            self.play_sound()
+        selection = self.task_listbox.curselection()
+        if selection and self.on_move_task_down:
+            index = selection[0]
+            if index < self.task_listbox.size() - 1:  # Không thể di chuyển xuống nếu đã ở cuối danh sách
+                self.on_move_task_down(index)
+                # Giữ selection sau khi di chuyển
+                self.task_listbox.selection_set(index + 1)
 
     def update_task_list(self, tasks):
         """Cập nhật danh sách tasks"""

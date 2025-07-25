@@ -20,6 +20,7 @@ class TimerCore:
         self.break_running = False
         self.main_time = 0  # Main timer elapsed time (seconds)
         self.break_time = 0  # Break timer elapsed time (seconds)
+        self.break_session_time = 0  # Hidden timer cho break session hiện tại
         
         # Session management
         self.current_session = 0
@@ -41,7 +42,7 @@ class TimerCore:
         self.on_session_update: Optional[Callable] = None
         self.on_session_complete = None
         self.on_all_sessions_complete = None
-        self.on_choice_required = None  # New callback for user choice
+        self.on_choice_required = None
 
     def format_time(self, seconds):
         """Format thời gian thành HH:MM:SS"""
@@ -51,19 +52,21 @@ class TimerCore:
         return f"{hrs:02}:{mins:02}:{secs:02}"
 
     def start_main_timer(self):
-        """Bắt đầu main timer, freeze break timer"""
+        """Bắt đầu main timer, freeze break timer và reset hidden timer"""
         if not self.waiting_for_user_choice:
             self.main_running = True
             self.break_running = False
+            self.break_session_time = 0  # Reset hidden timer về 0
             self.waiting_for_user_choice = False
             if self.on_state_change:
                 self.on_state_change("main_running")
 
     def start_break_timer(self):
-        """Bắt đầu break timer, freeze main timer"""
+        """Bắt đầu break timer, freeze main timer và reset hidden timer"""
         if not self.waiting_for_user_choice:
             self.main_running = False
             self.break_running = True
+            self.break_session_time = 0  # Reset hidden timer về 0
             self.waiting_for_user_choice = False
             if self.on_state_change:
                 self.on_state_change("break_running")
@@ -72,6 +75,7 @@ class TimerCore:
         """Pause main timer và start break timer"""
         self.main_running = False
         self.break_running = True
+        self.break_session_time = 0  # Reset hidden timer về 0
         if self.on_state_change:
             self.on_state_change("break_running")
 
@@ -95,6 +99,7 @@ class TimerCore:
         self.break_running = False
         self.main_time = 0
         self.break_time = 0
+        self.break_session_time = 0  # Reset hidden timer
         self.current_session = 0
         self.last_session_check = 0  # Reset session check
         self.session_completed = False
@@ -120,8 +125,9 @@ class TimerCore:
         # Update break timer
         if self.break_running:
             self.break_time += 1
+            self.break_session_time += 1  # Tăng hidden timer
             if self.on_break_timer_update:
-                self.on_break_timer_update(self.format_time(self.break_time))
+                self.on_break_timer_update(self.format_time(self.break_time), self.break_session_time)
 
     def _handle_session_complete(self):
         """Xử lý khi hoàn thành một session"""

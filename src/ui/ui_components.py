@@ -4,7 +4,7 @@ UI Components Module - Main user interface components for the Fliqlo Timer
 
 import tkinter as tk
 from tkinter import font as tkfont
-from typing import Optional, Callable, Dict, Any
+from typing import Dict
 
 from .task_ui import TaskUI
 
@@ -35,7 +35,7 @@ class FliqloUI:
         self.on_sessions_changed = None
         self.on_auto_continue_changed = None
         self.on_reset_sessions = None
-        self.on_session_duration_changed = None  # New callback
+        self.on_session_duration_changed = None
         self.on_help_clicked = None  # Help callback
         self.on_stats_clicked = None  # Stats window callback
         self.on_mute_clicked = None  # Mute/unmute background music callback
@@ -45,7 +45,9 @@ class FliqloUI:
         self.on_complete_task = None
         self.on_delete_task = None
         self.on_edit_task = None
-        self.on_reactivate_task = None  # New callback for reactivating tasks
+        self.on_reactivate_task = None
+        self.on_move_task_up = None
+        self.on_move_task_down = None
         self.on_clear_completed = None
         
         # Sound manager callback
@@ -55,17 +57,17 @@ class FliqloUI:
         """Thiết lập cửa sổ chính"""
         self.root.title("Fliqlo Timer")
         self.root.configure(bg='black')
-        self.root.geometry("500x600")  # Trở lại kích thước ban đầu
-        self.root.resizable(False, False)  # Không cho resize
+        self.root.geometry("500x600")
+        self.root.resizable(False, False)
 
     def _create_widgets(self):
         """Tạo các widget UI"""
-        # Font nhỏ gọn hơn
-        self.clock_font = tkfont.Font(family="Courier New", size=36, weight="bold")  # Giảm từ 72
-        self.break_font = tkfont.Font(family="Courier New", size=18, weight="bold")  # Giảm từ 36
-        self.info_font = tkfont.Font(family="Courier New", size=12, weight="bold")   # Giảm từ 16
+        # Font settings
+        self.clock_font = tkfont.Font(family="Courier New", size=36, weight="bold")
+        self.break_font = tkfont.Font(family="Courier New", size=18, weight="bold")
+        self.info_font = tkfont.Font(family="Courier New", size=12, weight="bold")
 
-        # Session info frame - compact
+        # Session info frame
         self.session_frame = tk.Frame(self.root, bg='black')
         self.session_frame.pack(pady=5)
 
@@ -89,7 +91,7 @@ class FliqloUI:
         )
         self.progress_label.pack(side=tk.RIGHT, padx=10)
 
-        # Main timer label - compact (bỏ chữ "Main")
+        # Main timer label
         self.main_timer_label = tk.Label(
             self.root, 
             text="00:00:00", 
@@ -99,15 +101,29 @@ class FliqloUI:
         )
         self.main_timer_label.pack(pady=5)
 
-        # Break timer label - compact
+        # Break timer section với hidden timer
+        break_frame = tk.Frame(self.root, bg='black')
+        break_frame.pack(pady=5)
+        
+        # Break timer label - compact (chính)
         self.break_timer_label = tk.Label(
-            self.root, 
+            break_frame, 
             text="Break: 00:00:00", 
             font=self.break_font, 
             fg="cyan", 
             bg="black"
         )
-        self.break_timer_label.pack(pady=5)
+        self.break_timer_label.pack(side="left")
+        
+        # Hidden timer label - nhỏ hơn, bên phải
+        self.hidden_timer_label = tk.Label(
+            break_frame,
+            text="00:00",
+            font=tkfont.Font(family="Arial", size=10),
+            fg="gray",
+            bg="black"
+        )
+        self.hidden_timer_label.pack(side="left", padx=(10, 0))
 
         # Help and stats buttons frame
         help_frame = tk.Frame(self.root, bg='black')
@@ -151,21 +167,21 @@ class FliqloUI:
         )
         self.mute_btn.pack(side="left", padx=5)
 
-        # Main control buttons - TO HƠN
+        # Main control buttons
         self._create_main_buttons()
 
-        # Settings frame - compact
+        # Settings frame
         self._create_settings()
 
-        # Task management frame - compact
+        # Task management frame
         self.task_ui = TaskUI(self.root)
 
     def _create_main_buttons(self):
-        """Tạo các nút điều khiển chính - TO HƠN"""
+        """Tạo các nút điều khiển chính"""
         btn_frame = tk.Frame(self.root, bg='black')
         btn_frame.pack(pady=10)
 
-        # Các nút to hơn với font lớn hơn
+        # Các nút điều khiển với font lớn
         btn_font = tkfont.Font(family="Arial", size=14, weight="bold")
         
         self.start_btn = tk.Button(
@@ -205,11 +221,11 @@ class FliqloUI:
         self.reset_btn.grid(row=0, column=2, padx=8, pady=5)
 
     def _create_settings(self):
-        """Tạo phần cài đặt session - compact"""
+        """Tạo phần cài đặt session"""
         settings_frame = tk.Frame(self.root, bg='black')
         settings_frame.pack(pady=5)
 
-        # Session duration setting - NEW
+        # Session duration setting
         tk.Label(settings_frame, text="Duration:", fg="white", bg="black", font=("Arial", 9)).grid(row=0, column=0, padx=3)
         self.session_duration_var = tk.StringVar(value="1 hour")
         self.duration_combobox = tk.OptionMenu(
@@ -227,7 +243,7 @@ class FliqloUI:
         )
         self.duration_combobox.grid(row=0, column=1, padx=3)
 
-        # Target sessions setting - compact
+        # Target sessions setting
         tk.Label(settings_frame, text="Sessions:", fg="white", bg="black", font=("Arial", 9)).grid(row=0, column=2, padx=3)
         self.sessions_var = tk.StringVar(value="8")
         self.sessions_spinbox = tk.Spinbox(
@@ -240,7 +256,7 @@ class FliqloUI:
         )
         self.sessions_spinbox.grid(row=0, column=3, padx=3)
 
-        # Auto continue setting - compact
+        # Auto continue setting
         self.auto_continue_var = tk.BooleanVar(value=False)
         self.auto_continue_cb = tk.Checkbutton(
             settings_frame,
@@ -254,7 +270,7 @@ class FliqloUI:
         )
         self.auto_continue_cb.grid(row=0, column=4, padx=5)
 
-        # Reset sessions button - compact
+        # Reset sessions button
         self.reset_sessions_btn = tk.Button(
             settings_frame,
             text="Reset",
@@ -343,31 +359,58 @@ class FliqloUI:
                 self.mute_btn.config(text="🔊 Sound", bg="#27ae60")
 
     def update_main_timer_display(self, time_text):
-        """Cập nhật hiển thị main timer (bỏ chữ Main)"""
+        """Cập nhật hiển thị main timer"""
         self.main_timer_label.config(text=time_text)
 
-    def update_break_timer_display(self, time_text):
-        """Cập nhật hiển thị break timer"""
+    def update_break_timer_display(self, time_text, break_session_seconds=0):
+        """Cập nhật hiển thị break timer với màu sắc dựa trên hidden timer"""
         self.break_timer_label.config(text=f"Break: {time_text}")
+        
+        # Format hidden timer (MM:SS format)
+        hidden_mins = break_session_seconds // 60
+        hidden_secs = break_session_seconds % 60
+        hidden_text = f"{hidden_mins:02d}:{hidden_secs:02d}"
+        self.hidden_timer_label.config(text=hidden_text)
+        
+        # Đổi màu dựa trên thời gian break session hiện tại
+        if break_session_seconds >= 20 * 60:  # 20+ phút: màu đỏ
+            color = "red"
+        elif break_session_seconds >= 10 * 60:  # 10+ phút: màu tím
+            color = "magenta"
+        else:  # 0-10 phút: màu cyan
+            color = "cyan"
+        
+        # Chỉ đổi màu khi break timer đang active
+        if hasattr(self, '_break_timer_active') and self._break_timer_active:
+            self.break_timer_label.config(fg=color)
+            self.hidden_timer_label.config(fg=color)
+        else:
+            self.hidden_timer_label.config(fg="gray")
 
     def update_button_state(self, state):
         """Cập nhật trạng thái các nút theo dual clock system"""
         if state == "main_running":
             self.toggle_btn.config(text="🔄 → BREAK", bg="orange")
-            self.main_timer_label.config(fg="lime")  # Active main timer
-            self.break_timer_label.config(fg="gray")  # Inactive break timer
+            self.main_timer_label.config(fg="lime")
+            self.break_timer_label.config(fg="gray")
+            self.hidden_timer_label.config(text="00:00", fg="gray")
+            self._break_timer_active = False
         elif state == "break_running":
             self.toggle_btn.config(text="🔄 → MAIN", bg="blue")
-            self.main_timer_label.config(fg="gray")  # Inactive main timer
-            self.break_timer_label.config(fg="cyan")  # Active break timer
+            self.main_timer_label.config(fg="gray")
+            self.break_timer_label.config(fg="cyan")
+            self._break_timer_active = True
         elif state == "all_frozen":
             self.toggle_btn.config(text="▶ START", bg="green")
-            self.main_timer_label.config(fg="white")  # Both frozen
+            self.main_timer_label.config(fg="white")
             self.break_timer_label.config(fg="white")
+            self._break_timer_active = False
         elif state == "reset":
             self.toggle_btn.config(text="▶ START", bg="green")
-            self.main_timer_label.config(text="00:00:00", fg="white")  # Bỏ "Main:"
+            self.main_timer_label.config(text="00:00:00", fg="white")
             self.break_timer_label.config(text="Break: 00:00:00", fg="white")
+            self.hidden_timer_label.config(text="00:00", fg="gray")
+            self._break_timer_active = False
 
     def update_session_display(self, current, target):
         """Cập nhật hiển thị session"""
@@ -383,10 +426,6 @@ class FliqloUI:
             self.mute_btn.config(text="🔇 Muted", bg="#e74c3c")
         else:
             self.mute_btn.config(text="🔊 Sound", bg="#27ae60")
-
-    def show_session_complete_message(self):
-        """Hiển thị thông báo hoàn thành session"""
-        pass  # Message will be handled by controller via choice dialog
 
     def show_all_sessions_complete_message(self):
         """Hiển thị thông báo hoàn thành tất cả sessions (nhưng vẫn có thể tiếp tục)"""
@@ -405,9 +444,11 @@ class FliqloUI:
         self.task_ui.on_complete_task = self.on_complete_task
         self.task_ui.on_delete_task = self.on_delete_task
         self.task_ui.on_edit_task = self.on_edit_task
-        self.task_ui.on_reactivate_task = self.on_reactivate_task  # New callback
+        self.task_ui.on_reactivate_task = self.on_reactivate_task
+        self.task_ui.on_move_task_up = self.on_move_task_up
+        self.task_ui.on_move_task_down = self.on_move_task_down
         self.task_ui.on_clear_completed = self.on_clear_completed
-        self.task_ui.play_sound = self.play_sound  # Thiết lập sound callback
+        self.task_ui.play_sound = self.play_sound
 
     def update_task_list(self, tasks):
         """Cập nhật danh sách tasks"""
@@ -430,6 +471,7 @@ class FliqloUI:
         return {
             'main_timer_label': self.main_timer_label,
             'break_timer_label': self.break_timer_label,
+            'hidden_timer_label': self.hidden_timer_label,
             'session_label': self.session_label,
             'progress_label': self.progress_label,
             'start_btn': self.start_btn,

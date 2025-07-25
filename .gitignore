@@ -51,15 +51,16 @@ sfx/*.ogg
 !sfx/README.md
 
 # Test and temporary files
+test_*.py
+*_test.py
 demo_*.py
 *_demo.py
-test_efficiency_chart.py
-simple_efficiency_test.py
 *_diagnostic.py
 *_clean.py
 *.tmp
 *.bak
 *.old
+*.backup
 
 # Logs
 *.log
@@ -68,10 +69,7 @@ simple_efficiency_test.py
 venv/
 env/
 ENV/
-
-# Temporary files
-*.tmp
-*.temp
+.venv/
 
 # Runtime files
 *.pid
@@ -81,7 +79,3 @@ ENV/
 *~
 *.bak
 *.orig
-
-# Development
-.vscode/
-.idea/

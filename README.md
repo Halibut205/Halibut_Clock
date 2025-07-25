@@ -12,9 +12,13 @@ A **beautiful Pomodoro app** to help you focus on studying and working efficient
 
 ### **🕐 Dual Clock System**
 - **Main Timer**: Continuously tracks your total work time (never resets)
-- **Break Timer**: Tracks your break/pause time  
+- **Break Timer**: Tracks your break/pause time with smart color indicators
 - **Smart Toggle**: Seamlessly switch between work and break modes
 - **Independent Timing**: Each clock preserves its state when paused
+- **🎨 Break Color Alerts**: Visual warnings for long breaks
+  - 🔵 **Cyan (0-9:59)**: Normal break time
+  - 🟣 **Purple (10-19:59)**: Warning - break getting long
+  - 🔴 **Red (20+ minutes)**: Alert - time to get back to work!
 
 ### **⏱️ How It Works**
 1. **START**: Main timer runs continuously, break timer freezes
@@ -74,7 +78,22 @@ setup.bat    # Install dependencies
 run.bat      # Launch the application
 ```
 
-### **macOS/Linux Users**
+### **macOS Users** 
+```bash
+# Make scripts executable and run:
+chmod +x setup.sh run.sh
+./setup.sh   # Install dependencies with macOS optimizations
+./run.sh     # Launch the application
+
+# If you encounter issues, see MACOS_SETUP.md for detailed instructions
+```
+
+**macOS Troubleshooting:**
+- If `tkinter` issues: `brew install python-tk`
+- If `pygame` issues: `brew install sdl2 sdl2_mixer && pip3 install pygame`
+- Alternative: Use system Python `/usr/bin/python3 main.py`
+
+### **Linux Users**
 ```bash
 # Make scripts executable and run:
 chmod +x setup.sh run.sh
@@ -233,6 +252,7 @@ Timer/
 - ✅ **Adaptive Charts**: All target lines automatically adjust to your habits
 - ✅ **Performance-Based**: Goals range from 3-12 sessions and 2-8 hours
 - ✅ **Intelligent Defaults**: New users start with 6 sessions and 4 hours goals
+- ✅ **Break Timer Colors**: Visual alerts for long breaks (cyan→purple→red)
 
 ### **v2.0 - Advanced Charts & Separated Views**
 - ✅ **Separated Charts**: Daily Sessions and Tasks now in dedicated tabs

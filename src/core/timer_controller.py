@@ -52,7 +52,7 @@ class TimerController:
         self.ui.on_sessions_changed = self._handle_sessions_changed
         self.ui.on_auto_continue_changed = self._handle_auto_continue_changed
         self.ui.on_reset_sessions = self._handle_reset_sessions
-        self.ui.on_session_duration_changed = self._handle_session_duration_changed  # New callback
+        self.ui.on_session_duration_changed = self._handle_session_duration_changed
         self.ui.on_help_clicked = self._handle_help_clicked  # Help callback
         self.ui.on_stats_clicked = self._handle_stats_clicked  # Stats window callback
         self.ui.on_mute_clicked = self._handle_mute_clicked  # Mute callback
@@ -62,7 +62,9 @@ class TimerController:
         self.ui.on_complete_task = self._handle_complete_task
         self.ui.on_delete_task = self._handle_delete_task
         self.ui.on_edit_task = self._handle_edit_task
-        self.ui.on_reactivate_task = self._handle_reactivate_task  # New callback
+        self.ui.on_reactivate_task = self._handle_reactivate_task
+        self.ui.on_move_task_up = self._handle_move_task_up
+        self.ui.on_move_task_down = self._handle_move_task_down
         self.ui.on_clear_completed = self._handle_clear_completed
         
         # Setup task UI callbacks
@@ -167,10 +169,21 @@ class TimerController:
         """Xử lý sự kiện xóa tất cả completed tasks"""
         self.task_manager.clear_completed_tasks()
 
+    def _handle_move_task_up(self, task_index):
+        """Xử lý sự kiện di chuyển task lên trên"""
+        success = self.task_manager.move_task_up(task_index)
+        if success:
+            self.sound_manager.play_button_click()
+
+    def _handle_move_task_down(self, task_index):
+        """Xử lý sự kiện di chuyển task xuống dưới"""
+        success = self.task_manager.move_task_down(task_index)
+        if success:
+            self.sound_manager.play_button_click()
+
     def _handle_session_duration_changed(self, duration_seconds, duration_label):
         """Xử lý sự kiện thay đổi session duration"""
         self.timer_core.set_session_duration(duration_seconds)
-        print(f"Session duration changed to: {duration_label} ({duration_seconds} seconds)")
 
     def _handle_help_clicked(self):
         """Xử lý sự kiện click Help - show welcome screen"""
@@ -256,7 +269,7 @@ class TimerController:
 
     def _on_task_added(self, task):
         """Callback khi task được thêm"""
-        print(f"✅ Task added: {task['text']}")
+        pass
 
     def _on_task_completed(self, task):
         """Callback khi task được hoàn thành"""

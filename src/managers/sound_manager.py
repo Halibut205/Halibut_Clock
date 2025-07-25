@@ -1,5 +1,11 @@
 """
-Enhanced Sound Manager - Manages button sounds and background music with volume control
+Enhanced Sound Manager - Manages button sounds a               try:
+                self.completion_sound = pygame.mixer.Sound(completion_file)
+                self.completion_sound.set_volume(self.completion_volume)
+            except Exception as e:    try:
+                self.completion_sound = pygame.mixer.Sound(completion_file)
+                self.completion_sound.set_volume(self.completion_volume)
+            except Exception as e:ckground music with volume control
 """
 
 import os
@@ -18,7 +24,7 @@ class SoundManager:
         self.music_volume = 0.3  # Default volume (30%)
         self.button_volume = 0.7  # Button volume (70%)
         self.music_playing = False
-        self.music_muted = False  # New: mute state
+        self.music_muted = False
         self.volume_before_mute = 0.3  # Store volume before muting
         self._init_pygame()
     
@@ -30,7 +36,6 @@ class SoundManager:
             pygame.mixer.init()
             self._load_sounds()
             self.sound_enabled = True
-            print("[SOUND] Pygame initialized successfully")
         except Exception as e:
             print(f"[SOUND] Could not initialize pygame: {e}")
             self.sound_enabled = False
@@ -43,12 +48,10 @@ class SoundManager:
             try:
                 self.button_sound = pygame.mixer.Sound(button_file)
                 self.button_sound.set_volume(self.button_volume)
-                print(f"[SOUND] Loaded button sound: {button_file}")
             except Exception as e:
                 print(f"[SOUND] Could not load button sound {button_file}: {e}")
                 self.button_sound = None
         else:
-            print(f"[SOUND] Button sound file not found: {button_file}")
             self.button_sound = None
         
         # Load completion sound (rang.mp3)
@@ -62,16 +65,13 @@ class SoundManager:
                 print(f"[SOUND] Could not load completion sound {completion_file}: {e}")
                 self.completion_sound = None
         else:
-            print(f"[SOUND] Completion sound file not found: {completion_file}")
             self.completion_sound = None
         
         # Check for background music
         music_file = os.path.join("sfx", "whitenoise_1.mp3")
         if os.path.exists(music_file):
             self.background_music_file = music_file
-            print(f"[SOUND] Found background music: {music_file}")
         else:
-            print(f"[SOUND] Background music file not found: {music_file}")
             self.background_music_file = None
     
     def play_button_click(self):
@@ -87,7 +87,6 @@ class SoundManager:
         if self.sound_enabled and self.completion_sound:
             try:
                 self.completion_sound.play()
-                print("[SOUND] Played session completion sound")
             except Exception as e:
                 print(f"[SOUND] Error playing completion sound: {e}")
     
@@ -102,7 +101,6 @@ class SoundManager:
                 pygame.mixer.music.set_volume(self.music_volume)
                 pygame.mixer.music.play(-1)  # -1 means loop forever
                 self.music_playing = True
-                print(f"[SOUND] Started background music (volume: {int(self.music_volume * 100)}%)")
         except Exception as e:
             print(f"[SOUND] Error starting background music: {e}")
     
@@ -111,7 +109,6 @@ class SoundManager:
         if self.sound_enabled and self.music_playing:
             try:
                 pygame.mixer.music.pause()
-                print("[SOUND] Background music paused")
             except Exception as e:
                 print(f"[SOUND] Error pausing background music: {e}")
     
@@ -120,7 +117,6 @@ class SoundManager:
         if self.sound_enabled and self.music_playing:
             try:
                 pygame.mixer.music.unpause()
-                print("[SOUND] Background music resumed")
             except Exception as e:
                 print(f"[SOUND] Error resuming background music: {e}")
     
@@ -130,7 +126,6 @@ class SoundManager:
             try:
                 pygame.mixer.music.stop()
                 self.music_playing = False
-                print("[SOUND] Background music stopped")
             except Exception as e:
                 print(f"[SOUND] Error stopping background music: {e}")
     
@@ -144,7 +139,6 @@ class SoundManager:
         if self.sound_enabled and self.music_playing and not self.music_muted:
             try:
                 pygame.mixer.music.set_volume(self.music_volume)
-                print(f"[SOUND] Music volume set to {int(self.music_volume * 100)}%")
             except Exception as e:
                 print(f"[SOUND] Error setting music volume: {e}")
 
@@ -155,7 +149,6 @@ class SoundManager:
                 self.volume_before_mute = self.music_volume
                 pygame.mixer.music.set_volume(0.0)
                 self.music_muted = True
-                print("[SOUND] Background music muted")
             except Exception as e:
                 print(f"[SOUND] Error muting background music: {e}")
 
@@ -165,7 +158,6 @@ class SoundManager:
             try:
                 pygame.mixer.music.set_volume(self.volume_before_mute)
                 self.music_muted = False
-                print(f"[SOUND] Background music unmuted (volume: {int(self.volume_before_mute * 100)}%)")
             except Exception as e:
                 print(f"[SOUND] Error unmuting background music: {e}")
 
@@ -183,13 +175,11 @@ class SoundManager:
         if self.button_sound:
             try:
                 self.button_sound.set_volume(self.button_volume)
-                print(f"[SOUND] Button volume set to {int(self.button_volume * 100)}%")
             except Exception as e:
                 print(f"[SOUND] Error setting button volume: {e}")
         if self.completion_sound:
             try:
                 self.completion_sound.set_volume(self.button_volume)
-                print(f"[SOUND] Completion volume set to {int(self.button_volume * 100)}%")
             except Exception as e:
                 print(f"[SOUND] Error setting completion volume: {e}")
     
