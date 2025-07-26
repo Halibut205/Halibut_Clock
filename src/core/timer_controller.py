@@ -3,6 +3,7 @@ Timer Controller Module - Điều phối giữa UI và Timer Core
 """
 
 import tkinter as tk
+import tkinter.messagebox as messagebox
 from datetime import datetime
 from typing import Optional
 
@@ -70,8 +71,14 @@ class TimerController:
         # Setup task UI callbacks
         self.ui.setup_task_callbacks()
         
-        # Connect sound to UI buttons
-        self.ui.play_sound = self.sound_manager.play_button_click
+        # Connect sound callbacks to UI buttons
+        self.ui.play_main_button_sound = self.sound_manager.play_main_button_sound
+        self.ui.play_secondary_button_sound = self.sound_manager.play_secondary_button_sound
+        self.ui.play_stats_button_sound = self.sound_manager.play_button_stat
+        
+        # Choice overlay callbacks
+        self.ui.on_continue_session = self._handle_continue_session
+        self.ui.on_take_break = self._handle_take_break
         
         # Core callbacks - Updated for dual clock system
         self.timer_core.on_main_timer_update = self.ui.update_main_timer_display
@@ -128,6 +135,21 @@ class TimerController:
         """Xử lý sự kiện reset sessions"""
         self.timer_core.reset_sessions()
 
+    def test_popup_directly(self):
+        """Test popup trực tiếp để debug"""
+        print("🧪 Testing popup directly...")
+        self._show_user_choice_dialog()
+
+    def enable_test_mode(self):
+        """Enable test mode với session 10 giây"""
+        self.timer_core.set_test_mode()
+        print("🧪 Test mode enabled - session duration = 10 seconds")
+
+    def force_session_complete(self):
+        """Force trigger session complete cho testing"""
+        print("🔧 Force triggering session complete...")
+        self.timer_core.force_session_complete()
+
     def _handle_add_task(self, task_text):
         """Xử lý sự kiện thêm task"""
         current_session = self.timer_core.current_session + 1  # Next session
@@ -141,7 +163,7 @@ class TimerController:
             self.task_manager.complete_task(task['id'])
             # Update daily stats - increment tasks completed
             self.daily_stats.increment_tasks_completed()
-            self.sound_manager.play_button_click()
+            self.sound_manager.play_secondary_button_sound()
 
     def _handle_delete_task(self, task_index):
         """Xử lý sự kiện xóa task"""
@@ -163,7 +185,7 @@ class TimerController:
         if 0 <= task_index < len(completed_tasks):
             task = completed_tasks[task_index]
             self.task_manager.reactivate_task(task['id'])
-            self.sound_manager.play_button_click()
+            self.sound_manager.play_secondary_button_sound()
 
     def _handle_clear_completed(self):
         """Xử lý sự kiện xóa tất cả completed tasks"""
@@ -173,17 +195,24 @@ class TimerController:
         """Xử lý sự kiện di chuyển task lên trên"""
         success = self.task_manager.move_task_up(task_index)
         if success:
-            self.sound_manager.play_button_click()
+            self.sound_manager.play_secondary_button_sound()
 
     def _handle_move_task_down(self, task_index):
         """Xử lý sự kiện di chuyển task xuống dưới"""
         success = self.task_manager.move_task_down(task_index)
         if success:
-            self.sound_manager.play_button_click()
+            self.sound_manager.play_secondary_button_sound()
 
-    def _handle_session_duration_changed(self, duration_seconds, duration_label):
+    def _handle_session_duration_changed(self, duration_seconds, duration_label, is_debug_mode=False):
         """Xử lý sự kiện thay đổi session duration"""
         self.timer_core.set_session_duration(duration_seconds)
+        
+        # Log debug mode status
+        if is_debug_mode:
+            print(f"🧪 Debug mode session duration set: {duration_seconds} seconds ({duration_label})")
+            print("⚠️  Debug settings are not persistent and will reset on app restart")
+        else:
+            print(f"⏱️  Session duration set: {duration_seconds} seconds ({duration_label})")
 
     def _handle_help_clicked(self):
         """Xử lý sự kiện click Help - show welcome screen"""
@@ -216,7 +245,7 @@ class TimerController:
         self.daily_stats.increment_sessions_completed()
         
         # Play completion sound (rang.mp3)
-        self.sound_manager.play_completion_sound()
+        self.sound_manager.play_session_complete()
         
         # Pause background music
         self.sound_manager.pause_background_music()
@@ -227,7 +256,7 @@ class TimerController:
     def _handle_all_sessions_complete(self):
         """Xử lý khi hoàn thành tất cả sessions"""
         # Play completion sound
-        self.sound_manager.play_completion_sound()
+        self.sound_manager.play_session_complete()
         
         # Stop background music
         self.sound_manager.stop_background_music()
@@ -236,36 +265,41 @@ class TimerController:
         self.ui.show_all_sessions_complete_message()
     
     def _show_user_choice_dialog(self):
-        """Hiển thị dialog cho user chọn tiếp tục hay nghỉ"""
-        import tkinter.messagebox as messagebox
+        """Hiển thị overlay cho user chọn tiếp tục hay nghỉ"""
+        print("🔔 _show_user_choice_dialog được gọi!")
         
-        # Kiểm tra xem đã vượt qua target sessions chưa
-        if self.timer_core.current_session > self.timer_core.target_sessions:
-            # Đã vượt qua target - hiển thị thông báo khuyến khích
-            title = "🚀 Beyond Target! 🚀"
-            message = (f"Amazing! You've completed {self.timer_core.current_session}/{self.timer_core.target_sessions} sessions!\n\n"
-                      f"🌟 You're now in EXTRA MODE! 🌟\n\n"
-                      f"You can continue as long as you want:\n\n"
-                      f"YES = Keep going! (Session {self.timer_core.current_session + 1})\n"
-                      f"NO = Take a well-deserved break")
-        else:
-            # Chưa đạt target - thông báo bình thường
-            title = "Session Complete! 🎉"
-            message = (f"Completed session {self.timer_core.current_session}/{self.timer_core.target_sessions}!\n\n"
-                      f"What would you like to do next?\n\n"
-                      f"YES = Continue next session\n"
-                      f"NO = Take a break")
+        # Debug: Check UI object
+        if not self.ui:
+            print("❌ Error: self.ui is None!")
+            return
         
-        choice = messagebox.askyesno(title, message, icon='question')
+        # Stop background music để tránh conflict
+        self.sound_manager.stop_background_music()
         
-        if choice:
-            # User chose to continue
-            self.timer_core.choose_continue_session()
-            self.sound_manager.start_background_music()
-        else:
-            # User chose to take break
-            self.timer_core.choose_take_break()
-            # No background music during break
+        # Hiển thị overlay thay vì popup
+        try:
+            print(f"🎨 Calling show_choice_overlay with session {self.timer_core.current_session}/{self.timer_core.target_sessions}")
+            self.ui.show_choice_overlay(
+                self.timer_core.current_session, 
+                self.timer_core.target_sessions
+            )
+            print("✅ show_choice_overlay called successfully")
+        except Exception as e:
+            print(f"❌ Error calling show_choice_overlay: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _handle_continue_session(self):
+        """Xử lý khi user chọn tiếp tục session"""
+        print("✅ User chọn Continue Session")
+        self.timer_core.choose_continue_session()
+        self.sound_manager.start_background_music()
+
+    def _handle_take_break(self):
+        """Xử lý khi user chọn nghỉ break"""
+        print("✅ User chọn Take Break")
+        self.timer_core.choose_take_break()
+        # No background music during break
 
     def _on_task_added(self, task):
         """Callback khi task được thêm"""
@@ -373,7 +407,6 @@ class TimerController:
 
     def _handle_reset_today_stats(self):
         """Xử lý reset thống kê ngày hôm nay"""
-        import tkinter.messagebox as messagebox
         
         confirm = messagebox.askyesno(
             "Reset Today's Statistics",

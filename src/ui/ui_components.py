@@ -10,6 +10,7 @@ from .task_ui import TaskUI
 
 # Session duration options mapping
 SESSION_DURATION_OPTIONS: Dict[str, int] = {
+    "🧪 1 min (DEBUG)": 1 * 60,    # 60 seconds (debug only)
     "15 min": 15 * 60,      # 900 seconds
     "25 min": 25 * 60,      # 1500 seconds (Pomodoro)
     "30 min": 30 * 60,      # 1800 seconds
@@ -48,10 +49,25 @@ class FliqloUI:
         self.on_reactivate_task = None
         self.on_move_task_up = None
         self.on_move_task_down = None
+        
+        # Sound callback (deprecated - use specific sound callbacks)
+        self.play_sound = None
+        
+        # Sound callbacks for different button types
+        self.play_main_button_sound = None      # For START, PAUSE/RESUME
+        self.play_secondary_button_sound = None # For RESET, Help, Mute
+        self.play_stats_button_sound = None     # For Daily Stats
         self.on_clear_completed = None
+        
+        # Choice overlay callbacks
+        self.on_continue_session = None
+        self.on_take_break = None
         
         # Sound manager callback
         self.play_sound = None
+        
+        # Choice overlay
+        self.choice_overlay = None
 
     def _setup_window(self):
         """Thiết lập cửa sổ chính"""
@@ -59,6 +75,10 @@ class FliqloUI:
         self.root.configure(bg='black')
         self.root.geometry("500x600")
         self.root.resizable(False, False)
+        
+        # Bind keyboard shortcut for debug toggle (Ctrl+D)
+        self.root.bind('<Control-d>', lambda e: self._on_debug_toggle_clicked())
+        self.root.bind('<Control-D>', lambda e: self._on_debug_toggle_clicked())
 
     def _create_widgets(self):
         """Tạo các widget UI"""
@@ -279,25 +299,87 @@ class FliqloUI:
             command=self._on_reset_sessions_clicked
         )
         self.reset_sessions_btn.grid(row=0, column=5, padx=5)
+        
+        # Debug toggle button (quick access)
+        self.debug_toggle_btn = tk.Button(
+            settings_frame,
+            text="🧪",
+            width=3,
+            font=("Arial", 8),
+            bg="#27ae60",
+            fg="white",
+            command=self._on_debug_toggle_clicked,
+            relief="raised"
+        )
+        self.debug_toggle_btn.grid(row=0, column=6, padx=2)
+        
+        # Bind tooltip events
+        def show_debug_tooltip(event):
+            self.debug_status_label.config(text="🧪 Debug Mode Toggle (Ctrl+D)")
+        
+        def hide_debug_tooltip(event):
+            if not self.is_debug_mode_active():
+                self.debug_status_label.config(text="")
+        
+        self.debug_toggle_btn.bind("<Enter>", show_debug_tooltip)
+        self.debug_toggle_btn.bind("<Leave>", hide_debug_tooltip)
+        
+        # Tooltip-like label for debug button (initially hidden)
+        self.debug_status_label = tk.Label(
+            settings_frame,
+            text="",
+            font=("Arial", 7),
+            fg="red",
+            bg="black"
+        )
+        self.debug_status_label.grid(row=1, column=0, columnspan=7, pady=2)
+
+    def _on_debug_toggle_clicked(self):
+        """Xử lý sự kiện click nút debug toggle"""
+        if self.play_secondary_button_sound:
+            self.play_secondary_button_sound()
+        
+        current_selection = self.session_duration_var.get()
+        
+        if current_selection.startswith("🧪"):
+            # Currently in debug mode, switch to normal
+            self.session_duration_var.set("1 hour")
+            self.duration_combobox.config(bg="gray20", fg="white")
+            self.debug_toggle_btn.config(bg="#27ae60", text="🧪")  # Green when debug available
+            self.debug_status_label.config(text="")
+            print("🔄 Switched from debug mode to normal mode (1 hour)")
+            if self.on_session_duration_changed:
+                duration_seconds = SESSION_DURATION_OPTIONS["1 hour"]
+                self.on_session_duration_changed(duration_seconds, "1 hour", False)
+        else:
+            # Currently in normal mode, switch to debug
+            self.session_duration_var.set("🧪 1 min (DEBUG)")
+            self.duration_combobox.config(bg="#e74c3c", fg="white")
+            self.debug_toggle_btn.config(bg="#c0392b", text="⚠️")  # Darker red when debug active
+            self.debug_status_label.config(text="🧪 DEBUG MODE: 1-min sessions (not saved)")
+            print("🧪 Switched to debug mode (1 minute sessions)")
+            if self.on_session_duration_changed:
+                duration_seconds = SESSION_DURATION_OPTIONS["🧪 1 min (DEBUG)"]
+                self.on_session_duration_changed(duration_seconds, "🧪 1 min (DEBUG)", True)
 
     def _on_start_clicked(self):
         """Xử lý sự kiện click nút Start"""
-        if self.play_sound:
-            self.play_sound()
+        if self.play_main_button_sound:
+            self.play_main_button_sound()
         if self.on_start:
             self.on_start()
 
     def _on_toggle_clicked(self):
         """Xử lý sự kiện click nút Pause/Resume"""
-        if self.play_sound:
-            self.play_sound()
+        if self.play_main_button_sound:
+            self.play_main_button_sound()
         if self.on_toggle:
             self.on_toggle()
 
     def _on_reset_clicked(self):
         """Xử lý sự kiện click nút Reset"""
-        if self.play_sound:
-            self.play_sound()
+        if self.play_secondary_button_sound:
+            self.play_secondary_button_sound()
         if self.on_reset:
             self.on_reset()
 
@@ -312,44 +394,76 @@ class FliqloUI:
 
     def _on_auto_continue_changed(self):
         """Xử lý sự kiện thay đổi auto continue"""
-        if self.play_sound:
-            self.play_sound()
+        if self.play_secondary_button_sound:
+            self.play_secondary_button_sound()
         if self.on_auto_continue_changed:
             self.on_auto_continue_changed(self.auto_continue_var.get())
 
     def _on_reset_sessions_clicked(self):
         """Xử lý sự kiện reset sessions"""
-        if self.play_sound:
-            self.play_sound()
+        if self.play_secondary_button_sound:
+            self.play_secondary_button_sound()
         if self.on_reset_sessions:
             self.on_reset_sessions()
+
+    def is_debug_mode_active(self):
+        """Check if debug mode is currently active"""
+        current_selection = self.session_duration_var.get()
+        return current_selection.startswith("🧪")
+    
+    def reset_to_normal_mode(self):
+        """Reset session duration to normal mode (1 hour)"""
+        if self.is_debug_mode_active():
+            print("🔄 Resetting from debug mode to normal mode")
+            self.session_duration_var.set("1 hour")
+            self.duration_combobox.config(bg="gray20", fg="white")
+            # Trigger the change event
+            if self.on_session_duration_changed:
+                duration_seconds = SESSION_DURATION_OPTIONS["1 hour"]
+                self.on_session_duration_changed(duration_seconds, "1 hour", False)
 
     def _on_session_duration_changed(self, selected_duration):
         """Xử lý sự kiện thay đổi session duration"""
         if self.play_sound:
             self.play_sound()
+        
+        # Check if debug mode is selected
+        is_debug_mode = selected_duration.startswith("🧪")
+        
+        # Visual indicator cho debug mode
+        if is_debug_mode:
+            self.duration_combobox.config(bg="#e74c3c", fg="white")  # Red background for debug
+            self.debug_toggle_btn.config(bg="#c0392b", text="⚠️")  # Active debug button
+            self.debug_status_label.config(text="🧪 DEBUG MODE: 1-min sessions (not saved)")
+            print("🧪 DEBUG MODE ACTIVATED: 1-minute sessions")
+            print("⚠️  This setting will NOT be saved to data files")
+        else:
+            self.duration_combobox.config(bg="gray20", fg="white")  # Normal background
+            self.debug_toggle_btn.config(bg="#27ae60", text="🧪")  # Available debug button
+            self.debug_status_label.config(text="")
+        
         if self.on_session_duration_changed:
             duration_seconds = SESSION_DURATION_OPTIONS[selected_duration]
-            self.on_session_duration_changed(duration_seconds, selected_duration)
+            self.on_session_duration_changed(duration_seconds, selected_duration, is_debug_mode)
 
     def _on_help_clicked(self):
         """Xử lý sự kiện click nút Help"""
-        if self.play_sound:
-            self.play_sound()
+        if self.play_secondary_button_sound:
+            self.play_secondary_button_sound()
         if self.on_help_clicked:
             self.on_help_clicked()
 
     def _on_stats_clicked(self):
         """Xử lý sự kiện click nút Daily Stats"""
-        if self.play_sound:
-            self.play_sound()
+        if self.play_stats_button_sound:
+            self.play_stats_button_sound()
         if self.on_stats_clicked:
             self.on_stats_clicked()
 
     def _on_mute_clicked(self):
         """Xử lý sự kiện click nút Mute"""
-        if self.play_sound:
-            self.play_sound()
+        if self.play_secondary_button_sound:
+            self.play_secondary_button_sound()
         if self.on_mute_clicked:
             is_muted = self.on_mute_clicked()
             # Update button appearance based on mute state
@@ -427,16 +541,18 @@ class FliqloUI:
         else:
             self.mute_btn.config(text="🔊 Sound", bg="#27ae60")
 
+    def show_session_complete_message(self):
+        """Hiển thị thông báo hoàn thành một session"""
+        print("🎯 Session complete message displayed")
+        # Không hiển thị messagebox nữa vì đã có choice overlay
+        # Message này chỉ để tương thích với code cũ
+        pass
+
     def show_all_sessions_complete_message(self):
-        """Hiển thị thông báo hoàn thành tất cả sessions (nhưng vẫn có thể tiếp tục)"""
-        import tkinter.messagebox as msgbox
-        msgbox.showinfo(
-            "� Target Achieved! �", 
-            f"🎉 You completed your target of {self.sessions_var.get()} sessions! 🎉\n\n"
-            "🌟 You are a productivity champion! 🌟\n\n"
-            "🚀 You can continue working if you want to go BEYOND your target!\n\n"
-            "The choice is yours - celebrate this achievement! 🏆"
-        )
+        """Hiển thị thông báo hoàn thành tất cả sessions - chỉ console log, popup đã tích hợp vào overlay"""
+        print("🎉 Target sessions achieved! Overlay will show celebration message.")
+        # Không hiển thị popup nữa - thông báo đã được tích hợp vào choice overlay
+        pass
 
     def setup_task_callbacks(self):
         """Thiết lập callbacks cho task UI"""
@@ -448,7 +564,7 @@ class FliqloUI:
         self.task_ui.on_move_task_up = self.on_move_task_up
         self.task_ui.on_move_task_down = self.on_move_task_down
         self.task_ui.on_clear_completed = self.on_clear_completed
-        self.task_ui.play_sound = self.play_sound
+        self.task_ui.play_sound = self.play_secondary_button_sound
 
     def update_task_list(self, tasks):
         """Cập nhật danh sách tasks"""
@@ -481,3 +597,177 @@ class FliqloUI:
             'auto_continue_cb': self.auto_continue_cb,
             'task_ui': self.task_ui
         }
+
+    def show_choice_overlay(self, current_session, target_sessions):
+        """Hiển thị overlay lựa chọn session complete"""
+        print(f"🎨 show_choice_overlay called: session {current_session}/{target_sessions}")
+        
+        # Debug: Check if root exists
+        if not self.root:
+            print("❌ Error: self.root is None!")
+            return
+        
+        # Hide existing overlay if any
+        if self.choice_overlay:
+            print("🧹 Hiding existing overlay")
+            self.hide_choice_overlay()
+        
+        print("🔧 Creating new overlay...")
+        
+        # Tạo overlay frame - điều chỉnh kích thước để fit celebration message
+        overlay_height = 230 if current_session >= target_sessions else 200  # Cao hơn cho celebration message
+        self.choice_overlay = tk.Frame(self.root, bg='#34495e', relief='raised', bd=1)
+        self.choice_overlay.place(relx=0.5, rely=0.5, anchor='center', width=380, height=overlay_height)
+        
+        print(f"✅ Overlay frame created: {self.choice_overlay}")
+        
+        # Background với màu đậm và special effect cho celebration
+        if current_session >= target_sessions:
+            # Celebration mode: gold border effect
+            overlay_bg = tk.Frame(self.choice_overlay, bg='#2c3e50', relief='solid', bd=2)
+            overlay_bg.config(highlightbackground="#f39c12", highlightthickness=1)
+        else:
+            # Normal mode
+            overlay_bg = tk.Frame(self.choice_overlay, bg='#2c3e50', relief='flat', bd=0)
+        overlay_bg.pack(fill='both', expand=True, padx=3, pady=3)
+        
+        # Title - logic cải thiện cho hiển thị session với celebration message
+        if current_session >= target_sessions:
+            title_text = "🎉 TARGET ACHIEVED! 🎉"
+            title_color = "#f39c12"
+            if current_session == target_sessions:
+                # Vừa đạt target lần đầu
+                message_text = (f"🏆 Congratulations! You completed {target_sessions} sessions! 🏆\n"
+                               f"🌟 You are a productivity champion! 🌟\n"
+                               f"✨ Continue to go BEYOND your target! ✨")
+            else:
+                # Đã vượt target
+                message_text = (f"🚀 Amazing! Session {current_session}/{target_sessions} complete! 🚀\n"
+                               f"🌟 You're in EXTRA MODE! 🌟\n"
+                               f"💪 Keep pushing your limits! 💪")
+        else:
+            title_text = "� Session Complete! �"
+            title_color = "#27ae60"
+            message_text = f"Session {current_session}/{target_sessions} completed!\n💡 What's next? 💡"
+        
+        title_label = tk.Label(
+            overlay_bg,
+            text=title_text,
+            font=("Arial", 12, "bold"),  # Giảm từ 13 xuống 12 để có space cho message
+            fg=title_color,
+            bg='#2c3e50'
+        )
+        title_label.pack(pady=(10, 4))  # Giảm padding để có space cho message dài hơn
+        
+        # Message với line height tốt hơn cho celebration text
+        message_font_size = 8 if current_session >= target_sessions else 9  # Nhỏ hơn cho celebration
+        message_label = tk.Label(
+            overlay_bg,
+            text=message_text,
+            font=("Arial", message_font_size),
+            fg="white",
+            bg='#2c3e50',
+            justify='center',
+            wraplength=340  # Wrap text để fit trong overlay
+        )
+        message_label.pack(pady=(0, 10))  # Padding bottom vừa phải
+        
+        # Buttons frame với grid layout để cân đối hơn
+        buttons_frame = tk.Frame(overlay_bg, bg='#2c3e50')
+        buttons_frame.pack(pady=(0, 8), padx=12, fill='x')  # Padding bottom và sides
+        
+        # Configure grid để buttons có khoảng cách đều
+        buttons_frame.grid_columnconfigure(0, weight=1)
+        buttons_frame.grid_columnconfigure(1, weight=1)
+        
+        # Continue button với text phù hợp context
+        continue_text = "🚀 Keep Going!" if current_session >= target_sessions else "✅ Continue"
+        continue_btn = tk.Button(
+            buttons_frame,
+            text=continue_text,
+            font=("Arial", 9, "bold"),
+            bg="#27ae60",
+            fg="white",
+            activebackground="#2ecc71",
+            activeforeground="white",
+            width=11,
+            height=1,
+            pady=6,
+            relief='flat',
+            bd=0,
+            command=self._on_continue_clicked
+        )
+        continue_btn.grid(row=0, column=0, padx=(0, 4), sticky='ew')
+        
+        # Break button với text phù hợp context  
+        break_text = "🎉 Celebrate!" if current_session >= target_sessions else "☕ Break"
+        break_btn = tk.Button(
+            buttons_frame,
+            text=break_text,
+            font=("Arial", 9, "bold"),
+            bg="#e74c3c",
+            fg="white",
+            activebackground="#c0392b",
+            activeforeground="white",
+            width=11,
+            height=1,
+            pady=6,
+            relief='flat',
+            bd=0,
+            command=self._on_break_clicked
+        )
+        break_btn.grid(row=0, column=1, padx=(4, 0), sticky='ew')
+        
+        # Đưa overlay lên trên cùng với tkraise và focus
+        self.choice_overlay.tkraise()
+        self.choice_overlay.lift()
+        
+        # Đưa root window lên trên và focus
+        self.root.lift()
+        self.root.attributes('-topmost', True)
+        self.root.attributes('-topmost', False)  # Chỉ flash lên trên rồi về normal
+        
+        # Focus vào continue button
+        continue_btn.focus_set()
+        continue_btn.bind('<Return>', lambda e: self._on_continue_clicked())
+        break_btn.bind('<Return>', lambda e: self._on_break_clicked())
+        
+        print("✅ Choice overlay setup complete!")
+        print(f"🔍 Overlay geometry: {self.choice_overlay.winfo_reqwidth()}x{self.choice_overlay.winfo_reqheight()}")
+        
+        # Force update
+        self.root.update_idletasks()
+
+    def hide_choice_overlay(self):
+        """Ẩn overlay lựa chọn"""
+        if self.choice_overlay:
+            self.choice_overlay.destroy()
+            self.choice_overlay = None
+
+    def _on_continue_clicked(self):
+        """Xử lý khi user click Continue"""
+        print("🎯 Continue button clicked!")
+        self.hide_choice_overlay()
+        if self.on_continue_session:
+            print("🔄 Calling on_continue_session callback...")
+            try:
+                self.on_continue_session()
+                print("✅ on_continue_session callback completed")
+            except Exception as e:
+                print(f"❌ Error in on_continue_session callback: {e}")
+        else:
+            print("❌ on_continue_session callback is None!")
+
+    def _on_break_clicked(self):
+        """Xử lý khi user click Take Break"""
+        print("☕ Break button clicked!")
+        self.hide_choice_overlay()
+        if self.on_take_break:
+            print("🔄 Calling on_take_break callback...")
+            try:
+                self.on_take_break()
+                print("✅ on_take_break callback completed")
+            except Exception as e:
+                print(f"❌ Error in on_take_break callback: {e}")
+        else:
+            print("❌ on_take_break callback is None!")
