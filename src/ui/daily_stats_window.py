@@ -1904,7 +1904,7 @@ class DailyStatsWindow:
         # Customize chart with beautiful typography
         ax.set_title('📈 Study Time & Break Analysis', 
                     fontsize=16, fontweight='bold', pad=25,
-                    color='#2c3e50', fontfamily='sans-serif')
+                    color='#2c3e50', fontfamily='monospace')
         ax.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
         ax.set_ylabel('Hours', fontsize=12, color='#34495e', fontweight='500')
         
@@ -1986,7 +1986,7 @@ class DailyStatsWindow:
         
         ax.set_title('🎯 Daily Sessions Completed - Detailed Analysis', 
                     fontsize=16, fontweight='bold', pad=20,
-                    color='#2c3e50', fontfamily='sans-serif')
+                    color='#2c3e50', fontfamily='monospace')
         ax.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
         ax.set_ylabel('Sessions', fontsize=12, color='#34495e', fontweight='500')
         ax.grid(True, alpha=0.4, axis='y', linestyle='-', linewidth=0.5, color='#bdc3c7')
@@ -2087,7 +2087,7 @@ class DailyStatsWindow:
         
         ax.set_title('✅ Daily Tasks Completed - Detailed Analysis', 
                     fontsize=16, fontweight='bold', pad=20,
-                    color='#2c3e50', fontfamily='sans-serif')
+                    color='#2c3e50', fontfamily='monospace')
         ax.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
         ax.set_ylabel('Tasks', fontsize=12, color='#34495e', fontweight='500')
         ax.grid(True, alpha=0.4, axis='y', linestyle='-', linewidth=0.5, color='#bdc3c7')
@@ -2223,7 +2223,7 @@ class DailyStatsWindow:
         # Customize chart with beautiful typography
         ax.set_title('⚡ Study Efficiency & Goal Achievement Analysis', 
                     fontsize=16, fontweight='bold', pad=25,
-                    color='#2c3e50', fontfamily='sans-serif')
+                    color='#2c3e50', fontfamily='monospace')
         ax.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
         ax.set_ylabel('Efficiency (%)', fontsize=12, color='#16a085', fontweight='600')
         ax2.set_ylabel('Goal Progress (%)', fontsize=12, color='#2980b9', fontweight='600')

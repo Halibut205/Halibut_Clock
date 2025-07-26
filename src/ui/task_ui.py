@@ -4,6 +4,7 @@ Task UI Components - Giao diện quản lý tasks
 
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
+from .font_config import get_text_font
 
 class TaskUI:
     def __init__(self, parent_frame):
@@ -39,7 +40,7 @@ class TaskUI:
         self.summary_label = tk.Label(
             summary_frame,
             text="Tasks: 0 total, 0 completed",
-            font=("Arial", 10, "bold"),
+            font=get_text_font(10, "bold"),
             fg="lightgreen",
             bg="black"
         )
@@ -49,9 +50,9 @@ class TaskUI:
         add_frame = tk.Frame(self.tasks_frame, bg='black')
         add_frame.pack(fill=tk.X, pady=3)
 
-        tk.Label(add_frame, text="Task:", fg="white", bg="black", font=("Arial", 9)).pack(side=tk.LEFT)
+        tk.Label(add_frame, text="Task:", fg="white", bg="black", font=get_text_font(9)).pack(side=tk.LEFT)
         
-        self.task_entry = tk.Entry(add_frame, width=25, font=("Arial", 9))
+        self.task_entry = tk.Entry(add_frame, width=25, font=get_text_font(9))
         self.task_entry.pack(side=tk.LEFT, padx=3, fill=tk.X, expand=True)
         self.task_entry.bind("<Return>", self._on_add_task_enter)
 
@@ -62,7 +63,7 @@ class TaskUI:
             bg="green",
             fg="white",
             width=6,
-            font=("Arial", 8)
+            font=get_text_font(8)
         )
         self.add_btn.pack(side=tk.RIGHT, padx=3)
 
@@ -75,13 +76,13 @@ class TaskUI:
         active_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=3)
 
         tk.Label(active_frame, text="📋 Active", fg="yellow", bg="black", 
-                font=("Arial", 9, "bold")).pack()
+                font=get_text_font(9, "bold")).pack()
 
         # Active tasks listbox - smaller
         self.task_listbox = tk.Listbox(
             active_frame,
             height=4,  # Giảm từ 6
-            font=("Arial", 8),
+            font=get_text_font(8),
             bg="gray20",
             fg="white",
             selectbackground="blue"
@@ -99,7 +100,7 @@ class TaskUI:
             bg="darkgreen",
             fg="white",
             width=3,
-            font=("Arial", 8)
+            font=get_text_font(8)
         )
         self.complete_btn.pack(side=tk.LEFT, padx=1)
 
@@ -110,7 +111,7 @@ class TaskUI:
             bg="orange",
             fg="white",
             width=3,
-            font=("Arial", 8)
+            font=get_text_font(8)
         )
         self.edit_btn.pack(side=tk.LEFT, padx=1)
 
@@ -121,7 +122,7 @@ class TaskUI:
             bg="darkred",
             fg="white",
             width=3,
-            font=("Arial", 8)
+            font=get_text_font(8)
         )
         self.delete_btn.pack(side=tk.LEFT, padx=1)
 
@@ -133,7 +134,7 @@ class TaskUI:
             bg="steelblue",
             fg="white",
             width=3,
-            font=("Arial", 8)
+            font=get_text_font(8)
         )
         self.move_up_btn.pack(side=tk.LEFT, padx=1)
 
@@ -144,7 +145,7 @@ class TaskUI:
             bg="steelblue",
             fg="white",
             width=3,
-            font=("Arial", 8)
+            font=get_text_font(8)
         )
         self.move_down_btn.pack(side=tk.LEFT, padx=1)
 
@@ -153,13 +154,13 @@ class TaskUI:
         completed_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=3)
 
         tk.Label(completed_frame, text="✅ Done", fg="lightgreen", bg="black",
-                font=("Arial", 9, "bold")).pack()
+                font=get_text_font(9, "bold")).pack()
 
         # Completed tasks listbox - smaller
         self.completed_listbox = tk.Listbox(
             completed_frame,
             height=4,  # Giảm từ 6
-            font=("Arial", 8),
+            font=get_text_font(8),
             bg="gray15",
             fg="lightgray",
             selectbackground="darkgreen"
@@ -178,7 +179,7 @@ class TaskUI:
             bg="orange",
             fg="white",
             width=6,
-            font=("Arial", 8)
+            font=get_text_font(8)
         )
         self.reactivate_btn.pack(side=tk.LEFT, padx=1)
 
@@ -190,7 +191,7 @@ class TaskUI:
             bg="purple",
             fg="white",
             width=6,
-            font=("Arial", 8)
+            font=get_text_font(8)
         )
         self.clear_completed_btn.pack(side=tk.LEFT, padx=1)
 
