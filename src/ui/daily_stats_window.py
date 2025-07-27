@@ -250,6 +250,28 @@ class DailyStatsWindow:
         )
         self.efficiency_label.pack(side="left", padx=(10, 0))
         
+        # Add efficiency info toggle button
+        self.efficiency_toggle_btn = tk.Label(
+            eff_header,
+            text="?",
+            font=("Segoe UI", 9, "bold"),
+            bg='#ecf0f1',
+            fg='#3498db',
+            relief="raised",
+            bd=1,
+            padx=3,
+            pady=1,
+            cursor="hand2"
+        )
+        self.efficiency_toggle_btn.pack(side="left", padx=(5, 0))
+        self.efficiency_toggle_btn.bind("<Button-1>", self.toggle_efficiency_info)
+        self.efficiency_toggle_btn.bind("<Enter>", self.on_toggle_hover)
+        self.efficiency_toggle_btn.bind("<Leave>", self.on_toggle_leave)
+        
+        # Initially hidden efficiency info panel
+        self.efficiency_info_panel = None
+        self.efficiency_info_visible = False
+        
         # Efficiency progress bar
         eff_progress_frame = tk.Frame(efficiency_frame, bg='#ecf0f1', height=8, relief="flat", bd=1)
         eff_progress_frame.pack(fill="x", pady=(5, 0))
@@ -2590,3 +2612,127 @@ class DailyStatsWindow:
         """Refresh current data in explorer"""
         if hasattr(self, 'current_data'):
             self.update_explorer_display()
+    
+    def toggle_efficiency_info(self, event=None):
+        """Toggle display/hide efficiency info panel"""
+        if self.efficiency_info_visible:
+            self.hide_efficiency_info()
+        else:
+            self.show_efficiency_info_panel()
+    
+    def show_efficiency_info_panel(self):
+        """Show efficiency info panel"""
+        if self.efficiency_info_panel:
+            return
+        
+        # Find efficiency_frame to insert panel into it
+        efficiency_frame = self.efficiency_toggle_btn.master.master
+        
+        # Create info panel
+        self.efficiency_info_panel = tk.Frame(efficiency_frame, bg='#f8f9fa', relief="solid", bd=1)
+        self.efficiency_info_panel.pack(fill="x", pady=(8, 0))
+        
+        # Header with close icon
+        header_frame = tk.Frame(self.efficiency_info_panel, bg='#3498db', height=25)
+        header_frame.pack(fill="x")
+        header_frame.pack_propagate(False)
+        
+        tk.Label(
+            header_frame,
+            text="📊 Study Efficiency Guide",
+            font=("Segoe UI", 9, "bold"),
+            bg='#3498db',
+            fg='white'
+        ).pack(side="left", padx=8, expand=True, anchor="w")
+        
+        close_btn = tk.Label(
+            header_frame,
+            text="✕",
+            font=("Segoe UI", 8, "bold"),
+            bg='#3498db',
+            fg='white',
+            cursor="hand2",
+            padx=5
+        )
+        close_btn.pack(side="right")
+        close_btn.bind("<Button-1>", lambda e: self.hide_efficiency_info())
+        
+        # Content
+        content_frame = tk.Frame(self.efficiency_info_panel, bg='#f8f9fa', padx=10, pady=8)
+        content_frame.pack(fill="x")
+        
+        # Formula
+        formula_text = "💡 Formula: Efficiency = (Study Time / Total Time) × 100%"
+        tk.Label(
+            content_frame,
+            text=formula_text,
+            font=("Segoe UI", 8),
+            bg='#f8f9fa',
+            fg='#2c3e50',
+            wraplength=400,
+            justify="left"
+        ).pack(anchor="w", pady=(0, 4))
+        
+        # Levels
+        levels_frame = tk.Frame(content_frame, bg='#f8f9fa')
+        levels_frame.pack(fill="x", pady=(0, 4))
+        
+        levels = [
+            ("🔥 85-100%", "Excellent", "#27ae60"),
+            ("💪 70-84%", "Very Good", "#f39c12"),
+            ("📈 50-69%", "Good", "#e67e22"),
+            ("⚠️ <50%", "Needs Improvement", "#e74c3c")
+        ]
+        
+        for i, (range_text, desc, color) in enumerate(levels):
+            level_frame = tk.Frame(levels_frame, bg='#f8f9fa')
+            level_frame.pack(fill="x")
+            
+            tk.Label(
+                level_frame,
+                text=f"{range_text}: {desc}",
+                font=("Segoe UI", 8),
+                bg='#f8f9fa',
+                fg=color,
+                anchor="w"
+            ).pack(side="left")
+        
+        # Quick tips
+        tips_text = "💡 Tip: 85-90% is ideal. 100% = no breaks (not recommended!)"
+        tk.Label(
+            content_frame,
+            text=tips_text,
+            font=("Segoe UI", 8, "italic"),
+            bg='#f8f9fa',
+            fg='#7f8c8d',
+            wraplength=400,
+            justify="left"
+        ).pack(anchor="w", pady=(4, 0))
+        
+        # Update toggle button
+        self.efficiency_toggle_btn.config(text="×", bg='#e74c3c', fg='white')
+        self.efficiency_info_visible = True
+    
+    def hide_efficiency_info(self):
+        """Hide efficiency info panel"""
+        if self.efficiency_info_panel:
+            self.efficiency_info_panel.destroy()
+            self.efficiency_info_panel = None
+        
+        # Reset toggle button
+        self.efficiency_toggle_btn.config(text="?", bg='#ecf0f1', fg='#3498db')
+        self.efficiency_info_visible = False
+    
+    def on_toggle_hover(self, event):
+        """Hover effect for toggle button"""
+        if self.efficiency_info_visible:
+            self.efficiency_toggle_btn.config(bg='#c0392b')
+        else:
+            self.efficiency_toggle_btn.config(bg='#d5dbdb')
+    
+    def on_toggle_leave(self, event):
+        """Remove hover effect for toggle button"""
+        if self.efficiency_info_visible:
+            self.efficiency_toggle_btn.config(bg='#e74c3c')
+        else:
+            self.efficiency_toggle_btn.config(bg='#ecf0f1')
