@@ -25,6 +25,10 @@ class DailyStatsWindow:
         self.window = None
         self.current_data = []  # Để lưu dữ liệu hiện tại trong Data Explorer
         
+        # Overlay variables
+        self.date_overlay = None
+        self.overlay_visible = False
+        
     def show(self):
         """Hiển thị cửa sổ thống kê"""
         if self.window is not None:
@@ -437,6 +441,9 @@ class DailyStatsWindow:
         # Pack with better layout
         self.weekly_tree.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+        
+        # Bind double-click event for date overlay
+        self.weekly_tree.bind("<Double-1>", self.on_weekly_double_click)
     
     def create_monthly_tab(self):
         """Tạo tab thống kê tháng"""
@@ -886,6 +893,9 @@ class DailyStatsWindow:
         
         table_frame.grid_rowconfigure(0, weight=1)
         table_frame.grid_columnconfigure(0, weight=1)
+        
+        # Bind double-click event for date overlay
+        self.explorer_tree.bind("<Double-1>", self.on_explorer_double_click)
         
         # Initialize with last 30 days
         self.load_data_range(30)
@@ -1761,6 +1771,10 @@ class DailyStatsWindow:
 
     def on_close(self):
         """Xử lý khi đóng cửa sổ"""
+        # Close overlay if open
+        if self.overlay_visible:
+            self.hide_date_overlay()
+        
         self.window.destroy()
         self.window = None
 
@@ -2736,3 +2750,288 @@ class DailyStatsWindow:
             self.efficiency_toggle_btn.config(bg='#e74c3c')
         else:
             self.efficiency_toggle_btn.config(bg='#ecf0f1')
+
+    # === DATE OVERLAY METHODS ===
+    
+    def on_weekly_double_click(self, event):
+        """Handle double-click on weekly table"""
+        item = self.weekly_tree.selection()[0] if self.weekly_tree.selection() else None
+        if item:
+            # Get date from the first column
+            date_str = self.weekly_tree.item(item, 'values')[0]
+            # Convert from display format (MM/DD) to YYYY-MM-DD
+            date_str = self.convert_display_date_to_iso(date_str)
+            self.show_date_overlay(date_str)
+    
+    def on_explorer_double_click(self, event):
+        """Handle double-click on explorer table"""
+        item = self.explorer_tree.selection()[0] if self.explorer_tree.selection() else None
+        if item:
+            # Get date from the first column
+            date_str = self.explorer_tree.item(item, 'values')[0]
+            # Convert from display format to YYYY-MM-DD if needed
+            date_str = self.convert_display_date_to_iso(date_str)
+            self.show_date_overlay(date_str)
+    
+    def convert_display_date_to_iso(self, display_date):
+        """Convert display date format to ISO format (YYYY-MM-DD)"""
+        try:
+            from datetime import datetime
+            # Try different formats
+            for fmt in ['%m/%d', '%Y-%m-%d', '%m/%d (%a)', '%Y-%m-%d (%a)']:
+                try:
+                    if '(' in display_date:
+                        # Remove day name in parentheses
+                        display_date = display_date.split(' (')[0]
+                    
+                    if fmt == '%m/%d':
+                        # For MM/DD format, add current year
+                        parsed_date = datetime.strptime(display_date, fmt)
+                        current_year = datetime.now().year
+                        return f"{current_year}-{parsed_date.month:02d}-{parsed_date.day:02d}"
+                    else:
+                        parsed_date = datetime.strptime(display_date, fmt)
+                        return parsed_date.strftime('%Y-%m-%d')
+                except ValueError:
+                    continue
+            
+            # If all formats fail, return as is
+            return display_date
+        except Exception:
+            return display_date
+    
+    def show_date_overlay(self, date_str):
+        """Show overlay with date details"""
+        if self.overlay_visible:
+            self.hide_date_overlay()
+            return
+        
+        # Get stats for the selected date
+        date_stats = self.stats_manager.get_date_summary(date_str)
+        
+        # Create overlay
+        self.date_overlay = tk.Toplevel(self.window)
+        self.date_overlay.title(f"📊 Details for {date_str}")
+        self.date_overlay.geometry("600x500")
+        self.date_overlay.configure(bg='#f5f5f5')
+        self.date_overlay.resizable(False, False)
+        
+        # Make it modal
+        self.date_overlay.transient(self.window)
+        self.date_overlay.grab_set()
+        
+        # Center the overlay
+        self.center_overlay()
+        
+        # Create content similar to Today tab
+        self.create_overlay_content(date_stats)
+        
+        # Bind close events
+        self.date_overlay.protocol("WM_DELETE_WINDOW", self.hide_date_overlay)
+        self.date_overlay.bind("<Escape>", lambda e: self.hide_date_overlay())
+        
+        self.overlay_visible = True
+    
+    def center_overlay(self):
+        """Center the overlay on the parent window"""
+        self.date_overlay.update_idletasks()
+        
+        # Get parent window position and size
+        parent_x = self.window.winfo_x()
+        parent_y = self.window.winfo_y()
+        parent_width = self.window.winfo_width()
+        parent_height = self.window.winfo_height()
+        
+        # Get overlay size
+        overlay_width = self.date_overlay.winfo_width()
+        overlay_height = self.date_overlay.winfo_height()
+        
+        # Calculate center position
+        x = parent_x + (parent_width - overlay_width) // 2
+        y = parent_y + (parent_height - overlay_height) // 2
+        
+        self.date_overlay.geometry(f"{overlay_width}x{overlay_height}+{x}+{y}")
+    
+    def create_overlay_content(self, date_stats):
+        """Create overlay content similar to Today tab"""
+        # Header
+        header_frame = tk.Frame(self.date_overlay, bg='#2c3e50', height=60)
+        header_frame.pack(fill="x")
+        header_frame.pack_propagate(False)
+        
+        # Header content
+        header_content = tk.Frame(header_frame, bg='#2c3e50')
+        header_content.pack(expand=True, fill="both")
+        
+        # Title
+        title_label = tk.Label(
+            header_content,
+            text=f"📊 Study Statistics",
+            font=("Segoe UI", 16, "bold"),
+            bg='#2c3e50',
+            fg='white'
+        )
+        title_label.pack(side="left", padx=20, pady=15)
+        
+        # Date
+        date_label = tk.Label(
+            header_content,
+            text=f"{date_stats['date']}",
+            font=("Segoe UI", 12),
+            bg='#2c3e50',
+            fg='#ecf0f1'
+        )
+        date_label.pack(side="left", padx=(10, 0), pady=15)
+        
+        # Close button
+        close_btn = tk.Button(
+            header_content,
+            text="✕",
+            command=self.hide_date_overlay,
+            bg='#e74c3c',
+            fg='white',
+            font=("Arial", 14, "bold"),
+            relief="flat",
+            width=3,
+            cursor="hand2"
+        )
+        close_btn.pack(side="right", padx=20, pady=15)
+        
+        # Main content
+        main_frame = tk.Frame(self.date_overlay, bg='#f5f5f5', padx=20, pady=20)
+        main_frame.pack(fill="both", expand=True)
+        
+        # Stats cards
+        cards_frame = tk.Frame(main_frame, bg='#f5f5f5')
+        cards_frame.pack(fill="x", pady=(0, 20))
+        
+        # Create 4 stat cards in 2x2 grid
+        self.create_overlay_card(cards_frame, "📚 Study Time", date_stats['study_time'], "#2ecc71", 0, 0)
+        self.create_overlay_card(cards_frame, "☕ Break Time", date_stats['break_time'], "#f39c12", 0, 1)
+        self.create_overlay_card(cards_frame, "🎯 Sessions", date_stats['sessions_completed'], "#9b59b6", 1, 0)
+        self.create_overlay_card(cards_frame, "✅ Tasks", date_stats['tasks_completed'], "#e74c3c", 1, 1)
+        
+        # Progress summary
+        self.create_overlay_summary(main_frame, date_stats)
+    
+    def create_overlay_card(self, parent, title, value, color, row, col):
+        """Create a stat card for overlay"""
+        card_frame = tk.Frame(parent, bg=color, relief="flat", bd=0)
+        card_frame.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
+        
+        # Configure grid weights
+        parent.grid_rowconfigure(row, weight=1)
+        parent.grid_columnconfigure(col, weight=1)
+        
+        # Title
+        title_label = tk.Label(
+            card_frame,
+            text=title,
+            font=("Segoe UI", 11, "bold"),
+            bg=color,
+            fg='white'
+        )
+        title_label.pack(fill="x", pady=10)
+        
+        # Value
+        value_label = tk.Label(
+            card_frame,
+            text=str(value),
+            font=("Segoe UI", 18, "bold"),
+            bg=color,
+            fg='white'
+        )
+        value_label.pack(fill="x", pady=(0, 15))
+        
+        # Make card a bit taller
+        card_frame.configure(height=100)
+    
+    def create_overlay_summary(self, parent, date_stats):
+        """Create progress summary for overlay"""
+        summary_frame = tk.LabelFrame(parent, text="📈 Progress Summary", font=("Segoe UI", 12, "bold"), bg='#f5f5f5')
+        summary_frame.pack(fill="x", pady=(10, 0))
+        
+        # Calculate efficiency
+        study_seconds = self.time_to_seconds(date_stats['study_time'])
+        break_seconds = self.time_to_seconds(date_stats['break_time'])
+        total_seconds = study_seconds + break_seconds
+        
+        if total_seconds > 0:
+            efficiency = (study_seconds / total_seconds) * 100
+            efficiency_text = f"{efficiency:.1f}%"
+            if efficiency >= 85:
+                efficiency_color = "#2ecc71"
+                efficiency_level = "🔥 Excellent"
+            elif efficiency >= 70:
+                efficiency_color = "#f39c12"
+                efficiency_level = "💪 Very Good"
+            elif efficiency >= 50:
+                efficiency_color = "#e67e22"
+                efficiency_level = "📈 Good"
+            else:
+                efficiency_color = "#e74c3c"
+                efficiency_level = "⚠️ Needs Improvement"
+        else:
+            efficiency_text = "N/A"
+            efficiency_color = "#95a5a6"
+            efficiency_level = "📊 No Data"
+        
+        # Efficiency display
+        efficiency_frame = tk.Frame(summary_frame, bg='#f5f5f5')
+        efficiency_frame.pack(fill="x", padx=15, pady=10)
+        
+        efficiency_label = tk.Label(
+            efficiency_frame,
+            text="⚡ Study Efficiency:",
+            font=("Segoe UI", 11, "bold"),
+            bg='#f5f5f5'
+        )
+        efficiency_label.pack(side="left")
+        
+        efficiency_value = tk.Label(
+            efficiency_frame,
+            text=f"{efficiency_text} - {efficiency_level}",
+            font=("Segoe UI", 11, "bold"),
+            bg='#f5f5f5',
+            fg=efficiency_color
+        )
+        efficiency_value.pack(side="left", padx=(10, 0))
+        
+        # Total time
+        total_frame = tk.Frame(summary_frame, bg='#f5f5f5')
+        total_frame.pack(fill="x", padx=15, pady=(0, 10))
+        
+        total_label = tk.Label(
+            total_frame,
+            text="⏰ Total Time:",
+            font=("Segoe UI", 11, "bold"),
+            bg='#f5f5f5'
+        )
+        total_label.pack(side="left")
+        
+        total_value = tk.Label(
+            total_frame,
+            text=date_stats['total_time'],
+            font=("Segoe UI", 11),
+            bg='#f5f5f5',
+            fg='#2c3e50'
+        )
+        total_value.pack(side="left", padx=(10, 0))
+    
+    def time_to_seconds(self, time_str):
+        """Convert HH:MM:SS to seconds"""
+        try:
+            parts = time_str.split(':')
+            hours = int(parts[0])
+            minutes = int(parts[1])
+            seconds = int(parts[2])
+            return hours * 3600 + minutes * 60 + seconds
+        except:
+            return 0
+    
+    def hide_date_overlay(self):
+        """Hide the date overlay"""
+        if self.date_overlay:
+            self.date_overlay.destroy()
+            self.date_overlay = None
+        self.overlay_visible = False

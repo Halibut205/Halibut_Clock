@@ -62,6 +62,34 @@ class DailyStatsManager:
             }
         return self.stats_data[today_key]
     
+    def get_date_stats(self, date_str: str) -> Dict[str, Any]:
+        """Lấy thống kê của ngày cụ thể (format: YYYY-MM-DD)"""
+        if date_str in self.stats_data:
+            return self.stats_data[date_str]
+        else:
+            # Trả về empty stats nếu không có dữ liệu
+            return {
+                "date": date_str,
+                "study_time": 0,
+                "break_time": 0,
+                "sessions_completed": 0,
+                "tasks_completed": 0,
+                "start_time": None,
+                "last_update": None
+            }
+    
+    def get_date_summary(self, date_str: str) -> Dict[str, str]:
+        """Lấy tóm tắt thống kê của ngày cụ thể với format đẹp"""
+        date_stats = self.get_date_stats(date_str)
+        return {
+            "date": date_stats["date"],
+            "study_time": self.format_time(date_stats["study_time"]),
+            "break_time": self.format_time(date_stats["break_time"]),
+            "sessions_completed": str(date_stats["sessions_completed"]),
+            "tasks_completed": str(date_stats["tasks_completed"]),
+            "total_time": self.format_time(date_stats["study_time"] + date_stats["break_time"])
+        }
+    
     def update_study_time(self, additional_seconds: int):
         """Cập nhật thời gian học"""
         today_stats = self.get_today_stats()
