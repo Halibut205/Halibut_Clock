@@ -1,6 +1,6 @@
 @echo off
 echo ============================================
-echo    Fliqlo Timer - Installation Script
+echo    Study Timer - Installation Script
 echo ============================================
 echo.
 

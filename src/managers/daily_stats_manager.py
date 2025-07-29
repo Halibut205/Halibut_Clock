@@ -67,7 +67,7 @@ class DailyStatsManager:
         if date_str in self.stats_data:
             return self.stats_data[date_str]
         else:
-            # Trả về empty stats nếu không có dữ liệu
+            # Return empty stats if no data available
             return {
                 "date": date_str,
                 "study_time": 0,
@@ -96,7 +96,7 @@ class DailyStatsManager:
         today_stats["study_time"] += additional_seconds
         today_stats["last_update"] = datetime.now().isoformat()
         
-        # Đặt thời gian bắt đầu nếu chưa có
+        # Set start time if not already set
         if today_stats["start_time"] is None:
             today_stats["start_time"] = datetime.now().isoformat()
         
@@ -156,13 +156,13 @@ class DailyStatsManager:
                 stats["formatted_break_time"] = self.format_time(stats["break_time"])
                 recent_stats.append(stats)
             else:
-                # Tạo entry trống cho ngày không có dữ liệu
+                # Create empty entry for days with no data
                 recent_stats.append(self._create_empty_day_stats(date_key))
         
         return recent_stats
     
     def get_weekly_total(self) -> Dict[str, Any]:
-        """Lấy tổng thống kê tuần này"""
+        """Get this week's total statistics"""
         recent_days = self.get_recent_days(7)
         total_study = sum(day["study_time"] for day in recent_days)
         total_break = sum(day["break_time"] for day in recent_days)
@@ -182,20 +182,20 @@ class DailyStatsManager:
         """Lấy thống kê theo tháng"""
         from calendar import monthrange
         
-        # Nếu không chỉ định, lấy tháng hiện tại
+        # If not specified, get current month
         if year is None or month is None:
             now = datetime.now()
             year = now.year
             month = now.month
         
-        # Lấy số ngày trong tháng
+        # Get number of days in month
         days_in_month = monthrange(year, month)[1]
         
         monthly_stats = []
         totals = {"study": 0, "break": 0, "sessions": 0, "tasks": 0}
         active_days = 0
         
-        # Duyệt qua tất cả ngày trong tháng
+        # Iterate through all days in month
         for day in range(1, days_in_month + 1):
             date_key = f"{year:04d}-{month:02d}-{day:02d}"
             
@@ -214,7 +214,7 @@ class DailyStatsManager:
                 if day_stats["study_time"] > 0:
                     active_days += 1
             else:
-                # Ngày không có dữ liệu
+                # Day with no data
                 monthly_stats.append(self._create_empty_day_stats(date_key))
         
         return {
@@ -318,12 +318,12 @@ class DailyStatsManager:
         # Xác định start_date
         if start_date is None:
             if days is None:
-                days = 30  # Mặc định 30 ngày
+                days = 30  # Default 30 days
             start_date = end_date - timedelta(days=days-1)
         elif isinstance(start_date, str):
             start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
         
-        # Tạo danh sách ngày trong khoảng thời gian
+        # Create list of days in the time range
         current_date = start_date
         range_stats = []
         
@@ -336,7 +336,7 @@ class DailyStatsManager:
                 stats["formatted_break_time"] = self.format_time(stats["break_time"])
                 range_stats.append(stats)
             else:
-                # Tạo entry trống cho ngày không có dữ liệu
+                # Create empty entry for days with no data
                 range_stats.append(self._create_empty_day_stats(date_key))
             
             current_date += timedelta(days=1)
@@ -364,11 +364,11 @@ class DailyStatsManager:
         for month in range(1, 13):
             monthly_data = self.get_monthly_data(year, month)
             
-            # Chuyển đổi total_study_time từ string sang seconds để tính tổng
+            # Convert total_study_time from string to seconds to calculate total
             month_study_seconds = self.time_to_seconds(monthly_data["total_study_time"])
             month_break_seconds = self.time_to_seconds(monthly_data["total_break_time"])
             
-            # Thêm tháng vào yearly_stats
+            # Add month to yearly_stats
             yearly_stats.append({
                 "month": month,
                 "month_name": monthly_data["month_name"],

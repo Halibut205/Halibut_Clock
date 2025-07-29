@@ -1,6 +1,3 @@
-"""
-Daily Statistics UI - Giao diện hiển thị thống kê học tập hàng ngày
-"""
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime

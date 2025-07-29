@@ -1,6 +1,6 @@
 # Audio Files
 
-This directory contains sound effects and background music for the Fliqlo Timer application.
+This directory contains sound effects and background music for the Study Timer application.
 
 ## Required Files
 
@@ -46,11 +46,11 @@ You can replace these files with your own audio:
 
 Default audio files are included for demonstration purposes. For commercial use, please ensure you have proper licensing for any audio files you use.
 
-## Định dạng được hỗ trợ:
-- MP3 (đang dùng)
+## Supported Formats:
+- MP3 (currently used)
 - WAV
 - OGG
 
-## Ghi chú:
-- Ứng dụng sẽ hoạt động bình thường nếu thiếu file âm thanh
-- Whitenoise giúp tập trung và che tiếng ồn xung quanh
+## Notes:
+- Application will work normally if audio files are missing
+- White noise helps with focus and masks background noise

@@ -1,5 +1,5 @@
 """
-Configuration module for Fliqlo Timer
+Configuration module for Study Timer
 Contains application-wide settings and constants.
 """
 
@@ -30,7 +30,7 @@ SESSION_DURATION_OPTIONS: Dict[str, int] = {
 
 # UI settings
 WINDOW_SIZE = "500x600"
-WINDOW_TITLE = "Fliqlo Timer"
+WINDOW_TITLE = "Study Timer"
 WINDOW_RESIZABLE = False
 
 # Colors

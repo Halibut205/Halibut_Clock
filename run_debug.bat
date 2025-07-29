@@ -1,6 +1,6 @@
 @echo off
 echo ============================================
-echo    Fliqlo Timer - Debug Mode
+echo    Study Timer - Debug Mode
 echo ============================================
 echo.
 

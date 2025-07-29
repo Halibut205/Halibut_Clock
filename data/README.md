@@ -1,6 +1,6 @@
 # Data Directory
 
-This directory contains application data files that are automatically created and managed by the Fliqlo Timer.
+This directory contains application data files that are automatically created and managed by the Study Timer.
 
 ## Files
 

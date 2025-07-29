@@ -29,7 +29,7 @@ class TaskManager:
             'id': len(self.tasks) + len(self.completed_tasks) + 1,
             'text': task_text,
             'created_at': datetime.now().isoformat(),
-            'session_target': session_target,  # Session nào muốn hoàn thành task này
+            'session_target': session_target,  # Which session to complete this task
             'priority': 'normal'  # normal, high, low
         }
         
@@ -99,9 +99,9 @@ class TaskManager:
         return [task for task in self.tasks if task.get('session_target') == session_number]
 
     def move_task_up(self, task_index: int) -> bool:
-        """Di chuyển task lên trên trong danh sách"""
+        """Move task up in the list"""
         if task_index > 0 and task_index < len(self.tasks):
-            # Hoán đổi vị trí với task phía trên
+            # Swap position with task above
             self.tasks[task_index], self.tasks[task_index - 1] = self.tasks[task_index - 1], self.tasks[task_index]
             self.save_tasks()
             
@@ -112,9 +112,9 @@ class TaskManager:
         return False
 
     def move_task_down(self, task_index: int) -> bool:
-        """Di chuyển task xuống dưới trong danh sách"""
+        """Move task down in the list"""
         if task_index >= 0 and task_index < len(self.tasks) - 1:
-            # Hoán đổi vị trí với task phía dưới
+            # Swap position with task below
             self.tasks[task_index], self.tasks[task_index + 1] = self.tasks[task_index + 1], self.tasks[task_index]
             self.save_tasks()
             
@@ -196,7 +196,7 @@ class TaskManager:
             print(f"❌ Could not save tasks: {e}")
 
     def load_tasks(self):
-        """Load tasks từ file"""
+        """Load tasks from file"""
         try:
             if os.path.exists(self.data_file):
                 with open(self.data_file, 'r', encoding='utf-8') as f:

@@ -8,11 +8,12 @@ from datetime import datetime
 from typing import Optional
 
 from .timer_core import TimerCore
-from ..ui.ui_components import FliqloUI
+from ..ui.ui_components import StudyTimerUI
 from ..ui.daily_stats_window import DailyStatsWindow
 from ..managers.sound_manager import SoundManager
 from ..managers.task_manager import TaskManager
 from ..managers.daily_stats_manager import DailyStatsManager
+from ..managers.timer_state_manager import TimerStateManager
 
 
 class TimerController:
@@ -23,14 +24,18 @@ class TimerController:
         
         # Initialize core components
         self.timer_core = TimerCore()
-        self.ui = FliqloUI(root)
+        self.ui = StudyTimerUI(root)
         self.sound_manager = SoundManager()
         self.task_manager = TaskManager()
         self.daily_stats = DailyStatsManager()
+        self.timer_state_manager = TimerStateManager()
         
         # Tracking variables for stats updates
         self.last_main_time = 0
         self.last_break_time = 0
+        
+        # Auto-save counter (save every 30 seconds)
+        self.auto_save_counter = 0
         
         # Daily stats window
         self.daily_stats_window = DailyStatsWindow(root, self.daily_stats)
@@ -38,8 +43,14 @@ class TimerController:
         # Kết nối callbacks
         self._setup_callbacks()
         
+        # Check for and restore saved timer state from today
+        self._try_restore_timer_state()
+        
         # Load và hiển thị tasks
         self._refresh_task_display()
+        
+        # Setup window close handler for state saving
+        self._setup_close_handler()
         
         # Bắt đầu update loop
         self._update_loop()
@@ -330,6 +341,12 @@ class TimerController:
         # Cập nhật daily stats
         self._update_daily_stats()
         
+        # Auto-save state every 30 seconds
+        self.auto_save_counter += 1
+        if self.auto_save_counter >= 30:
+            self._auto_save_state()
+            self.auto_save_counter = 0
+        
         # Lặp lại sau 1 giây
         self.root.after(1000, self._update_loop)
 
@@ -429,3 +446,89 @@ class TimerController:
     def _update_session_display(self, current, target):
         """Update session display với current và target sessions"""
         self.ui.update_session_display(current, target)
+
+    def _try_restore_timer_state(self):
+        """Try to restore timer state from today if available"""
+        try:
+            if self.timer_state_manager.has_saved_state_today():
+                # Show overlay to ask user if they want to restore the previous session
+                def on_restore_choice(restore_choice):
+                    if restore_choice:
+                        # User chose to restore
+                        state_data = self.timer_state_manager.load_timer_state()
+                        if state_data and self.timer_state_manager.restore_timer_state(self.timer_core, state_data):
+                            # Update UI to reflect restored state
+                            self._refresh_ui_from_state()
+                            print("✅ Timer state restored successfully!")
+                        else:
+                            print("❌ Failed to restore timer state")
+                    else:
+                        # User chose not to restore, clear the saved state
+                        self.timer_state_manager.clear_timer_state()
+                        print("🆕 Starting fresh session")
+                
+                # Show the restore session overlay
+                self.ui.show_restore_session_overlay(on_restore_choice)
+                
+        except Exception as e:
+            print(f"Error during state restoration: {e}")
+
+    def _refresh_ui_from_state(self):
+        """Refresh UI elements to match restored timer state"""
+        try:
+            # Update timer displays
+            if self.timer_core.on_main_timer_update:
+                self.timer_core.on_main_timer_update(
+                    self.timer_core.format_time(self.timer_core.main_time)
+                )
+            if self.timer_core.on_break_timer_update:
+                self.timer_core.on_break_timer_update(
+                    self.timer_core.format_time(self.timer_core.break_time)
+                )
+            
+            # Update session display
+            self._update_session_display(self.timer_core.current_session, self.timer_core.target_sessions)
+            
+            # Update UI state
+            if self.timer_core.on_state_change:
+                if self.timer_core.main_running:
+                    self.timer_core.on_state_change("main_running")
+                elif self.timer_core.break_running:
+                    self.timer_core.on_state_change("break_running")
+                else:
+                    self.timer_core.on_state_change("all_frozen")
+            
+            # Update session controls
+            self.ui.set_target_sessions(self.timer_core.target_sessions)
+            self.ui.set_session_duration(self.timer_core.session_duration)
+            self.ui.set_auto_continue(self.timer_core.auto_continue)
+            
+        except Exception as e:
+            print(f"Error refreshing UI from state: {e}")
+
+    def _setup_close_handler(self):
+        """Setup handler to save state when window is closed"""
+        def on_closing():
+            # Save timer state before closing
+            try:
+                # Only save if timer has been used (has some time recorded)
+                if self.timer_core.main_time > 0 or self.timer_core.break_time > 0:
+                    self.timer_state_manager.save_timer_state(self.timer_core)
+                    print("Timer state saved successfully!")
+            except Exception as e:
+                print(f"Error saving timer state: {e}")
+            
+            # Close the application
+            self.root.destroy()
+        
+        self.root.protocol("WM_DELETE_WINDOW", on_closing)
+
+    def _auto_save_state(self):
+        """Auto-save timer state periodically (called during update loop)"""
+        try:
+            # Auto-save every 30 seconds if timer is active
+            if (self.timer_core.main_running or self.timer_core.break_running) and \
+               (self.timer_core.main_time > 0 or self.timer_core.break_time > 0):
+                self.timer_state_manager.save_timer_state(self.timer_core)
+        except Exception as e:
+            print(f"Error during auto-save: {e}")

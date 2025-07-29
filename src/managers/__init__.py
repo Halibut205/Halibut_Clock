@@ -5,5 +5,6 @@ Manager Classes - Data and resource management components
 from .daily_stats_manager import DailyStatsManager
 from .sound_manager import SoundManager
 from .task_manager import TaskManager
+from .timer_state_manager import TimerStateManager
 
-__all__ = ["DailyStatsManager", "SoundManager", "TaskManager"]
+__all__ = ["DailyStatsManager", "SoundManager", "TaskManager", "TimerStateManager"]

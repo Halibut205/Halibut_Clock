@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Fliqlo Timer - Main Application Entry Point
+Study Timer - Main Application Entry Point
 A beautiful Pomodoro timer with dual clock system and unlimited sessions support.
 """
 
@@ -30,8 +30,8 @@ from src.ui.welcome_screen import show_welcome_screen
 from src.ui.app_settings import should_show_welcome
 
 
-class FliqloTimerApp:
-    """Main application class for the Fliqlo Timer"""
+class StudyTimerApp:
+    """Main application class for the Study Timer"""
     
     def __init__(self):
         self.root = None
@@ -50,7 +50,7 @@ class FliqloTimerApp:
 
 def main():
     """Entry point của ứng dụng"""
-    app = FliqloTimerApp()
+    app = StudyTimerApp()
     
     # Check if should show welcome screen
     if should_show_welcome():

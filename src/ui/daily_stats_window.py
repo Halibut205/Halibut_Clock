@@ -40,7 +40,7 @@ class DailyStatsWindow:
             
         # Tạo cửa sổ mới với kích thước lớn hơn
         self.window = tk.Toplevel(self.parent)
-        self.window.title("📊 Daily Statistics - Fliqlo Timer")
+        self.window.title("📊 Daily Statistics - Study Timer")
         self.window.geometry("1200x800")  # Tăng từ 800x600 lên 1200x800
         self.window.configure(bg='#f5f5f5')
         

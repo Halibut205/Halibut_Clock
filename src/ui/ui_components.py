@@ -1,5 +1,5 @@
 """
-UI Components Module - Main user interface components for the Fliqlo Timer
+UI Components Module - Main user interface components for the Study Timer
 """
 
 import tkinter as tk
@@ -21,15 +21,15 @@ SESSION_DURATION_OPTIONS: Dict[str, int] = {
 }
 
 
-class FliqloUI:
-    """Main UI class for the Fliqlo Timer interface"""
+class StudyTimerUI:
+    """Main UI class for the Study Timer interface"""
     
     def __init__(self, root: tk.Tk):
         self.root = root
         self._setup_window()
         self._create_widgets()
         
-        # Callbacks cho các sự kiện
+        # Event callbacks
         self.on_start = None
         self.on_toggle = None
         self.on_reset = None
@@ -71,7 +71,7 @@ class FliqloUI:
 
     def _setup_window(self):
         """Thiết lập cửa sổ chính"""
-        self.root.title("Fliqlo Timer")
+        self.root.title("Study Timer")
         self.root.configure(bg='black')
         self.root.geometry("500x600")
         self.root.resizable(False, False)
@@ -121,11 +121,11 @@ class FliqloUI:
         )
         self.main_timer_label.pack(pady=5)
 
-        # Break timer section với hidden timer
+        # Break timer section with hidden timer
         break_frame = tk.Frame(self.root, bg='black')
         break_frame.pack(pady=5)
         
-        # Break timer label - compact (chính)
+        # Break timer label - compact (main)
         self.break_timer_label = tk.Label(
             break_frame, 
             text="Break: 00:00:00", 
@@ -135,7 +135,7 @@ class FliqloUI:
         )
         self.break_timer_label.pack(side="left")
         
-        # Hidden timer label - nhỏ hơn, bên phải
+        # Hidden timer label - smaller, on the right
         self.hidden_timer_label = tk.Label(
             break_frame,
             text="00:00",
@@ -201,7 +201,7 @@ class FliqloUI:
         btn_frame = tk.Frame(self.root, bg='black')
         btn_frame.pack(pady=10)
 
-        # Các nút điều khiển với font lớn
+        # Control buttons with large font
         btn_font = tkfont.Font(family="Arial", size=14, weight="bold")
         
         self.start_btn = tk.Button(
@@ -430,7 +430,7 @@ class FliqloUI:
         # Check if debug mode is selected
         is_debug_mode = selected_duration.startswith("🧪")
         
-        # Visual indicator cho debug mode
+        # Visual indicator for debug mode
         if is_debug_mode:
             self.duration_combobox.config(bg="#e74c3c", fg="white")  # Red background for debug
             self.debug_toggle_btn.config(bg="#c0392b", text="⚠️")  # Active debug button
@@ -486,15 +486,15 @@ class FliqloUI:
         hidden_text = f"{hidden_mins:02d}:{hidden_secs:02d}"
         self.hidden_timer_label.config(text=hidden_text)
         
-        # Đổi màu dựa trên thời gian break session hiện tại
-        if break_session_seconds >= 20 * 60:  # 20+ phút: màu đỏ
+        # Change color based on current break session time
+        if break_session_seconds >= 20 * 60:  # 20+ minutes: red color
             color = "red"
-        elif break_session_seconds >= 10 * 60:  # 10+ phút: màu tím
+        elif break_session_seconds >= 10 * 60:  # 10+ minutes: magenta color
             color = "magenta"
-        else:  # 0-10 phút: màu cyan
+        else:  # 0-10 minutes: cyan color
             color = "cyan"
         
-        # Chỉ đổi màu khi break timer đang active
+        # Only change color when break timer is active
         if hasattr(self, '_break_timer_active') and self._break_timer_active:
             self.break_timer_label.config(fg=color)
             self.hidden_timer_label.config(fg=color)
@@ -544,18 +544,18 @@ class FliqloUI:
     def show_session_complete_message(self):
         """Hiển thị thông báo hoàn thành một session"""
         print("🎯 Session complete message displayed")
-        # Không hiển thị messagebox nữa vì đã có choice overlay
-        # Message này chỉ để tương thích với code cũ
+        # No longer show messagebox because we have choice overlay
+        # This message is only for compatibility with old code
         pass
 
     def show_all_sessions_complete_message(self):
-        """Hiển thị thông báo hoàn thành tất cả sessions - chỉ console log, popup đã tích hợp vào overlay"""
+        """Display message for all sessions complete - only console log, popup already integrated into overlay"""
         print("🎉 Target sessions achieved! Overlay will show celebration message.")
-        # Không hiển thị popup nữa - thông báo đã được tích hợp vào choice overlay
+        # No longer show popup - notification already integrated into choice overlay
         pass
 
     def setup_task_callbacks(self):
-        """Thiết lập callbacks cho task UI"""
+        """Setup callbacks for task UI"""
         self.task_ui.on_add_task = self.on_add_task
         self.task_ui.on_complete_task = self.on_complete_task
         self.task_ui.on_delete_task = self.on_delete_task
@@ -614,14 +614,14 @@ class FliqloUI:
         
         print("🔧 Creating new overlay...")
         
-        # Tạo overlay frame - điều chỉnh kích thước để fit celebration message
-        overlay_height = 230 if current_session >= target_sessions else 200  # Cao hơn cho celebration message
+        # Create overlay frame - adjust size to fit celebration message
+        overlay_height = 230 if current_session >= target_sessions else 200  # Higher for celebration message
         self.choice_overlay = tk.Frame(self.root, bg='#34495e', relief='raised', bd=1)
         self.choice_overlay.place(relx=0.5, rely=0.5, anchor='center', width=380, height=overlay_height)
         
         print(f"✅ Overlay frame created: {self.choice_overlay}")
         
-        # Background với màu đậm và special effect cho celebration
+        # Background with dark color and special effect for celebration
         if current_session >= target_sessions:
             # Celebration mode: gold border effect
             overlay_bg = tk.Frame(self.choice_overlay, bg='#2c3e50', relief='solid', bd=2)
@@ -631,17 +631,17 @@ class FliqloUI:
             overlay_bg = tk.Frame(self.choice_overlay, bg='#2c3e50', relief='flat', bd=0)
         overlay_bg.pack(fill='both', expand=True, padx=3, pady=3)
         
-        # Title - logic cải thiện cho hiển thị session với celebration message
+        # Title - improved logic for session display with celebration message
         if current_session >= target_sessions:
             title_text = "🎉 TARGET ACHIEVED! 🎉"
             title_color = "#f39c12"
             if current_session == target_sessions:
-                # Vừa đạt target lần đầu
+                # Just reached target for the first time
                 message_text = (f"🏆 Congratulations! You completed {target_sessions} sessions! 🏆\n"
                                f"🌟 You are a productivity champion! 🌟\n"
                                f"✨ Continue to go BEYOND your target! ✨")
             else:
-                # Đã vượt target
+                # Already exceeded target
                 message_text = (f"🚀 Amazing! Session {current_session}/{target_sessions} complete! 🚀\n"
                                f"🌟 You're in EXTRA MODE! 🌟\n"
                                f"💪 Keep pushing your limits! 💪")
@@ -653,14 +653,14 @@ class FliqloUI:
         title_label = tk.Label(
             overlay_bg,
             text=title_text,
-            font=("Arial", 12, "bold"),  # Giảm từ 13 xuống 12 để có space cho message
+            font=("Arial", 12, "bold"),  # Reduced from 13 to 12 to make space for message
             fg=title_color,
             bg='#2c3e50'
         )
-        title_label.pack(pady=(10, 4))  # Giảm padding để có space cho message dài hơn
+        title_label.pack(pady=(10, 4))  # Reduced padding to make space for longer message
         
-        # Message với line height tốt hơn cho celebration text
-        message_font_size = 8 if current_session >= target_sessions else 9  # Nhỏ hơn cho celebration
+        # Message with better line height for celebration text
+        message_font_size = 8 if current_session >= target_sessions else 9  # Smaller for celebration
         message_label = tk.Label(
             overlay_bg,
             text=message_text,
@@ -668,19 +668,19 @@ class FliqloUI:
             fg="white",
             bg='#2c3e50',
             justify='center',
-            wraplength=340  # Wrap text để fit trong overlay
+            wraplength=340  # Wrap text to fit within overlay
         )
-        message_label.pack(pady=(0, 10))  # Padding bottom vừa phải
+        message_label.pack(pady=(0, 10))  # Moderate bottom padding
         
-        # Buttons frame với grid layout để cân đối hơn
+        # Buttons frame with grid layout for better balance
         buttons_frame = tk.Frame(overlay_bg, bg='#2c3e50')
-        buttons_frame.pack(pady=(0, 8), padx=12, fill='x')  # Padding bottom và sides
+        buttons_frame.pack(pady=(0, 8), padx=12, fill='x')  # Bottom and side padding
         
-        # Configure grid để buttons có khoảng cách đều
+        # Configure grid so buttons have even spacing
         buttons_frame.grid_columnconfigure(0, weight=1)
         buttons_frame.grid_columnconfigure(1, weight=1)
         
-        # Continue button với text phù hợp context
+        # Continue button with context-appropriate text
         continue_text = "🚀 Keep Going!" if current_session >= target_sessions else "✅ Continue"
         continue_btn = tk.Button(
             buttons_frame,
@@ -699,7 +699,7 @@ class FliqloUI:
         )
         continue_btn.grid(row=0, column=0, padx=(0, 4), sticky='ew')
         
-        # Break button với text phù hợp context  
+        # Break button with context-appropriate text  
         break_text = "🎉 Celebrate!" if current_session >= target_sessions else "☕ Break"
         break_btn = tk.Button(
             buttons_frame,
@@ -718,16 +718,16 @@ class FliqloUI:
         )
         break_btn.grid(row=0, column=1, padx=(4, 0), sticky='ew')
         
-        # Đưa overlay lên trên cùng với tkraise và focus
+        # Bring overlay to front with tkraise and focus
         self.choice_overlay.tkraise()
         self.choice_overlay.lift()
         
-        # Đưa root window lên trên và focus
+        # Bring root window to front and focus
         self.root.lift()
         self.root.attributes('-topmost', True)
-        self.root.attributes('-topmost', False)  # Chỉ flash lên trên rồi về normal
+        self.root.attributes('-topmost', False)  # Just flash to front then return to normal
         
-        # Focus vào continue button
+        # Focus on continue button
         continue_btn.focus_set()
         continue_btn.bind('<Return>', lambda e: self._on_continue_clicked())
         break_btn.bind('<Return>', lambda e: self._on_break_clicked())
@@ -771,3 +771,162 @@ class FliqloUI:
                 print(f"❌ Error in on_take_break callback: {e}")
         else:
             print("❌ on_take_break callback is None!")
+
+    # State restoration methods for timer state manager
+    def set_target_sessions(self, sessions):
+        """Set target sessions value"""
+        self.sessions_var.set(str(sessions))
+
+    def set_session_duration(self, duration_seconds):
+        """Set session duration value"""
+        # Convert seconds to appropriate dropdown value
+        if duration_seconds == 900:  # 15 minutes
+            self.session_duration_var.set("15 min")
+        elif duration_seconds == 1200:  # 20 minutes
+            self.session_duration_var.set("20 min")
+        elif duration_seconds == 1500:  # 25 minutes  
+            self.session_duration_var.set("25 min")
+        elif duration_seconds == 1800:  # 30 minutes
+            self.session_duration_var.set("30 min")
+        elif duration_seconds == 2700:  # 45 minutes
+            self.session_duration_var.set("45 min")
+        elif duration_seconds == 3600:  # 1 hour
+            self.session_duration_var.set("1 hour")
+        elif duration_seconds == 5400:  # 1.5 hours
+            self.session_duration_var.set("1.5 hours")
+        elif duration_seconds == 7200:  # 2 hours
+            self.session_duration_var.set("2 hours")
+        else:
+            # Default to 1 hour if unknown duration
+            self.session_duration_var.set("1 hour")
+
+    def set_auto_continue(self, auto_continue):
+        """Set auto continue checkbox value"""
+        self.auto_continue_var.set(auto_continue)
+
+    def show_restore_session_overlay(self, callback):
+        """Show overlay for session restoration choice"""
+        print("🔄 Showing restore session overlay...")
+        
+        # Hide existing overlay if any
+        if hasattr(self, 'restore_overlay') and self.restore_overlay:
+            self.restore_overlay.destroy()
+        
+        # Create overlay frame
+        self.restore_overlay = tk.Frame(self.root, bg='#34495e', relief='raised', bd=1)
+        self.restore_overlay.place(relx=0.5, rely=0.5, anchor='center', width=400, height=250)
+        
+        # Background
+        overlay_bg = tk.Frame(self.restore_overlay, bg='#2c3e50', relief='flat', bd=0)
+        overlay_bg.pack(fill='both', expand=True, padx=3, pady=3)
+        
+        # Icon and title
+        title_label = tk.Label(
+            overlay_bg,
+            text="💾 Session Recovery",
+            font=("Arial", 14, "bold"),
+            fg="#3498db",
+            bg='#2c3e50'
+        )
+        title_label.pack(pady=(15, 10))
+        
+        # Message
+        message_text = ("Found a saved timer session from today.\n\n"
+                       "Would you like to restore your previous session?\n\n"
+                       "This will restore:\n"
+                       "• Timer values (main time, break time)\n"
+                       "• Session progress\n"
+                       "• Timer state (running/paused)")
+        
+        message_label = tk.Label(
+            overlay_bg,
+            text=message_text,
+            font=("Arial", 9),
+            fg="white",
+            bg='#2c3e50',
+            justify='center',
+            wraplength=360
+        )
+        message_label.pack(pady=(0, 15))
+        
+        # Buttons frame
+        buttons_frame = tk.Frame(overlay_bg, bg='#2c3e50')
+        buttons_frame.pack(pady=(0, 15), padx=20, fill='x')
+        
+        # Configure grid
+        buttons_frame.grid_columnconfigure(0, weight=1)
+        buttons_frame.grid_columnconfigure(1, weight=1)
+        
+        # Restore button
+        restore_btn = tk.Button(
+            buttons_frame,
+            text="✅ Restore Session",
+            font=("Arial", 10, "bold"),
+            bg="#27ae60",
+            fg="white",
+            activebackground="#2ecc71",
+            activeforeground="white",
+            width=15,
+            height=2,
+            relief='flat',
+            bd=0,
+            command=lambda: self._on_restore_clicked(callback, True)
+        )
+        restore_btn.grid(row=0, column=0, padx=(0, 5), sticky='ew')
+        
+        # Start fresh button
+        fresh_btn = tk.Button(
+            buttons_frame,
+            text="🆕 Start Fresh",
+            font=("Arial", 10, "bold"),
+            bg="#e74c3c",
+            fg="white",
+            activebackground="#c0392b",
+            activeforeground="white",
+            width=15,
+            height=2,
+            relief='flat',
+            bd=0,
+            command=lambda: self._on_restore_clicked(callback, False)
+        )
+        fresh_btn.grid(row=0, column=1, padx=(5, 0), sticky='ew')
+        
+        # Bring overlay to front
+        self.restore_overlay.tkraise()
+        self.restore_overlay.lift()
+        
+        # Focus on restore button by default
+        restore_btn.focus_set()
+        restore_btn.bind('<Return>', lambda e: self._on_restore_clicked(callback, True))
+        fresh_btn.bind('<Return>', lambda e: self._on_restore_clicked(callback, False))
+        
+        # Keyboard shortcuts
+        self.root.bind('<Key-y>', lambda e: self._on_restore_clicked(callback, True))
+        self.root.bind('<Key-n>', lambda e: self._on_restore_clicked(callback, False))
+        self.root.bind('<Escape>', lambda e: self._on_restore_clicked(callback, False))
+        
+        print("✅ Restore session overlay displayed")
+
+    def _on_restore_clicked(self, callback, restore_choice):
+        """Handle restore session overlay button clicks"""
+        print(f"🔄 Restore choice: {'Yes' if restore_choice else 'No'}")
+        
+        # Unbind keyboard shortcuts
+        self.root.unbind('<Key-y>')
+        self.root.unbind('<Key-n>')
+        self.root.unbind('<Escape>')
+        
+        # Hide overlay
+        if hasattr(self, 'restore_overlay') and self.restore_overlay:
+            self.restore_overlay.destroy()
+            self.restore_overlay = None
+        
+        # Call callback with choice
+        if callback:
+            callback(restore_choice)
+
+    def hide_restore_session_overlay(self):
+        """Hide restore session overlay"""
+        if hasattr(self, 'restore_overlay') and self.restore_overlay:
+            self.restore_overlay.destroy()
+            self.restore_overlay = None

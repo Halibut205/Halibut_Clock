@@ -267,9 +267,9 @@ class TaskUI:
         selection = self.task_listbox.curselection()
         if selection and self.on_move_task_up:
             index = selection[0]
-            if index > 0:  # Không thể di chuyển lên nếu đã ở đầu danh sách
+            if index > 0:  # Cannot move up if already at the top of the list
                 self.on_move_task_up(index)
-                # Giữ selection sau khi di chuyển
+                # Keep selection after moving
                 self.task_listbox.selection_set(index - 1)
 
     def _on_move_task_down_clicked(self):
@@ -279,13 +279,13 @@ class TaskUI:
         selection = self.task_listbox.curselection()
         if selection and self.on_move_task_down:
             index = selection[0]
-            if index < self.task_listbox.size() - 1:  # Không thể di chuyển xuống nếu đã ở cuối danh sách
+            if index < self.task_listbox.size() - 1:  # Cannot move down if already at the bottom of the list
                 self.on_move_task_down(index)
-                # Giữ selection sau khi di chuyển
+                # Keep selection after moving
                 self.task_listbox.selection_set(index + 1)
 
     def update_task_list(self, tasks):
-        """Cập nhật danh sách tasks"""
+        """Update task list"""
         self.task_listbox.delete(0, tk.END)
         for task in tasks:
             # Add priority indicator

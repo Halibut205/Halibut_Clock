@@ -1,8 +1,8 @@
-# 🕐 Fliqlo Timer - Pomodoro Study Timer
+# 🕐 Study Timer - Pomodoro Study Timer
 
 A **beautiful Pomodoro app** to help you focus on studying and working efficiently. Features **continuous timing system** for flexible time management, task tracking, cross-platform sound support, and **advanced data visualization with separated charts**.
 
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue)
 ![Python](https://img.shields.io/badge/python-3.8%2B-green)
 ![License](https://img.shields.io/badge/license-MIT-yellow)
 
@@ -64,8 +64,16 @@ A **beautiful Pomodoro app** to help you focus on studying and working efficient
 ### **🎵 Audio Experience**
 - **Smart Sound System**: Session completion alerts
 - **Background Music**: Optional focus-enhancing audio
-- **Cross-Platform Support**: Works on Windows, macOS, and Linux
+- **Cross-Platform Support**: Works on Windows and Linux
 - **Customizable Audio**: Easy to replace with your own sound files
+
+### **💾 Session Persistence**
+- **Auto-Save State**: Timer state automatically saved every 30 seconds
+- **Crash Recovery**: Restore your session if the app is accidentally closed
+- **Daily Persistence**: Saved state only restored if from the same day
+- **Elegant Overlay**: Beautiful in-app overlay for session restoration choice
+- **Keyboard Support**: Quick restoration with Y/N/ESC keys
+- **Seamless Resume**: All timer values, session progress, and settings preserved
 
 ---
 
@@ -78,21 +86,6 @@ setup.bat    # Install dependencies
 run.bat      # Launch the application
 ```
 
-### **macOS Users** 
-```bash
-# Make scripts executable and run:
-chmod +x setup.sh run.sh
-./setup.sh   # Install dependencies with macOS optimizations
-./run.sh     # Launch the application
-
-# If you encounter issues, see MACOS_SETUP.md for detailed instructions
-```
-
-**macOS Troubleshooting:**
-- If `tkinter` issues: `brew install python-tk`
-- If `pygame` issues: `brew install sdl2 sdl2_mixer && pip3 install pygame`
-- Alternative: Use system Python `/usr/bin/python3 main.py`
-
 ### **Linux Users**
 ```bash
 # Make scripts executable and run:
@@ -104,8 +97,8 @@ chmod +x setup.sh run.sh
 ### **Manual Installation**
 ```bash
 # Clone the repository
-git clone https://github.com/Halibut205/Study_Fliqlo_Clock.git
-cd Study_Fliqlo_Clock
+git clone https://github.com/Halibut205/Study_Timer.git
+cd Study_Timer
 
 # Install dependencies
 pip install -r requirements.txt
@@ -194,7 +187,7 @@ This ensures your goals are:
   - `pygame` (for audio support)
   - `matplotlib>=3.5.0` (for advanced charts)
   - `tkinter` (usually included with Python)
-- **Platform**: Windows, macOS, Linux
+- **Platform**: Windows, Linux
 - **Audio Files**: Included in `sfx/` directory
 
 ---
@@ -239,12 +232,21 @@ Timer/
 └── data/               # User data (auto-created)
     ├── tasks_data.json       # Saved tasks
     ├── app_settings.json     # User preferences
-    └── daily_stats.json      # Daily statistics
+    ├── daily_stats.json      # Daily statistics
+    └── timer_state.json      # Saved timer state (auto-created)
 ```
 
 ---
 
 ## 🆕 Recent Updates
+
+### **v2.2 - Session Persistence & Crash Recovery**
+- ✅ **Auto-Save State**: Timer state automatically saved every 30 seconds during active sessions
+- ✅ **Crash Recovery**: Restore previous session if app accidentally closed (same day only)
+- ✅ **Elegant Overlay**: Beautiful in-app overlay replaces popup dialogs for session restoration
+- ✅ **Keyboard Support**: Quick restoration choices with Y (restore), N (fresh), ESC (cancel)
+- ✅ **Complete State Backup**: Preserves timer values, session progress, settings, and running state
+- ✅ **Session Continuity**: Never lose progress due to accidental app closure
 
 ### **v2.1 - Dynamic Goals System**
 - ✅ **Smart Session Targets**: Daily session goals adapt to your monthly performance (avg + 2)
@@ -277,8 +279,8 @@ Feel free to submit issues, fork the repository, and create pull requests for an
 ### **Development Setup**
 ```bash
 # Clone and setup development environment
-git clone https://github.com/Halibut205/Study_Fliqlo_Clock.git
-cd Study_Fliqlo_Clock
+git clone https://github.com/Halibut205/Study_Timer.git
+cd Study_Timer
 pip install -r requirements.txt
 
 # Run tests
@@ -296,7 +298,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **Fliqlo**: Inspiration for the clean, minimalist timer design
 - **Pomodoro Technique**: Time management methodology
 - **Matplotlib**: Advanced charting and visualization library
 - **Python Community**: For the excellent libraries and tools

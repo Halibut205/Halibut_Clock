@@ -1,4 +1,4 @@
-# Fliqlo Timer - Dependencies
+# Study Timer - Dependencies
 
 # pygame - for button sound effects
 pygame>=2.0.0

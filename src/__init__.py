@@ -1,5 +1,5 @@
 """
-Fliqlo Timer - Core Package
+Study Timer - Core Package
 A beautiful Pomodoro timer with dual clock system and unlimited sessions.
 """
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "============================================"
-echo "    Fliqlo Timer - Installation Script"
+echo "    Study Timer - Installation Script"
 echo "============================================"
 echo
 
@@ -9,7 +9,6 @@ echo
 OS="$(uname -s)"
 case "${OS}" in
     Linux*)     MACHINE=Linux;;
-    Darwin*)    MACHINE=Mac;;
     CYGWIN*)    MACHINE=Cygwin;;
     MINGW*)     MACHINE=MinGw;;
     *)          MACHINE="UNKNOWN:${OS}"
@@ -24,10 +23,6 @@ elif command -v python &> /dev/null; then
     PYTHON_CMD="python"
 else
     echo "[ERROR] Python is not installed"
-    if [ "$MACHINE" = "Mac" ]; then
-        echo "Please install Python 3.8+ using one of these methods:"
-        echo "1. Homebrew: brew install python"
-        echo "2. Official installer: https://python.org"
         echo "3. pyenv: https://github.com/pyenv/pyenv"
     else
         echo "Please install Python 3.8+ from https://python.org"
@@ -58,28 +53,6 @@ echo "[INFO] Using pip command: $PIP_CMD"
 echo
 echo "[INFO] Installing dependencies from requirements.txt..."
 
-# macOS specific fixes
-if [ "$MACHINE" = "Mac" ]; then
-    echo "[INFO] Applying macOS-specific configurations..."
-    
-    # Check if Xcode command line tools are installed (needed for some packages)
-    if ! xcode-select -p &> /dev/null; then
-        echo "[WARNING] Xcode command line tools not found"
-        echo "[INFO] Installing Xcode command line tools..."
-        xcode-select --install
-        echo "[INFO] Please wait for installation to complete and run this script again"
-        exit 1
-    fi
-    
-    # For macOS, ensure we have tkinter
-    $PYTHON_CMD -c "import tkinter" 2>/dev/null
-    if [ $? -ne 0 ]; then
-        echo "[WARNING] tkinter not found"
-        echo "[INFO] If using Homebrew Python, install with: brew install python-tk"
-        echo "[INFO] If using pyenv, reinstall Python with: env PYTHON_CONFIGURE_OPTS='--with-tcltk-includes=-I$(brew --prefix tcl-tk)/include' pyenv install 3.x.x"
-    fi
-fi
-
 $PIP_CMD install -r requirements.txt
 
 if [ $? -ne 0 ]; then
@@ -90,10 +63,6 @@ if [ $? -ne 0 ]; then
     $PIP_CMD install pygame
     if [ $? -ne 0 ]; then
         echo "[WARNING] Could not install pygame, app will use system beep"
-        if [ "$MACHINE" = "Mac" ]; then
-            echo "[INFO] On macOS, you might need to install SDL2 first:"
-            echo "       brew install sdl2 sdl2_image sdl2_mixer sdl2_ttf"
-        fi
     fi
     
     echo "[INFO] Installing matplotlib for charts..."
@@ -130,23 +99,10 @@ echo "- Sound effects (if pygame installed)"
 echo "- Export functionality for data and charts"
 echo
 echo "To run the app:"
-if [ "$MACHINE" = "Mac" ]; then
-    echo "1. Run '$PYTHON_CMD main.py' from this directory"
-    echo "2. Or run './run.sh' (make sure it's executable: chmod +x run.sh)"
-    echo "3. On macOS, the app window might appear behind other windows"
-else
-    echo "1. Run '$PYTHON_CMD main.py' from this directory"
-    echo "2. Or run './run.sh' (make sure it's executable: chmod +x run.sh)"
-fi
+echo "1. Run '$PYTHON_CMD main.py' from this directory"
+echo "2. Or run './run.sh' (make sure it's executable: chmod +x run.sh)"
 echo
 echo "To test charts functionality:"
 echo "- Run '$PYTHON_CMD demos/demo_charts.py'"
 echo
-if [ "$MACHINE" = "Mac" ]; then
-    echo "macOS Notes:"
-    echo "- If you get 'command not found' errors, try: /usr/bin/python3 main.py"
-    echo "- If tkinter issues occur, install python-tk: brew install python-tk"
-    echo "- For sound issues, install SDL2: brew install sdl2 sdl2_mixer"
-    echo
-fi
 read -p "Press Enter to continue..."
