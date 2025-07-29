@@ -4,14 +4,13 @@ A **beautiful Pomodoro app** to help you focus on studying and working efficient
 
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue)
 ![Python](https://img.shields.io/badge/python-3.8%2B-green)
-![License](https://img.shields.io/badge/license-MIT-yellow)
 
 ---
 
 ## ✨ Features
 
 ### **🕐 Dual Clock System**
-- **Main Timer**: Continuously tracks your total work time (never resets)
+- **Main Timer**: Continuously tracks your total work time
 - **Break Timer**: Tracks your break/pause time with smart color indicators
 - **Smart Toggle**: Seamlessly switch between work and break modes
 - **Independent Timing**: Each clock preserves its state when paused
@@ -287,14 +286,6 @@ pip install -r requirements.txt
 python tests/test_daily_stats.py
 python tests/test_enhanced_charts.py
 ```
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
 
 ## 🙏 Acknowledgments
 
