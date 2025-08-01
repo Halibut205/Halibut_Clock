@@ -148,13 +148,9 @@ class DailyStatsWindow:
     
     def create_stat_card(self, parent, title, stat_type, color, row, col):
         """Tạo card thống kê với thiết kế đẹp hơn và progress indicators"""
-        # Outer container với shadow effect
-        outer_frame = tk.Frame(parent, bg='#ecf0f1', relief="raised", bd=1)
-        outer_frame.grid(row=row, column=col, padx=12, pady=12, sticky="nsew", ipadx=3, ipady=3)
-        
-        # Inner card với gradient-like effect
-        card_frame = tk.Frame(outer_frame, bg=color, relief="flat", bd=0)
-        card_frame.pack(fill="both", expand=True, padx=2, pady=2)
+        # Main card frame without shadow
+        card_frame = tk.Frame(parent, bg=color, relief="raised", bd=2)
+        card_frame.grid(row=row, column=col, padx=12, pady=12, sticky="nsew", ipadx=15, ipady=10)
         
         # Configure grid weights
         parent.grid_rowconfigure(row, weight=1)
@@ -527,14 +523,10 @@ class DailyStatsWindow:
         self.comparison_tree.pack(fill="both", expand=True)
     
     def create_monthly_card(self, parent, title, stat_type, color, row, col):
-        """Tạo card thống kê tháng với thiết kế gradient và shadow"""
-        # Outer container với shadow effect
-        shadow_frame = tk.Frame(parent, bg='#bdc3c7', relief="flat", bd=0)
-        shadow_frame.grid(row=row, column=col, padx=10, pady=10, sticky="nsew", ipadx=2, ipady=2)
-        
-        # Main card với gradient effect
-        card_frame = tk.Frame(shadow_frame, bg=color, relief="flat", bd=0)
-        card_frame.pack(fill="both", expand=True)
+        """Tạo card thống kê tháng với thiết kế đẹp"""
+        # Main card frame without shadow
+        card_frame = tk.Frame(parent, bg=color, relief="raised", bd=2)
+        card_frame.grid(row=row, column=col, padx=10, pady=10, sticky="nsew", ipadx=12, ipady=8)
         
         parent.grid_columnconfigure(col, weight=1)
         
@@ -676,7 +668,7 @@ class DailyStatsWindow:
     def create_yearly_tab(self):
         """Tạo tab thống kê theo năm"""
         yearly_frame = ttk.Frame(self.notebook, padding="15")
-        self.notebook.add(yearly_frame, text="📅 Yearly Stats")
+        self.notebook.add(yearly_frame, text="📅 Yearly")
         
         # Year selector frame
         year_selector_frame = tk.Frame(yearly_frame, bg='white')
@@ -737,6 +729,9 @@ class DailyStatsWindow:
         self.yearly_tree.tag_configure('medium_month', background='#fff3e0', foreground='#f57c00')
         self.yearly_tree.tag_configure('low_month', background='#ffebee', foreground='#d32f2f')
         self.yearly_tree.tag_configure('current_month', background='#e3f2fd', foreground='#1565c0')
+        
+        # Bind double-click event for date overlay
+        self.yearly_tree.bind("<Double-1>", self.on_yearly_double_click)
         
         # Scrollbar
         yearly_scrollbar = ttk.Scrollbar(monthly_frame, orient="vertical", command=self.yearly_tree.yview)
@@ -2773,6 +2768,14 @@ class DailyStatsWindow:
             date_str = self.convert_display_date_to_iso(date_str)
             self.show_date_overlay(date_str)
     
+    def on_yearly_double_click(self, event):
+        """Handle double-click on yearly table"""
+        item = self.yearly_tree.selection()[0] if self.yearly_tree.selection() else None
+        if item:
+            # Get month from the first column
+            month_str = self.yearly_tree.item(item, 'values')[0]
+            self.show_monthly_details(month_str)
+    
     def convert_display_date_to_iso(self, display_date):
         """Convert display date format to ISO format (YYYY-MM-DD)"""
         try:
@@ -2800,6 +2803,47 @@ class DailyStatsWindow:
         except Exception:
             return display_date
     
+    def show_monthly_details(self, month_str):
+        """Show detailed breakdown of a specific month"""
+        if self.overlay_visible:
+            self.hide_date_overlay()
+            return
+        
+        # Parse month string (e.g., "January 2025" or "July 2025")
+        try:
+            month_name, year = month_str.split(' ')
+            year = int(year)
+            month_num = list(calendar.month_name).index(month_name)
+        except (ValueError, IndexError):
+            messagebox.showerror("Error", "Invalid month format")
+            return
+        
+        # Get all days data for this month
+        monthly_data = self.stats_manager.get_monthly_breakdown(year, month_num)
+        
+        # Create overlay
+        self.date_overlay = tk.Toplevel(self.window)
+        self.date_overlay.title(f"📊 Monthly Details - {month_str}")
+        self.date_overlay.geometry("800x600")
+        self.date_overlay.configure(bg='#f5f5f5')
+        self.date_overlay.resizable(True, True)
+        
+        # Make it modal
+        self.date_overlay.transient(self.window)
+        self.date_overlay.grab_set()
+        
+        # Center the overlay
+        self.center_overlay()
+        
+        # Create monthly content
+        self.create_monthly_overlay_content(monthly_data, month_str)
+        
+        # Bind close events
+        self.date_overlay.protocol("WM_DELETE_WINDOW", self.hide_date_overlay)
+        self.date_overlay.bind("<Escape>", lambda e: self.hide_date_overlay())
+        
+        self.overlay_visible = True
+
     def show_date_overlay(self, date_str):
         """Show overlay with date details"""
         if self.overlay_visible:
@@ -2882,20 +2926,6 @@ class DailyStatsWindow:
             fg='#ecf0f1'
         )
         date_label.pack(side="left", padx=(10, 0), pady=15)
-        
-        # Close button
-        close_btn = tk.Button(
-            header_content,
-            text="✕",
-            command=self.hide_date_overlay,
-            bg='#e74c3c',
-            fg='white',
-            font=("Arial", 14, "bold"),
-            relief="flat",
-            width=3,
-            cursor="hand2"
-        )
-        close_btn.pack(side="right", padx=20, pady=15)
         
         # Main content
         main_frame = tk.Frame(self.date_overlay, bg='#f5f5f5', padx=20, pady=20)
@@ -3018,6 +3048,142 @@ class DailyStatsWindow:
         )
         total_value.pack(side="left", padx=(10, 0))
     
+    def create_monthly_overlay_content(self, monthly_data, month_str):
+        """Create overlay content for monthly breakdown"""
+        # Header
+        header_frame = tk.Frame(self.date_overlay, bg='#34495e', height=60)
+        header_frame.pack(fill="x")
+        header_frame.pack_propagate(False)
+        
+        # Header content
+        header_content = tk.Frame(header_frame, bg='#34495e')
+        header_content.pack(expand=True, fill="both")
+        
+        # Title
+        title_label = tk.Label(
+            header_content,
+            text=f"📅 Monthly Breakdown",
+            font=("Segoe UI", 16, "bold"),
+            bg='#34495e',
+            fg='white'
+        )
+        title_label.pack(side="left", padx=20, pady=15)
+        
+        # Month
+        month_label = tk.Label(
+            header_content,
+            text=f"{month_str}",
+            font=("Segoe UI", 12),
+            bg='#34495e',
+            fg='#ecf0f1'
+        )
+        month_label.pack(side="left", padx=(10, 0), pady=15)
+        
+        # Main content
+        main_frame = tk.Frame(self.date_overlay, bg='#f5f5f5', padx=20, pady=20)
+        main_frame.pack(fill="both", expand=True)
+        
+        # Summary cards
+        summary_frame = tk.Frame(main_frame, bg='#f5f5f5')
+        summary_frame.pack(fill="x", pady=(0, 20))
+        
+        # Calculate totals
+        total_study_seconds = sum(self.time_to_seconds(day.get('study_time', '00:00:00')) for day in monthly_data)
+        total_break_seconds = sum(self.time_to_seconds(day.get('break_time', '00:00:00')) for day in monthly_data)
+        total_sessions = sum(day.get('sessions_completed', 0) for day in monthly_data)
+        total_tasks = sum(day.get('tasks_completed', 0) for day in monthly_data)
+        active_days = len([day for day in monthly_data if day.get('sessions_completed', 0) > 0])
+        
+        # Convert back to time format
+        total_study_time = self.seconds_to_time(total_study_seconds)
+        total_break_time = self.seconds_to_time(total_break_seconds)
+        
+        # Create summary cards
+        self.create_overlay_card(summary_frame, "📚 Total Study", total_study_time, "#2ecc71", 0, 0)
+        self.create_overlay_card(summary_frame, "☕ Total Break", total_break_time, "#f39c12", 0, 1)
+        self.create_overlay_card(summary_frame, "🎯 Total Sessions", total_sessions, "#9b59b6", 1, 0)
+        self.create_overlay_card(summary_frame, "📅 Active Days", f"{active_days} days", "#3498db", 1, 1)
+        
+        # Daily breakdown table
+        table_frame = ttk.LabelFrame(main_frame, text="📋 Daily Breakdown", padding="10")
+        table_frame.pack(fill="both", expand=True, pady=(10, 0))
+        
+        # Create treeview for daily data
+        daily_columns = ("Date", "Study Time", "Break Time", "Sessions", "Tasks", "Efficiency")
+        daily_tree = ttk.Treeview(table_frame, columns=daily_columns, show="headings", height=15)
+        
+        # Define headings
+        for col in daily_columns:
+            daily_tree.heading(col, text=col)
+            daily_tree.column(col, width=100, anchor="center")
+        
+        # Add data
+        for day_data in monthly_data:
+            if day_data.get('sessions_completed', 0) > 0:  # Only show active days
+                study_seconds = self.time_to_seconds(day_data.get('study_time', '00:00:00'))
+                break_seconds = self.time_to_seconds(day_data.get('break_time', '00:00:00'))
+                total_seconds = study_seconds + break_seconds
+                
+                if total_seconds > 0:
+                    efficiency = (study_seconds / total_seconds) * 100
+                    efficiency_text = f"{efficiency:.1f}%"
+                else:
+                    efficiency_text = "N/A"
+                
+                # Format date
+                date_str = day_data.get('date', '')
+                try:
+                    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+                    formatted_date = date_obj.strftime('%m/%d')
+                except:
+                    formatted_date = date_str
+                
+                daily_tree.insert("", "end", values=(
+                    formatted_date,
+                    day_data.get('study_time', '00:00:00'),
+                    day_data.get('break_time', '00:00:00'),
+                    day_data.get('sessions_completed', 0),
+                    day_data.get('tasks_completed', 0),
+                    efficiency_text
+                ))
+        
+        # Scrollbar for daily table
+        daily_scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=daily_tree.yview)
+        daily_tree.configure(yscrollcommand=daily_scrollbar.set)
+        
+        # Pack
+        daily_tree.pack(side="left", fill="both", expand=True)
+        daily_scrollbar.pack(side="right", fill="y")
+        
+        # Bind double-click to show individual day details
+        daily_tree.bind("<Double-1>", lambda e: self.on_monthly_day_double_click(e, daily_tree))
+    
+    def on_monthly_day_double_click(self, event, tree):
+        """Handle double-click on day in monthly breakdown"""
+        item = tree.selection()[0] if tree.selection() else None
+        if item:
+            # Get date from the first column
+            date_str = tree.item(item, 'values')[0]
+            # Convert MM/DD to YYYY-MM-DD format
+            try:
+                month_day = date_str.strip()
+                current_year = datetime.now().year
+                date_obj = datetime.strptime(f"{current_year}-{month_day}", '%Y-%m/%d')
+                full_date_str = date_obj.strftime('%Y-%m-%d')
+                
+                # Hide current overlay and show day details
+                self.hide_date_overlay()
+                self.show_date_overlay(full_date_str)
+            except:
+                pass
+    
+    def seconds_to_time(self, seconds):
+        """Convert seconds to HH:MM:SS format"""
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        seconds = seconds % 60
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
     def time_to_seconds(self, time_str):
         """Convert HH:MM:SS to seconds"""
         try:

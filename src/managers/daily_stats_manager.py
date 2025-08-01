@@ -232,6 +232,37 @@ class DailyStatsManager:
             "productivity_rate": f"{(active_days / days_in_month * 100):.1f}%"
         }
     
+    def get_monthly_breakdown(self, year: int, month: int) -> List[Dict[str, Any]]:
+        """Get detailed breakdown of all days in a specific month"""
+        from calendar import monthrange
+        
+        # Get number of days in month
+        days_in_month = monthrange(year, month)[1]
+        
+        daily_breakdown = []
+        
+        # Iterate through all days in month
+        for day in range(1, days_in_month + 1):
+            date_key = f"{year:04d}-{month:02d}-{day:02d}"
+            
+            if date_key in self.stats_data:
+                day_data = self.stats_data[date_key].copy()
+                day_data["date"] = date_key
+                day_data["study_time"] = self.format_time(day_data["study_time"])
+                day_data["break_time"] = self.format_time(day_data["break_time"])
+                daily_breakdown.append(day_data)
+            else:
+                # Create empty day entry
+                daily_breakdown.append({
+                    "date": date_key,
+                    "study_time": "00:00:00",
+                    "break_time": "00:00:00",
+                    "sessions_completed": 0,
+                    "tasks_completed": 0
+                })
+        
+        return daily_breakdown
+
     def get_month_comparison(self, months_back: int = 3) -> List[Dict[str, Any]]:
         """So sánh thống kê của N tháng gần đây"""
         import calendar

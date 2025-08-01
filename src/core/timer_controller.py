@@ -503,6 +503,13 @@ class TimerController:
             self.ui.set_session_duration(self.timer_core.session_duration)
             self.ui.set_auto_continue(self.timer_core.auto_continue)
             
+            # CRITICAL FIX: Initialize tracking variables to prevent double-counting study time
+            # When timer state is restored, we need to set the tracking variables to the current time
+            # to prevent the _update_daily_stats() method from counting all the restored time as new time
+            self.last_main_time = self.timer_core.main_time
+            self.last_break_time = self.timer_core.break_time
+            print(f"🔧 Fixed timer tracking: last_main_time={self.last_main_time}, last_break_time={self.last_break_time}")
+            
         except Exception as e:
             print(f"Error refreshing UI from state: {e}")
 
