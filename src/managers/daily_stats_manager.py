@@ -60,12 +60,19 @@ class DailyStatsManager:
                 "start_time": None,  # Thời gian bắt đầu học đầu tiên
                 "last_update": None  # Lần cập nhật cuối
             }
+        else:
+            # Handle existing data format - convert if needed
+            today_stats = self.stats_data[today_key]
+            today_stats = self._normalize_day_stats(today_stats, today_key)
         return self.stats_data[today_key]
     
     def get_date_stats(self, date_str: str) -> Dict[str, Any]:
         """Lấy thống kê của ngày cụ thể (format: YYYY-MM-DD)"""
         if date_str in self.stats_data:
-            return self.stats_data[date_str]
+            stats = self.stats_data[date_str].copy()
+            # Normalize the stats to ensure all required fields exist
+            stats = self._normalize_day_stats(stats, date_str)
+            return stats
         else:
             # Return empty stats if no data available
             return {
@@ -152,6 +159,9 @@ class DailyStatsManager:
             
             if date_key in self.stats_data:
                 stats = self.stats_data[date_key].copy()
+                # Normalize the stats to ensure all required fields exist
+                stats = self._normalize_day_stats(stats, date_key)
+                
                 stats["formatted_study_time"] = self.format_time(stats["study_time"])
                 stats["formatted_break_time"] = self.format_time(stats["break_time"])
                 recent_stats.append(stats)
@@ -201,6 +211,9 @@ class DailyStatsManager:
             
             if date_key in self.stats_data:
                 day_stats = self.stats_data[date_key].copy()
+                # Normalize the stats to ensure all required fields exist
+                day_stats = self._normalize_day_stats(day_stats, date_key)
+                
                 day_stats["formatted_study_time"] = self.format_time(day_stats["study_time"])
                 day_stats["formatted_break_time"] = self.format_time(day_stats["break_time"])
                 monthly_stats.append(day_stats)
@@ -247,7 +260,10 @@ class DailyStatsManager:
             
             if date_key in self.stats_data:
                 day_data = self.stats_data[date_key].copy()
-                day_data["date"] = date_key
+                # Normalize the stats to ensure all required fields exist
+                day_data = self._normalize_day_stats(day_data, date_key)
+                
+                # Convert to formatted time strings for display
                 day_data["study_time"] = self.format_time(day_data["study_time"])
                 day_data["break_time"] = self.format_time(day_data["break_time"])
                 daily_breakdown.append(day_data)
@@ -328,6 +344,30 @@ class DailyStatsManager:
             "formatted_break_time": "00:00:00"
         }
 
+    def _normalize_day_stats(self, stats: Dict[str, Any], date_key: str) -> Dict[str, Any]:
+        """Normalize day stats to ensure all required fields exist"""
+        # Handle existing data format - convert if needed
+        if "total_study_time" in stats and "study_time" not in stats:
+            stats["study_time"] = stats["total_study_time"]
+        
+        # Ensure all required fields exist with defaults
+        if "date" not in stats:
+            stats["date"] = date_key
+        if "study_time" not in stats:
+            stats["study_time"] = stats.get("total_study_time", 0)
+        if "break_time" not in stats:
+            stats["break_time"] = 0
+        if "sessions_completed" not in stats:
+            stats["sessions_completed"] = 0
+        if "tasks_completed" not in stats:
+            stats["tasks_completed"] = 0
+        if "start_time" not in stats:
+            stats["start_time"] = None
+        if "last_update" not in stats:
+            stats["last_update"] = None
+        
+        return stats
+
     def get_data_range(self, start_date=None, end_date=None, days=None) -> List[Dict[str, Any]]:
         """
         Lấy dữ liệu trong khoảng thời gian linh hoạt
@@ -363,6 +403,9 @@ class DailyStatsManager:
             
             if date_key in self.stats_data:
                 stats = self.stats_data[date_key].copy()
+                # Normalize the stats to ensure all required fields exist
+                stats = self._normalize_day_stats(stats, date_key)
+                
                 stats["formatted_study_time"] = self.format_time(stats["study_time"])
                 stats["formatted_break_time"] = self.format_time(stats["break_time"])
                 range_stats.append(stats)
@@ -503,7 +546,7 @@ class DailyStatsManager:
             }
         
         dates = sorted(self.stats_data.keys())
-        total_study = sum(day.get("study_time", 0) for day in self.stats_data.values())
+        total_study = sum(day.get("study_time", day.get("total_study_time", 0)) for day in self.stats_data.values())
         total_sessions = sum(day.get("sessions_completed", 0) for day in self.stats_data.values())
         total_tasks = sum(day.get("tasks_completed", 0) for day in self.stats_data.values())
         available_years = self.get_available_years()

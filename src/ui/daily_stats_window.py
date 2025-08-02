@@ -1590,10 +1590,10 @@ class DailyStatsWindow:
             # Add daily goal line (dynamic average)
             daily_goal = self.stats_manager.get_dynamic_daily_goal()
             ax.axhline(y=daily_goal, color='#3498db', linestyle='--', linewidth=2, 
-                      alpha=0.7, label=f'🎯 Monthly Avg Goal ({daily_goal:.1f}h)')
+                      alpha=0.7, label=f'Monthly Avg Goal ({daily_goal:.1f}h)')
             
             # Beautiful styling
-            ax.set_title('📈 Study Time & Break Analysis (Last 14 Days)', 
+            ax.set_title('Study Time & Break Analysis (Last 14 Days)', 
                         fontsize=18, fontweight='bold', pad=25, color='#2c3e50')
             ax.set_xlabel('Date', fontsize=14, color='#34495e', fontweight='500')
             ax.set_ylabel('Hours', fontsize=14, color='#34495e', fontweight='500')
@@ -1641,7 +1641,7 @@ class DailyStatsWindow:
                             bbox=dict(boxstyle="round,pad=0.3", facecolor='white', 
                                     alpha=0.8, edgecolor='#bdc3c7'))
             
-            ax1.set_title('🎯 Daily Sessions Completed', fontsize=16, fontweight='bold', 
+            ax1.set_title('Daily Sessions Completed', fontsize=16, fontweight='bold', 
                          pad=15, color='#2c3e50')
             ax1.set_ylabel('Sessions', fontsize=12, color='#34495e', fontweight='500')
             ax1.grid(True, alpha=0.4, axis='y', linestyle='-', linewidth=0.5, color='#bdc3c7')
@@ -1662,7 +1662,7 @@ class DailyStatsWindow:
                             bbox=dict(boxstyle="round,pad=0.3", facecolor='white', 
                                     alpha=0.8, edgecolor='#bdc3c7'))
             
-            ax2.set_title('✅ Daily Tasks Completed', fontsize=16, fontweight='bold', 
+            ax2.set_title('Daily Tasks Completed', fontsize=16, fontweight='bold', 
                          pad=15, color='#2c3e50')
             ax2.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
             ax2.set_ylabel('Tasks', fontsize=12, color='#34495e', fontweight='500')
@@ -1930,10 +1930,10 @@ class DailyStatsWindow:
         daily_goal = self.stats_manager.get_dynamic_daily_goal()
         goal_line = ax.axhline(y=daily_goal, color='#3498db', linestyle='--', 
                               linewidth=2, alpha=0.7, 
-                              label=f'🎯 Daily Goal ({daily_goal:.1f}h)')
+                              label=f'Daily Goal ({daily_goal:.1f}h)')
         
         # Customize chart with beautiful typography
-        ax.set_title('📈 Study Time & Break Analysis', 
+        ax.set_title('Study Time & Break Analysis', 
                     fontsize=16, fontweight='bold', pad=25,
                     color='#2c3e50', fontfamily='monospace')
         ax.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
@@ -2013,9 +2013,9 @@ class DailyStatsWindow:
         bars = ax.bar(dates, sessions, 
                      color='#9b59b6', alpha=0.8, 
                      edgecolor='#8e44ad', linewidth=1.5,
-                     label='🎯 Sessions', capsize=4, width=0.6)
+                     label='Sessions', capsize=4, width=0.6)
         
-        ax.set_title('🎯 Daily Sessions Completed - Detailed Analysis', 
+        ax.set_title('Daily Sessions Completed - Detailed Analysis', 
                     fontsize=16, fontweight='bold', pad=20,
                     color='#2c3e50', fontfamily='monospace')
         ax.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')
@@ -2114,9 +2114,9 @@ class DailyStatsWindow:
         bars = ax.bar(dates, tasks, 
                      color='#e74c3c', alpha=0.8,
                      edgecolor='#c0392b', linewidth=1.5,
-                     label='✅ Tasks', capsize=4, width=0.6)
+                     label='Tasks', capsize=4, width=0.6)
         
-        ax.set_title('✅ Daily Tasks Completed - Detailed Analysis', 
+        ax.set_title('Daily Tasks Completed - Detailed Analysis', 
                     fontsize=16, fontweight='bold', pad=20,
                     color='#2c3e50', fontfamily='monospace')
         ax.set_xlabel('Date', fontsize=12, color='#34495e', fontweight='500')

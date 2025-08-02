@@ -42,18 +42,15 @@ data/tasks_data.json
 data/app_settings.json
 data/daily_stats.json
 data/*.json
-!data/README.md
 
-# Audio files (user should provide their own)
-sfx/*.mp3
-sfx/*.wav
-sfx/*.ogg
-!sfx/README.md
 
 # Test and temporary files
 test_*.py
 *_test.py
 demo_*.py
+
+# Large audio files
+sfx/whitenoise_1.mp3
 *_demo.py
 *_diagnostic.py
 *_clean.py
@@ -65,11 +62,6 @@ demo_*.py
 # Logs
 *.log
 
-# Virtual environments
-venv/
-env/
-ENV/
-.venv/
 
 # Runtime files
 *.pid
